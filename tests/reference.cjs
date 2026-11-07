@@ -46,6 +46,8 @@ async function choose(page, song, level) {
   await screen(a.page, '02-songs');
   const charts = await a.page.evaluate(() => window.KF.SONGS.map((s, i) => [0, 1].map(l => window.KF.buildChart(s, l).notes.length)));
   check(charts.every(c => c[0] > 10 && c[1] > c[0]), 'charts build, EASY is smaller than MED: ' + JSON.stringify(charts));
+  const blacks = await a.page.evaluate(() => window.KF.SONGS.flatMap(s => [0, 1].flatMap(l => window.KF.buildChart(s, l).notes)).filter(n => [1, 3, 6, 8, 10].includes(((n.pitch % 12) + 12) % 12)).length);
+  check(blacks === 0, 'D1: no black keys in any chart');
 
   await a.page.evaluate(() => window.KF.setAuto(true));
   await choose(a.page, 0, 1); await a.page.keyboard.press('Enter');
@@ -81,14 +83,24 @@ async function choose(page, song, level) {
     const p = window.KF.play, n = p.notes[0];               /* C4 at beat 8 */
     return { t: n.t, pitch: n.pitch, state: n.state };
   });
-  await waitBeat(a.page, 8.13);                                  /* about 80 ms late at 96 BPM */
-  await a.page.keyboard.down('KeyA'); await a.page.keyboard.up('KeyA');
-  const after = await a.page.evaluate(() => ({ state: window.KF.play.notes[0].state, judge: window.KF.play.judge && window.KF.play.judge.text, combo: window.KF.play.combo }));
-  check(probe.pitch === 60 && after.state === 'hit' && (after.judge === 'GOOD' || after.judge === 'GREAT'), `a late C4 is hit but not PERFECT: ${JSON.stringify(after)}`);
+  await waitBeat(a.page, 8.03);
+  const after = await a.page.evaluate(() => {                    /* C4, stamped exactly 80 ms after it was due */
+    const p = window.KF.play, bms = 60000 / p.bpm, ts = performance.now() - (p.beat - 8) * bms + 80 + window.KF.G.offset;
+    window.KF.keyDownK('test-late', 7, ts); window.KF.releaseNote('test-late', ts + 50);
+    return { state: p.notes[0].state, judge: p.judge && p.judge.text, combo: p.combo };
+  });
+  check(probe.pitch === 60 && after.state === 'hit' && after.judge === 'GOOD', `C4 80 ms late is GOOD: ${JSON.stringify(after)}`);
   await waitBeat(a.page, 8.95);
   await a.page.keyboard.down('KeyK'); await a.page.keyboard.up('KeyK');  /* C5 where E4 is due */
   const wrong = await a.page.evaluate(() => ({ judge: window.KF.play.judge && window.KF.play.judge.text, combo: window.KF.play.combo }));
   check(wrong.judge === 'WRONG' && wrong.combo === 0, `a wrong key breaks the combo: ${JSON.stringify(wrong)}`);
+  await waitBeat(a.page, 11.93);                                 /* G4 is due at beat 12 (bar 3, beat 0)... */
+  const black = await a.page.evaluate(() => {                    /* ...and a black key (C#4) next to it changes nothing */
+    const p = window.KF.play, before = { combo: p.combo, judge: p.judge && p.judge.text, t0: p.judge && p.judge.t0 };
+    window.KF.keyDownK('test-black', 8, performance.now()); window.KF.releaseNote('test-black', performance.now());
+    return { before, combo: p.combo, judge: p.judge && p.judge.text, same: (p.judge && p.judge.t0) === before.t0 };
+  });
+  check(black.same && black.combo === black.before.combo, `D1: a black key in play is ignored: ${JSON.stringify(black)}`);
   await a.page.keyboard.press('Escape');
 
   /* 3. against the bot: the protocol's receive path, and a winner */
