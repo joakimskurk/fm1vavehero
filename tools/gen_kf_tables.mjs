@@ -236,7 +236,7 @@ w('    int32_t tdec;                               /* Q24: a tick / the decay (t
 w('    int32_t end;                                /* ticks: the layer stops (decay + 50 ms) */');
 w('    int32_t gain, lgain;                        /* Q15, and log2(gain) Q16 */');
 w('    int32_t at;                                 /* ticks after the hit */');
-w('    int16_t gate, rev;                          /* Q15: the sends */');
+w('    int32_t gate, rev;                          /* Q15: the sends (the snare\'s gate send is 1.1) */');
 w('} kf_layer_t;');
 w(`#define KF_NLAYERDEF ${layers.length}u`);
 w('static const kf_layer_t KF_LAYER[KF_NLAYERDEF] = {');

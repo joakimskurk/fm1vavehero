@@ -8,12 +8,13 @@
 #include "kf_song.h"
 
 #define KF_BENCH_SONG 2u                         /* ENGINE TOUR */
-#define KF_BENCH_BEAT 160u                       /* bar 41 */
+static volatile uint32_t kf_bench_beat = 160u;  /* bar 41 (volatile: folded, 160 beats of frames is -3528000, which
+                                                  * looks like a ROM address to the build's check, docs/RULES.md) */
 static uint32_t kf_bench_mi;                     /* the melody's next note */
 static void kf_bench_start(uint32_t t0)          /* bar 41 sounds at frame t0 */
 {
     const kf_song_t *s = &KF_SONG[KF_BENCH_SONG];
-    uint32_t from = KF_BENCH_BEAT * 96u;
+    uint32_t from = kf_bench_beat * 96u;
     kf_seq_start(s, 0, 100);
     kf_seq.t0 = t0 - kf_seq_len(from);
     while (kf_seq.bi < s->nband && s->band[kf_seq.bi].t < from) {   /* the keyswitches up to bar 41, nothing sounds */

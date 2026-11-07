@@ -18,6 +18,11 @@ fi
 run "keyfall.c compiles for the host without a warning (-Werror)" \
     cc -O2 -Wall -Werror -Wno-unused-function -DDINGHY_HOST -DAPP_VER='"test"' -Ifirmware/hal -Ifirmware/src -Ifirmware/gen \
        -o "$OUT/keyfall-werror" firmware/src/keyfall.c
+if command -v clang >/dev/null 2>&1; then           # (the chip's compiler is a clang: its warnings, e.g. a constant that does not fit)
+    run "keyfall.c with clang, as the chip's compiler sees it (-Werror)" \
+        clang -O2 -Wall -Werror -Wno-unused-function -DDINGHY_HOST -DAPP_VER='"test"' -Ifirmware/hal -Ifirmware/src -Ifirmware/gen \
+           -o "$OUT/keyfall-clang" firmware/src/keyfall.c
+fi
 run "the engine alone compiles without a warning (-Wextra -Werror)" \
     cc -O2 -Wall -Wextra -Werror -Wno-unused-function -Ifirmware/src -Ifirmware/gen -o build/kf_render tests/kf/kf_render.c -lm
 run "the engine tour: every patch and kit" sh -c "build/kf_render tour build/audio/kf-tour.wav build/audio/kf-tour.json >/dev/null"

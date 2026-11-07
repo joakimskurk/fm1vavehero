@@ -100,7 +100,7 @@ typedef struct {
     int32_t end;                                /* ticks: the layer stops (decay + 50 ms) */
     int32_t gain, lgain;                        /* Q15, and log2(gain) Q16 */
     int32_t at;                                 /* ticks after the hit */
-    int16_t gate, rev;                          /* Q15: the sends */
+    int32_t gate, rev;                          /* Q15: the sends (the snare's gate send is 1.1) */
 } kf_layer_t;
 #define KF_NLAYERDEF 68u
 static const kf_layer_t KF_LAYER[KF_NLAYERDEF] = {
