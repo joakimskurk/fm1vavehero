@@ -82,6 +82,10 @@ GitHub Actions bygger `.fwsc`-pakken ved hver push, kjører testene og måler DE
 (`.github/workflows/build.yml`, via zvenson/fm1-build). Pakken heter `FM-1_95N`, der N er mindreversjonen, og 0 er
 en utviklerbygging.
 
+**Prøv den uten FM-1:** last ned `packages` fra en bygging under *Actions* på GitHub, pakk ut `keyfall.fwsc` og åpne
+den i [fm1-emu](https://joakimeriksson.github.io/fm1-emu/) i nettleseren. Siden kan åpne en lokal pakke. Tangentene
+og knappene ligger på datamaskinens tastatur og mus, og et MIDI-keyboard virker i Chrome og Edge.
+
 ## Innhold
 
 | | |
