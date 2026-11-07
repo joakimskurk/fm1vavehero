@@ -14,4 +14,4 @@ if [ ! -x "$DIR/target/release/fm1-emu" ]; then
     (cd "$DIR" && timeout 900 cargo build -q --release -p fm1-emu)
 fi
 echo "emu_ci: fm1-emu ready"
-timeout 1200 sh tools/emu_cpu.sh build/keyfall.fwsc
+EMU_MAX=${EMU_MAX:-45} timeout 1200 sh tools/emu_cpu.sh build/keyfall.fwsc   # (45 %: ROADMAP's ceiling)

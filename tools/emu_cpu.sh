@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 Joakim (joakimskurk), after Star Distroyer's tools/emu_cpu.sh
 # The engine's load on the chip, in fm1-emu (ROADMAP.md, phase 3: "first, measure the engine"): the audio
-# interrupt's share of the chip while KEYFALL's DEMO plays (kf_bench.h, the worst case), in instructions (the
-# emulator counts instructions, not cycles). Two runs: 1.6 s of silence, then 9.6 s with PLAY pressed at 1.6 s;
+# interrupt's share of the chip while KEYFALL's DEMO plays (FX on the splash: kf_bench.h, the worst case), in instructions (the
+# emulator counts instructions, not cycles). Two runs: 1.6 s of silence, then 9.6 s with FX pressed at 1.6 s;
 # the difference is 8 s of the DEMO: ENGINE TOUR's bars 41-44. The main loop spins in the emulator, so its count says nothing about the chip.
 #   tools/emu_cpu.sh build/keyfall.fwsc [label]
 #   FM1_EMU   the fm1-emu binary (default: ~/fm1-emu/target/release/fm1-emu; tools/emu_ci.sh builds it)
@@ -25,7 +25,7 @@ emu() {    # ms, keys, log
     echo "emu_cpu: took $(( $(date +%s) - s0 )) s"
     grep -q "in an ISR" "$3" || { cat "$3"; echo "emu_cpu: no report"; exit 1; }
 }
-emu $((SILENT_MS + PLAY_MS)) "$SILENT_MS:PLAY" "$WORK/play.txt"
+emu $((SILENT_MS + PLAY_MS)) "$SILENT_MS:FX" "$WORK/play.txt"
 emu $SILENT_MS "" "$WORK/silent.txt"
 isr_total() {    # M ISR instructions in the whole run
     awk -v ms="$2" '/in an ISR/ { for (i = 1; i <= NF; i++) if ($i == "M" && $(i+1) == "ISR") { m = $(i-1); sub(/\(/, "", m); printf "%.3f", m * ms / 1000.0 } }' "$1"
@@ -41,6 +41,7 @@ awk -v label="$LABEL" -v play="$PLAY_TOTAL" -v silent="$SILENT_TOTAL" -v pms=$PL
     printf "%s: the DEMO (the worst case) costs the engine %.1f M instructions/s = %s%% of the chip, %.0f a frame\n", label, per_s, pct, per_s * 1e6 / 44100.0
     printf "%s: all interrupts while it plays %.1f%% (the platform alone, silent: %.1f M/s = %.1f%%)\n", label, 100.0 * (per_s + base) / 240.0, base, 100.0 * base / 240.0
 }'
+[ -n "$GITHUB_ACTIONS" ] && echo "::notice title=fm1-emu::the DEMO (ENGINE TOUR bars 41-44) costs the engine $PCT % of the chip"
 if [ -n "$EMU_MAX" ]; then
     awk -v p="$PCT" -v m="$EMU_MAX" 'BEGIN { exit !(p <= m) }' || { echo "emu_cpu: FAIL, above $EMU_MAX %"; exit 1; }
 fi
