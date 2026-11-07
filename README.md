@@ -13,8 +13,6 @@ each other. A Dinghy 0.5 app, in the same family as [RoboSeq](https://github.com
 
 <p align="center"><img src="docs/screens/splash.gif" width="360" alt="The title screen: the chrome logo VAVEHERO over a striped sun and mountains, and the game's highway as the road into the sunset, with the notes on their way towards you"></p>
 
-<p align="center"><img src="docs/screens/reference-page.png" width="820" alt="The reference in the browser: the screen and the FM-1 panel with key LEDs"></p>
-
 ## Try it
 
 Open [`reference/vavehero.html`](reference/vavehero.html) in a browser and press Enter. The white keys C4–C5 are
