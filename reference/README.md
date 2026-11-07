@@ -6,7 +6,7 @@ RoboSeq og SkurkyMello.
 
 | Fil | Versjon | SHA-256 |
 |---|---|---|
-| `keyfall.html` | REF 0.1.2 | `9b576e4e5b94e300d803e9a4d5f782d7ddd00438317c9db665dd8c1f79711c5f` |
+| `keyfall.html` | REF 0.1.3 | `b8a414d6f99448ae4f053bcfd38879a6a1315e9c72742a249aba7380d050fa8a` |
 
 En ny HTML er en ny referanse og får en egen commit med ny SHA-256 her.
 
@@ -30,3 +30,14 @@ sjekker den 100 % på autospill, at LED-ene bare lyser på SPREAD-tangentene, og
 gjør noe. Den sjekker
 også at et trykk 80 ms for sent gir GOOD, at feil tangent bryter comboen, kampen mot boten, og to vinduer over
 LINK (roller, start, klokke, poeng og stopp).
+
+Låtene (D3): de innebygde MIDI-filene gir samme notekart og oktavskift som før. En testlåt i E-moll (format 0,
+running status) blir lastet inn via filvelgeren, transponert, får oktavskift og spilles 100 %. Rapporten nevner det
+som er tatt ut eller ignorert. Live-MIDI går til riktig del per kanal, og malen lastes ned identisk med
+`songs/neon-carrier.mid`. Lyden (D4): begge låtene rendres offline i 20 sekunder uten klipping, og WAV-filene havner
+i `build/test/`.
+
+## Låtene
+
+`window.KEYFALL_SONGS` i HTML-en er de innebygde MIDI-filene i base64. `python3 tools/songs.py` lager `songs/*.mid`
+og oppdaterer blokka. HTML-en får da ny SHA-256.
