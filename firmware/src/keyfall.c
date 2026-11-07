@@ -431,8 +431,9 @@ static void app_main(void)
         if (ch) { dirty_set = 1; t_set = now_ms; }
 
         leds();
-        if (scr == SCR_PLAY || redraw || ((scr == SCR_SPLASH || scr == SCR_MIDI || toast_ms) && now_ms - last_draw >= 33u)) {
-            kg_ms = now_ms;                      /* the play as fast as it goes, the rest at 30 fps when it moves */
+        if (redraw || (scr == SCR_PLAY && now_ms - last_draw >= 16u) ||
+            ((scr == SCR_SPLASH || scr == SCR_MIDI || toast_ms) && now_ms - last_draw >= 33u)) {
+            kg_ms = now_ms;                      /* the play at up to 60 fps, the rest at 30 when it moves */
             draw();
             redraw = 0;
             last_draw = now_ms;
