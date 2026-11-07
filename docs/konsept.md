@@ -74,9 +74,9 @@ Nivåene kan genereres fra én MIDI-fil: tonene flyttes inn i vinduet, akkorder 
 
 - PERFECT ±35 ms, GREAT ±70 ms, GOOD ±110 ms. Alt utenfor er MISS. Vinduene justeres i HTML-referansen.
 - Hver tiende treff på rad øker multiplikatoren, opp til ×4.
-- **OP BOOST** er spillets «star power». Seks segmenter, ett per operator, fylles av feilfrie fraser. Trykk **FX**
-  når måleren er full, så får du dobbel poengsum i 8 takter. Banen gløder gult, FX-LED-en blinker, og patchen åpner
-  seg med høyere modulasjonsindeks og mer feedback.
+- **OP BOOST** er spillets «star power». Seks segmenter, ett per operator. Toner i en OP-frase har en lys kant,
+  og en feilfri frase tenner to operatorer. Når måleren er full, blinker FX-LED-en. Trykk **FX**, så får du dobbel
+  poengsum i 4 takter. Banen gløder gult og patchen åpner seg med høyere modulasjonsindeks.
 - **Sweep-partier** er en egen mekanikk (gitarspillets whammy-bar finnes ikke her). En målbue vises, og du vrir
   **KNOB 1** inn i den og holder den der. Knotten styrer FM-modulasjonen i sanntid, så du hører at du treffer.
 
@@ -93,8 +93,12 @@ Nivåene kan genereres fra én MIDI-fil: tonene flyttes inn i vinduet, akkorder 
   treffer). Du kan også øve én hånd om gangen.
 - **Lytt og gjenta:** spillet spiller en frase mens LED-ene viser den, og så spiller du den tilbake. Det passer
   godt til den lille skjermen og egner seg som opplæring.
-- **Duell for to:** hver spiller får sin ende av klaviaturet, slik som i RoboSeqs battle, og dere spiller
-  annenhver frase. Den som har lengst combo, vinner runden.
+- **To spillere, to FM-1-er (LINK):** hver spiller har sitt FM-1, og enhetene kobles sammen. I VS spiller begge
+  samme låt samtidig og ser hverandres poeng. Senere kommer annenhver frase og band (samarbeid). Protokollen er
+  bakt inn fra start, og målet er én USB-C-kabel mellom enhetene. Se [link.md](link.md), og om hvorfor USB-C direkte
+  krever USB-vertsmodus.
+- **Duell på ett FM-1:** en enklere variant der hver spiller får sin ende av klaviaturet, slik som i RoboSeqs
+  battle.
 - **Spill inn (REC):** spill inn en melodi på FM-1, så lagres den som et notekart en venn kan spille. Det oppfyller
   RoboSeqs regel om at det alltid skal være noe å spille.
 - **Kalibrering:** trykk i takt med et klikk, så lagres et latensavvik. Resultatskjermen viser snittet, som
@@ -131,10 +135,13 @@ Se `mockup/screens/` (240 × 240 px, nøyaktig som de ville tegnes): **SONGS**, 
 - Perspektivbane eller flat bane på EXP? Det avgjøres i HTML-referansen.
 - Navn: KEYFALL, OP RUSH, SIX OPS, CARRIER eller SKURKY KEYS?
 
-## Neste steg
+## Plan
 
-1. `reference/keyfall.html`: én låt, én bane, timing og kalibrering, spillbar med tastaturet.
-2. Notekartformat i JSON, og import fra MIDI.
-3. Spilltest av banebredde og tidsvinduer, og EASY/MED-nivåer for 3–4 låter.
-4. Dinghy-port: bane, LED-er, poeng og lyd. Testes i fm1-emu.
-5. OP BOOST, sweep, duell og innspilling.
+Planen med faser og avkrysning står i [ROADMAP.md](../ROADMAP.md):
+
+0. Idé og mockup (ferdig)
+1. Nettleserreferanse 0.1 (ferdig): spillbar, med LINK i to vinduer og mot bot
+2. Referanse 0.2: spillfølelse, sweep, øving, flere låter, notekartformat
+3. Dinghy-port
+4. **LINK på maskinvare: to FM-1-er koblet med USB-C.** Forstudien om USB-vertsmodus kan starte nå.
+5. Utgivelse
