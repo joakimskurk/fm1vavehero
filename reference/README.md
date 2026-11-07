@@ -6,7 +6,7 @@ RoboSeq og SkurkyMello.
 
 | Fil | Versjon | SHA-256 |
 |---|---|---|
-| `keyfall.html` | REF 0.1.4 | `e4fda1e1274902589e964aa093b35a652288e1c784ea8b4a478e23c33f2349a2` |
+| `keyfall.html` | REF 0.1.5 | `82d26d78d807872adc9018ce199bd49a16b38bfc7dada05e9959ae27e0bb651b` |
 
 En ny HTML er en ny referanse og får en egen commit med ny SHA-256 her.
 
@@ -29,7 +29,8 @@ at ingen notekart har svarte tangenter, og at en svart tangent under spill blir 
 sjekker den 100 % på autospill, at LED-ene bare lyser på SPREAD-tangentene, og at en tangent mellom to brukte ikke
 gjør noe. Den sjekker
 også at et trykk 80 ms for sent gir GOOD, at feil tangent bryter comboen, kampen mot boten, og to vinduer over
-LINK (roller, start, klokke, poeng og stopp).
+LINK (roller, start, klokke, poeng og stopp). De to vinduene starter med samme ID med vilje, og må trekke på nytt
+for å koble opp.
 
 Låtene (D3): de innebygde MIDI-filene gir samme notekart og oktavskift som før. En testlåt i E-moll (format 0,
 running status) blir lastet inn via filvelgeren, transponert, får oktavskift og spilles 100 %. Rapporten nevner det
@@ -41,6 +42,10 @@ MIDI MODE (D5): den åpnes fra siste rad i låtlista, og en MIDI-klokke på 120 
 pulstelling. I LIVE lyser kanal 1, 2 og 10, og E4 fra DAW-en tenner E4-LED-en. Tangenten C4 sendes ut på kanal 1. I
 PREVIEW havner kanal 1 én takt foran, med oktavskift og holdtone. C#4 vises som varsel, og autospill treffer begge
 tonene og skiftet. HOME går ut, og MIDI MODE holdes stengt mens LINK er på.
+
+Patcher (D6): de innebygde låtene bytter patch der nøkkelnotene sier det. Alle 22 patcher og trommesett høres alene,
+og ingen klipper. Testlåtas nøkkelnoter havner i rapporten, og den uten patch flagges. Live flytter nøkkelnoter og
+Program Change kanalens patch, mens en nøkkelnote uten patch ikke endrer noe.
 
 ## Låtene
 
