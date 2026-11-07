@@ -275,6 +275,13 @@ static int32_t kf_blep(uint32_t q, uint32_t ri)
     x = 32768 - (int32_t)(((uint64_t)(0u - q) * ri) >> 32);
     return -((x * x) >> 15);
 }
+/* q's next KF_TICK frames (q, q + inc, ...) stay out of the step's window, [-inc, inc) around 0: the test the loops
+ * below make every frame (q + inc < 2 inc), made once for the tick. The step is two frames a period, so most ticks are
+ * clear and take a loop without it; the same numbers either way */
+static inline int kf_clear(uint32_t q, uint32_t inc)
+{
+    return inc < (1u << 26) && q >= inc && q < 0u - (uint32_t)KF_TICK * inc;
+}
 static inline uint32_t kf_rinc(uint32_t inc)     /* 2^47 / inc (the BLEP's 1 / dt), 32-bit */
 {
     uint32_t d = inc >> 15;
@@ -461,21 +468,32 @@ static void kf_voice_tick(kf_voice_t *v)
         x1 = p->nmod > 1u ? (int32_t)(((int64_t)i1 * v->mi[1]) >> 12) : 0;
         for (o = 0; o < 2u; o++)                 /* the index falls to its sustain */
             v->mi[o] += (int32_t)(((int64_t)(v->mtgt[o] - v->mi[o]) * p->c_mdec[o]) >> 24);
-        for (i = 0; i < KF_TICK; i++) {
-            uint32_t ci = cph >> 20;
-            int32_t fr = (int32_t)((cph >> 4) & 0xFFFFu), a = KF_SINE[ci], b = KF_SINE[(ci + 1u) & 4095u];
-            s = a + (int32_t)(((int64_t)(b - a) * fr) >> 16);   /* the carrier, interpolated */
-            cph += cinc + (uint32_t)(((int64_t)KF_SINE[m0 >> 20] * x0 + (int64_t)KF_SINE[m1 >> 20] * x1) >> 15);
-            m0 += i0; m1 += i1;
-            if (dr >= 0) {
-                int32_t x = s + 32768, k = x >> 8, fr = x & 255;
-                const int16_t *T = KF_DRIVE[dr];
-                if (k > 255) { k = 255; fr = 256; }
-                s = T[k] + (((T[k + 1] - T[k]) * fr) >> 8);
+#define KF_FM_STEP()                                                                     \
+            uint32_t ci = cph >> 20;                                                     \
+            int32_t fr = (int32_t)((cph >> 4) & 0xFFFFu), a = KF_SINE[ci], b = KF_SINE[(ci + 1u) & 4095u]; \
+            s = a + (int32_t)(((int64_t)(b - a) * fr) >> 16);   /* the carrier, interpolated */ \
+            cph += cinc + (uint32_t)(((int64_t)KF_SINE[m0 >> 20] * x0 + (int64_t)KF_SINE[m1 >> 20] * x1) >> 15); \
+            m0 += i0; m1 += i1
+        if (dr < 0)                              /* (with the drive or without: the patch decides, not the frame) */
+            for (i = 0; i < KF_TICK; i++) {
+                KF_FM_STEP();
+                pb[i] += (int32_t)(((int64_t)s * env) >> 24);
+                env += envd;
             }
-            pb[i] += (int32_t)(((int64_t)s * env) >> 24);
-            env += envd;
+        else {
+            const int16_t *T = KF_DRIVE[dr];
+            for (i = 0; i < KF_TICK; i++) {
+                KF_FM_STEP();
+                {
+                    int32_t x = s + 32768, k = x >> 8, fq = x & 255;
+                    if (k > 255) { k = 255; fq = 256; }
+                    s = T[k] + (((T[k + 1] - T[k]) * fq) >> 8);
+                }
+                pb[i] += (int32_t)(((int64_t)s * env) >> 24);
+                env += envd;
+            }
         }
+#undef KF_FM_STEP
         v->cph = cph; v->mph[0] = m0; v->mph[1] = m1;
     } else {
         int32_t buf[KF_TICK];
@@ -504,7 +522,18 @@ static void kf_voice_tick(kf_voice_t *v)
             if (p->wav[o] == 0u && o + 1u < p->nosc && p->wav[o + 1u] == 0u && p->lvl[o + 1u] == lv) {
                 /* two saws of one level (the detuned pairs): summed, then one multiply */
                 uint32_t ph1 = v->ph[o + 1u], inc1 = v->inc[o + 1u], ri1 = v->rinc[o + 1u], inc12 = inc1 << 1;
-                for (i = 0; i < KF_TICK; i++) {
+                if (kf_clear(ph + 0x80000000u, inc) && kf_clear(ph1 + 0x80000000u, inc1)) {   /* no step this tick */
+                    if (first)
+                        for (i = 0; i < KF_TICK; i++) {
+                            buf[i] = ((int32_t)((ph + 0x80000000u) >> 16) + (int32_t)((ph1 + 0x80000000u) >> 16) - 65536) * lv;
+                            ph += inc; ph1 += inc1;
+                        }
+                    else
+                        for (i = 0; i < KF_TICK; i++) {
+                            buf[i] += ((int32_t)((ph + 0x80000000u) >> 16) + (int32_t)((ph1 + 0x80000000u) >> 16) - 65536) * lv;
+                            ph += inc; ph1 += inc1;
+                        }
+                } else for (i = 0; i < KF_TICK; i++) {
                     uint32_t q = ph + 0x80000000u, q1 = ph1 + 0x80000000u;
                     int32_t y = (int32_t)(q >> 16) + (int32_t)(q1 >> 16) - 65536;
                     if (__builtin_expect(q + inc < inc2, 0)) y += kf_blep(q, ri);
@@ -516,7 +545,19 @@ static void kf_voice_tick(kf_voice_t *v)
                 o += 2u;
                 continue;
             }
-            if (p->wav[o] == 0u) {                /* saw: 0 at phase 0, rising (WebAudio's); PolyBLEP at the step */
+            if (p->wav[o] == 0u && kf_clear(ph + 0x80000000u, inc)) {   /* a saw with no step this tick */
+                if (first)
+                    for (i = 0; i < KF_TICK; i++) { buf[i] = ((int32_t)((ph + 0x80000000u) >> 16) - 32768) * lv; ph += inc; }
+                else
+                    for (i = 0; i < KF_TICK; i++) { buf[i] += ((int32_t)((ph + 0x80000000u) >> 16) - 32768) * lv; ph += inc; }
+            } else if (p->wav[o] == 1u && kf_clear(ph, inc) && kf_clear(ph + 0x80000000u, inc)) {   /* a square, no step: */
+                int32_t y = ((int32_t)((ph + 0x80000000u) >> 31) * 65535 - 32768) * lv;          /* one level the tick */
+                if (first)
+                    for (i = 0; i < KF_TICK; i++) buf[i] = y;
+                else
+                    for (i = 0; i < KF_TICK; i++) buf[i] += y;
+                ph += (uint32_t)KF_TICK * inc;
+            } else if (p->wav[o] == 0u) {         /* saw: 0 at phase 0, rising (WebAudio's); PolyBLEP at the step */
                 for (i = 0; i < KF_TICK; i++) {
                     uint32_t q = ph + 0x80000000u;
                     int32_t y = (int32_t)(q >> 16) - 32768;
@@ -545,23 +586,46 @@ static void kf_voice_tick(kf_voice_t *v)
             v->ph[o] = ph;
             o++;
         }
-        for (i = 0; i < KF_TICK; i++) {          /* the filter, the drive, the crushed copy, the level */
-            int32_t v0 = buf[i] >> 12, v3 = v0 - ic2, v1, v2;
-            v1 = (int32_t)(((int64_t)a1 * ic1 + (int64_t)a2 * v3) >> 15);
-            v2 = ic2 + (int32_t)(((int64_t)a2 * ic1 + (int64_t)a3 * v3) >> 15);
-            ic1 = 2 * v1 - ic1;
-            ic2 = 2 * v2 - ic2;
-            s = v2;
-            if (dr >= 0) {
-                int32_t x = s < -32767 ? -32767 : s > 32767 ? 32767 : s, k, fr;
-                const int16_t *T = KF_DRIVE[dr];
-                x += 32768; k = x >> 8; fr = x & 255;
-                s = T[k] + (((T[k + 1] - T[k]) * fr) >> 8);
-                if (cr) s += (((((s * 10) + 16384) >> 15) * 3277) * cr) >> 15;   /* round(x 10) / 10, mixed in */
+        /* the filter, the drive, the crushed copy, the level: one loop for each (the patch decides, not the frame) */
+#define KF_SVF_STEP()                                                                    \
+            int32_t v0 = buf[i] >> 12, v3 = v0 - ic2, v1, v2;                            \
+            v1 = (int32_t)(((int64_t)a1 * ic1 + (int64_t)a2 * v3) >> 15);               \
+            v2 = ic2 + (int32_t)(((int64_t)a2 * ic1 + (int64_t)a3 * v3) >> 15);         \
+            ic1 = 2 * v1 - ic1;                                                          \
+            ic2 = 2 * v2 - ic2
+#define KF_DRIVE_STEP(s, T) do {                                                         \
+                int32_t x_ = (s) < -32767 ? -32767 : (s) > 32767 ? 32767 : (s), k_, fr_;  \
+                x_ += 32768; k_ = x_ >> 8; fr_ = x_ & 255;                               \
+                (s) = (T)[k_] + ((((T)[k_ + 1] - (T)[k_]) * fr_) >> 8);                  \
+            } while (0)
+        if (dr < 0)
+            for (i = 0; i < KF_TICK; i++) {
+                KF_SVF_STEP();
+                pb[i] += (int32_t)(((int64_t)v2 * env) >> 24);
+                env += envd;
             }
-            pb[i] += (int32_t)(((int64_t)s * env) >> 24);
-            env += envd;
+        else {
+            const int16_t *T = KF_DRIVE[dr];
+            if (!cr)
+                for (i = 0; i < KF_TICK; i++) {
+                    KF_SVF_STEP();
+                    s = v2;
+                    KF_DRIVE_STEP(s, T);
+                    pb[i] += (int32_t)(((int64_t)s * env) >> 24);
+                    env += envd;
+                }
+            else
+                for (i = 0; i < KF_TICK; i++) {
+                    KF_SVF_STEP();
+                    s = v2;
+                    KF_DRIVE_STEP(s, T);
+                    s += (((((s * 10) + 16384) >> 15) * 3277) * cr) >> 15;   /* round(x 10) / 10, mixed in */
+                    pb[i] += (int32_t)(((int64_t)s * env) >> 24);
+                    env += envd;
+                }
         }
+#undef KF_SVF_STEP
+#undef KF_DRIVE_STEP
         v->ic1 = ic1;
         v->ic2 = ic2;
     }

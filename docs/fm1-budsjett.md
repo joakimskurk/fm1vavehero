@@ -91,8 +91,8 @@ utklinging som står alene, for eksempel på slutten av en låt, får klinge hel
 | Hva | Målt i fm1-emu |
 |---|---|
 | ENGINE TOUR takt 41–44, lydmotoren alene (bandet og melodien) | **31,6 %**, 1717 instruksjoner per frame |
-| Det samme som DEMO i spillet (spillerens stemme med comboens lysstyrke) | **34,0 %**, 1853 instruksjoner per frame |
-| Det samme, alle avbrudd | 36,9 % |
+| Det samme som DEMO i spillet (spillerens stemme med comboens lysstyrke) | **34,0 %**, 1853 instruksjoner per frame; **30,8 %**, 1673, etter optimaliseringen under |
+| Det samme, alle avbrudd | 36,9 %; 33,6 % etter |
 
 x86-anslaget (callgrind × 0,8) sa 31,5 %, så anslaget kan brukes mellom CI-kjøringene.
 
@@ -102,9 +102,9 @@ stoppunkter på kallet inn i lydavbruddet, på `draw()` og på `song_start`, og 
 
 | Hva (fm1-emu, 2026-11-07) | DEMO-en, 60 bilder/s | MIDI MODE, flom fra en DAW |
 |---|---|---|
-| Lydblokkene (256 frames, 5,8 ms hver), median / verste | 36 % / 46 % av tida | 48 % / 54 % |
-| `draw()` med avbruddene i seg, median / verste | 6,6 ms / 9,3 ms | 6,3 ms / 6,6 ms (30 bilder/s) |
-| Lengst mellom to bilder | 20,7 ms | 36,7 ms |
+| Lydblokkene (256 frames, 5,8 ms hver), median / verste | 32 % / 42 % av tida (før: 36 / 46) | 44 % / 48 % (før: 48 / 54) |
+| `draw()` med avbruddene i seg, median / verste | 3,1 ms / 5,5 ms (før: 6,6 / 9,3) | 2,3 ms / 4,9 ms (30 bilder/s; før: 6,3 / 6,6) |
+| Lengst mellom to bilder | 19,2 ms | 35,0 ms |
 
 Flommen: hvert 100. ms slipper kanal 1–6 en akkord på 6 toner og spiller en ny, og kanal 10 slår fire trommer.
 Oscillatorbudsjettet holder den tyngste blokka på 54 %. CI feiler hvis en blokk bruker over 75 % av tida, eller hvis
@@ -114,6 +114,35 @@ Første måling fant et hull på 30–40 ms hvert sekund. `usb_retry` ventet 25 
 for eksempel med en powerbank eller en lader. Hvert sekund hoppet skjermen over tre bilder, og tangenter som ble
 trykket i mellomtiden, fikk tid som var opptil 30 ms for sen. Nå venter `usb_retry` uten å blokkere (PLATFORM.md), og
 tangentene får tid fra skanningen (`FM1_NOTE_EDGE`), ikke fra når hovedløkka leser dem.
+
+**Hvor tida går, på brikkens egne instruksjoner.** fm1-emu teller hver instruksjonsadresse. En lokal kopi som skriver
+ut hele histogrammet, sammen med en `-g`-bygging (`DINGHY_DEFS=-g ./build.sh` og `objdump -d -l`), gir en profil per
+funksjon og per kildelinje. Kjøringen er den samme som i `emu_cpu.sh`: 9,6 s, med FX etter 1,6 s. Tallene er andeler
+av hele brikken:
+
+| Hva | Før | Etter |
+|---|---|---|
+| Lydavbruddet med motoren | 28,7 % | 25,9 % |
+| Tekst (`ktext_n`) | 10,1 % | 4,8 % |
+| Tømming av lerretet hvert bilde (`cv_begin`, nå `kfill_rows` for tangentradene) | 2,6 % | 0,5 % |
+| Blandede rektangler, stråler og glimt (`krect_a`) | 3,0 % | 2,5 % |
+
+Hovedløkka går i ring når den har ledig tid (`fm1_led_key` og `fm1_led_key_glow`, 39 %), og den tida koster ingenting.
+
+Det som er gjort, med samme piksler og samme lyd (bit for bit, sjekket mot forrige commit):
+- **Tekst:** en glyf som ligger helt på lerretet, tegnes uten sjekk per piksel. Fargen deles i kanaler én gang per
+  glyf, ikke per piksel, og alfa kommer fra en tabell.
+- **Lerretet:** spillskjermen tegner hver rad selv, så `draw()` tømmer det ikke først. Bare tangentradene fylles,
+  to piksler per skriving.
+- **Oscillatorene:** PolyBLEP-testen sjekket hvert sample om bølgen var nær hoppet sitt. Nå sjekkes en tick (32
+  frames) én gang. Er ingen oscillator nær hoppet, går en løkke uten testen. En firkant uten hopp har samme nivå
+  hele ticken.
+- **Filteret og FM:** drive og crush er bestemt av patchen, ikke av samplet. Løkkene er delt i én per variant, og
+  drive-tabellen slås opp én gang.
+
+Motoren gikk fra 34,1 % til 30,8 % av brikken, og et bilde i DEMO-en fra 6,6 til 3,1 ms (median, med avbruddene).
+Rendrene er byte for byte like (motorturen, verste tilfelle, 60 s av hver låt), og alle 23 skjermbildene fra
+testskriptene er piksel for piksel like.
 
 Lyden er sjekket mot referansen: alle 25 patcher og 4 trommesett ligger innenfor 1,5 dB og 25 % lysstyrke, de
 fleste innenfor 0,3 dB. Hver fjerde takt av de første 30 sekundene av alle fire låtene ligger innenfor 0,8 dB

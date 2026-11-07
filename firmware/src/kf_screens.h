@@ -30,7 +30,7 @@ static void ks_night(uint32_t ms)
             r = r * 1664525u + 1013904223u; ks_star[k][2] = (uint8_t)(70u + (r >> 8) % 180u);
         }
     }
-    for (y = 0; y < 240; y++) krect(0, y, 240, 1, kmix(0x07021au, 0x2a0c50u, y * 4096 / 239));
+    for (y = 0; y < 240; y++) kfill_rows(y, y + 1, kmix(0x07021au, 0x2a0c50u, y * 4096 / 239));
     for (k = 0; k < KS_NSTAR; k++) {
         int32_t b = ks_star[k][2], x = ks_star[k][0], yy = ks_star[k][1];
         if (k % 4 == 0) {                        /* a quarter twinkle, each in its own time */
@@ -423,6 +423,7 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
      * highway on the floor, its neon horizon */
     for (i = 0; i < (int32_t)(240u * KF_SKY_H); i++) cv_px[KF_SKY_Y * 240u + (uint32_t)i] = KF_SKY[i];
     ks_highway_bg(boost, kg.spread);
+    kfill_rows(KH_HIT, 222, K_BG);               /* (the keys' rows; the rest is drawn whole: vavehero.c's draw does not clear) */
     ks_beat_lines(pos, boost);
     krect(0, KH_TOPY, 240, 1, K_NEON);
     krect(0, KH_TOPY + 1, 240, 1, kmix(K_FLOOR0, K_NEON, Q12(.45)));

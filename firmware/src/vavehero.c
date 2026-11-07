@@ -339,7 +339,12 @@ static void draw(void)
     uint32_t i;
     char num[4];
     idle_ok = 1;                                 /* (cv_begin waits for the last frame's DMA: keys and MIDI meanwhile) */
-    cv_begin(240, 240, c565(K_BG));
+    if (scr == SCR_PLAY) {                       /* the play draws every row itself (ks_play): no clear first */
+        lcd_sync();
+        cv_w = 240u;
+        cv_h = 240u;
+    } else
+        cv_begin(240, 240, c565(K_BG));
     idle_ok = 0;
     knum(num, (scr == SCR_PLAY || scr == SCR_RESULTS ? kg.idx : set.sel) + 1u, 2);
     if (scr == SCR_SPLASH) ks_splash(fm1_ms, VER);

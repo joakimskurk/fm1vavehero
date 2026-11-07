@@ -68,6 +68,21 @@ static inline uint16_t kblend565(uint16_t under_sw, uint32_t c, uint32_t a)
     ur += ((cr - ur) * aa + 32) >> 6; ug += ((cg - ug) * aa + 32) >> 6; ub += ((cb - ub) * aa + 32) >> 6;
     return swap16((uint32_t)ur << 11 | (uint32_t)ug << 5 | (uint32_t)ub);
 }
+/* the same blend with the colour split once (a glyph, a rectangle: one colour for many pixels); the same numbers */
+typedef struct { int32_t r, g, b; uint16_t sw; } kcol_t;
+static inline kcol_t kcol(uint32_t c565v)
+{
+    kcol_t k = {(int32_t)(c565v >> 11), (int32_t)((c565v >> 5) & 63u), (int32_t)(c565v & 31u), swap16(c565v)};
+    return k;
+}
+static inline uint16_t kblend_k(uint16_t under_sw, const kcol_t *k, int32_t aa)
+{
+    uint32_t u = swap16(under_sw);
+    int32_t ur = (int32_t)(u >> 11), ug = (int32_t)((u >> 5) & 63u), ub = (int32_t)(u & 31u);
+    ur += ((k->r - ur) * aa + 32) >> 6; ug += ((k->g - ug) * aa + 32) >> 6; ub += ((k->b - ub) * aa + 32) >> 6;
+    return swap16((uint32_t)ur << 11 | (uint32_t)ug << 5 | (uint32_t)ub);
+}
+static const uint8_t KA64[16] = {0, 4, 8, 12, 17, 21, 25, 29, 34, 38, 42, 46, 51, 55, 59, 64};   /* v * 64 / 15 */
 static inline void kpx_text(int32_t x, int32_t y, uint32_t c565v, uint32_t v)   /* a glyph's pixel, v 1..15 */
 {
     uint16_t *px;
@@ -85,14 +100,33 @@ static inline void kpx_blend(int32_t x, int32_t y, rgb_t c, int32_t a)   /* a Q1
 static void krect(int32_t x, int32_t y, int32_t w, int32_t h, rgb_t c) { if (w > 0 && h > 0) cv_rect(x, y, w, h, c565(c)); }
 static void krect_a(int32_t x, int32_t y, int32_t w, int32_t h, rgb_t c, int32_t a)   /* blended, a Q12 */
 {
-    int32_t i, j;
-    uint32_t cc = c565(c), aa = (uint32_t)a >> 6;
+    int32_t i, j, x1 = x + w, y1 = y + h, aa = a >> 6;
+    kcol_t k = kcol(c565(c));
     if (a <= 0) return;
-    for (j = y < 0 ? 0 : y; j < y + h && j < (int32_t)cv_h; j++)
-        for (i = x < 0 ? 0 : x; i < x + w && i < (int32_t)cv_w; i++) {
-            uint16_t *px = &cv_px[(uint32_t)j * cv_w + (uint32_t)i];
-            *px = a >= 4096 ? swap16(cc) : kblend565(*px, cc, aa);
-        }
+    if (x < 0) x = 0;                            /* (clipped once) */
+    if (y < 0) y = 0;
+    if (x1 > (int32_t)cv_w) x1 = (int32_t)cv_w;
+    if (y1 > (int32_t)cv_h) y1 = (int32_t)cv_h;
+    for (j = y; j < y1; j++) {
+        uint16_t *row = cv_px + (uint32_t)j * cv_w;
+        if (a >= 4096) for (i = x; i < x1; i++) row[i] = k.sw;
+        else for (i = x; i < x1; i++) row[i] = kblend_k(row[i], &k, aa);
+    }
+}
+static void kfill_rows(int32_t y0, int32_t y1, rgb_t c)   /* whole rows of the canvas, two pixels a store */
+{
+    uint16_t sw = swap16(c565(c));
+    if (y0 < 0) y0 = 0;
+    if (y1 > (int32_t)cv_h) y1 = (int32_t)cv_h;
+    if (y1 <= y0) return;
+    if (((uintptr_t)cv_px & 3u) == 0u && (cv_w & 1u) == 0u) {
+        uint32_t *p = (uint32_t *)(void *)(cv_px + (uint32_t)y0 * cv_w), n = (uint32_t)(y1 - y0) * cv_w / 2u, v = (uint32_t)sw | (uint32_t)sw << 16, i;
+        for (i = 0; i < n; i++) p[i] = v;
+    } else {
+        uint32_t i, n = (uint32_t)(y1 - y0) * cv_w;
+        uint16_t *p = cv_px + (uint32_t)y0 * cv_w;
+        for (i = 0; i < n; i++) p[i] = sw;
+    }
 }
 
 /* ---- the capsule: each row inset as a circle of radius min(w, h) / 2 would (x 0.92), standing ones round at the
@@ -131,10 +165,23 @@ static void kpcap(int32_t x, int32_t y, int32_t w, int32_t h, rgb_t c)
 static int32_t ktext_n(const felucca_font_t *f, int32_t x, int32_t y, const char *s, uint32_t n, rgb_t col, int32_t sc)
 {
     uint32_t k, cc = c565(col);
+    kcol_t kc = kcol(cc);
     for (k = 0; k < n && s[k]; k++) {
         uint32_t gi = glyph(f, (uint8_t)s[k]), gx, gy, w = f->bw[gi], bpr = (w + 1u) / 2u;
         const uint8_t *gd = f->data + f->off[gi];
-        if (s[k] != ' ')
+        int32_t x0 = x - f->pad * sc;
+        if (s[k] != ' ' && sc == 1 && x0 >= 0 && x0 + (int32_t)w <= (int32_t)cv_w && y >= 0 && y + (int32_t)f->h <= (int32_t)cv_h) {
+            for (gy = 0; gy < f->h; gy++) {      /* all of it on the canvas: no checks a pixel, the colour split once */
+                const uint8_t *src = gd + gy * bpr;
+                uint16_t *row = cv_px + (uint32_t)(y + (int32_t)gy) * cv_w + (uint32_t)x0;
+                for (gx = 0; gx < w; gx += 2u) {
+                    uint32_t b = src[gx >> 1], v;
+                    if (!b) continue;
+                    if ((v = b >> 4) != 0u) row[gx] = v == 15u ? kc.sw : kblend_k(row[gx], &kc, KA64[v]);
+                    if ((v = b & 15u) != 0u && gx + 1u < w) row[gx + 1u] = v == 15u ? kc.sw : kblend_k(row[gx + 1u], &kc, KA64[v]);
+                }
+            }
+        } else if (s[k] != ' ')
             for (gy = 0; gy < f->h; gy++)
                 for (gx = 0; gx < w; gx += 2u) {   /* (two pixels a byte: an empty byte skips both) */
                     uint32_t b = gd[gy * bpr + gx / 2u], h;
