@@ -10,20 +10,20 @@ De fire innebygde låtene er laget nøyaktig slik, og fungerer som maler (de kan
 |---|---|---|
 | [`first-light.mid`](../songs/first-light.mid) | FIRST LIGHT, 96 BPM | Den enkle: fem hvite tangenter, BELL EP, SUB-bass og STRINGS |
 | [`neon-carrier.mid`](../songs/neon-carrier.mid) | NEON CARRIER, 112 BPM | Oktavskift, akkorder og patchbytter mellom delene |
-| [`engine-tour.mid`](../songs/engine-tour.mid) | ENGINE TOUR, 120 BPM | **Omvisning i lydmotoren.** Trommene alene først, så kommer bass, pad, arpeggio, lead og keys inn ett etter ett. Hvert instrument går gjennom alle patchene sine, to takter hver, og trommesettene og spillerens stemme byttes underveis. Til slutt spiller alt sammen. Alle 22 lydene høres. |
-| [`chrome-horizon.mid`](../songs/chrome-horizon.mid) | CHROME HORIZON, 104 BPM | **En hel synthwave-låt i D-moll:** intro, vers, pre-chorus, refreng, breakdown og et siste refreng en oktav opp. Spillsporet er skrevet i D-moll, og importen flytter det 5 halvtoner ned til hvite tangenter. |
+| [`engine-tour.mid`](../songs/engine-tour.mid) | ENGINE TOUR, 120 BPM | **Omvisning i lydmotoren.** Trommene alene først, så kommer bass, pad, arpeggio, lead og keys inn ett etter ett. Hvert instrument går gjennom alle fire patchene sine, to takter hver, med den skitne til slutt. Trommesettene og spillerens stemme byttes underveis, og til slutt spiller alt sammen på de skitne lydene. Alle 29 lydene høres. |
+| [`chrome-horizon.mid`](../songs/chrome-horizon.mid) | CHROME HORIZON, 104 BPM | **En hel synthwave-låt i D-moll:** intro, vers, pre-chorus, skitne refrenger med DIRT BASS, DIRT-trommer og FUZZ LEAD, en breakdown, og et siste refreng en oktav opp med FUZZ som spillerstemme. Spillsporet er skrevet i D-moll, og importen flytter det 5 halvtoner ned til hvite tangenter. |
 
-Hver patch i ENGINE TOUR (to takter hver, fra takt 1):
+Hver patch i ENGINE TOUR (to takter hver, de rene først og den skitne sist):
 
 | Takt | Hva som kommer inn |
 |---|---|
 | 1–4 | Trommer alene (GATED) |
-| 5–10 | BASS: PULSE, FM BASS, SUB. Spillerens stemme er SYN LEAD. |
-| 9–14 | PAD: SUPERSAW, STRINGS, GLASS PAD. Trommer TIGHT fra takt 13, stemme BELL EP. |
-| 15–20 | ARP: PLUCK, BELL, SQUARE |
-| 21–26 | LEAD: SAW LEAD, SQUARE LEAD, BRASS LEAD. Stemme BRASS, trommer BOOM fra takt 23. |
-| 27–32 | KEYS: FM EP, TINE, ORGAN. Stemme GLASS fra takt 29, en oktav opp. |
-| 33–37 | Alt sammen, på GATED |
+| 5–12 | BASS: PULSE, FM BASS, SUB, DIRT BASS. Spillerens stemme er SYN LEAD. |
+| 13–20 | PAD: SUPERSAW, STRINGS, GLASS PAD, GRIT PAD. Trommer TIGHT, stemme BELL EP. |
+| 21–28 | ARP: PLUCK, BELL, SQUARE, CRUSH. Stemme BRASS. Trommer BOOM fra takt 25. |
+| 29–36 | LEAD: SAW, SQUARE, BRASS og FUZZ LEAD. Stemme GLASS, en oktav opp i takt 33–36. |
+| 37–44 | KEYS: FM EP, TINE, ORGAN, GRIT EP. Trommer DIRT, stemme FUZZ. |
+| 45–49 | Alt sammen, på de skitne patchene |
 
 ## Kanalene
 
@@ -47,20 +47,23 @@ note 0–11, under ethvert musikalsk register, som aldri høres. Note 0 gir patc
 Patchen gjelder fra nøkkelnoten og til neste. Uten nøkkelnote brukes patch 1. En nøkkelnote kan ligge samtidig med
 første tone den skal gjelde for.
 
-| Kanal | Note 0 (C-1) | Note 1 (C#-1) | Note 2 (D-1) | Note 3 (D#-1) |
-|---|---|---|---|---|
-| 1 PLAY | SYN LEAD | BELL EP | BRASS | GLASS |
-| 2 BASS | PULSE (pulserende sagtann) | FM BASS | SUB |  |
-| 3 PAD | SUPERSAW | STRINGS | GLASS PAD (FM) |  |
-| 4 ARP | PLUCK | BELL (FM) | SQUARE |  |
-| 5 LEAD | SAW LEAD | SQUARE LEAD | BRASS LEAD |  |
-| 6 KEYS | FM EP | TINE | ORGAN |  |
-| 10 DRUMS | GATED (80-talls gated reverb) | TIGHT (tørt) | BOOM (lang kick, lange tammer) |  |
+| Kanal | Note 0 (C-1) | Note 1 (C#-1) | Note 2 (D-1) | Note 3 (D#-1) | Note 4 (E-1) |
+|---|---|---|---|---|---|
+| 1 PLAY | SYN LEAD | BELL EP | BRASS | GLASS | **FUZZ** |
+| 2 BASS | PULSE (pulserende sagtann) | FM BASS | SUB | **DIRT BASS** |  |
+| 3 PAD | SUPERSAW | STRINGS | GLASS PAD (FM) | **GRIT PAD** |  |
+| 4 ARP | PLUCK | BELL (FM) | SQUARE | **CRUSH** |  |
+| 5 LEAD | SAW LEAD | SQUARE LEAD | BRASS LEAD | **FUZZ LEAD** |  |
+| 6 KEYS | FM EP | TINE | ORGAN | **GRIT EP** |  |
+| 10 DRUMS | GATED (80-talls gated reverb) | TIGHT (tørt) | BOOM (lang kick, lange tammer) | **DIRT** (forvrengt og knust) |  |
+
+De uthevede er de skitne patchene ([D7](DECISIONS.md)). De har forvrengning etter filteret, og noen har en knust
+kopi (bitcrush) blandet inn. Sammen med GRIT-innstillingen gir de den franske, skitne lyden (Kavinsky, Justice).
 
 - Mange DAW-er kaller note 0 for **C-1**. Noen, blant annet Cubase, kaller den **C-2**. Det er samme note.
 - På kanal 1 velger nøkkelnoten spillerens stemme gjennom låta, når TONE (KNOB 2) står på **SONG**, som er standard.
   Spilleren kan alltid velge en fast stemme med KNOB 2 i stedet.
-- På kanal 1 er note 11 (B-1) satt av til OP-fraser (se under), så stemmene ligger på note 0–3.
+- På kanal 1 er note 11 (B-1) satt av til OP-fraser (se under), så stemmene ligger på note 0–4.
 - En nøkkelnote uten patch, for eksempel note 7 på BASS, gjør ingenting og vises i importrapporten.
 - Alt er noter. Program Change og CC brukes ikke, så alt kan tegnes rett i pianorullen.
 - Det virker likt live: send nøkkelnoter fra DAW-en, så bytter lyden med en gang (i PREVIEW i takt med resten), og

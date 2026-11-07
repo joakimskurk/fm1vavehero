@@ -116,3 +116,25 @@ innenfor ±2 dB av hverandre, så et bytte ikke blir et volumhopp. Refrenget i N
 BELL-arpeggio, har samme balanse som i D4.
 
 **Sjekkes av.** `tests/reference.cjs`, med testene beskrevet i [reference/README.md](../reference/README.md).
+
+## D7 (2026-11-07): skitnere lyd, med GRIT
+
+**Beslutning.** Lydmotoren skal kunne låte skitten og fransk (Kavinsky, Justice), ikke bare blank:
+
+- **GRIT** (0–100, standard 70) styrer tre ting på hele miksen: pumping, der bandet dukker på hvert kick
+  (sidekjede), metning og liming av hele miksen, og crunch på trommebussen. På 0 er lyden ren som før.
+- **En skitten patch per instrument,** med forvrengning etter filteret, og noen med en knust kopi (bitcrush):
+  FUZZ (spillerstemme), DIRT BASS, GRIT PAD, CRUSH (arpeggio), FUZZ LEAD og GRIT EP. Trommesettet heter DIRT. De
+  ligger på neste ledige nøkkelnote, som er note 4 på kanal 1 og note 3 på de andre.
+- **Tørrere miks:** hallen er senket fra 0,55 til 0,4.
+- Spillerens stemme pumper ikke, så den alltid ligger fritt over bandet.
+
+**Nivåer.** Hver skitne patch ligger innenfor ±2 dB av sine søsken. Unntaket er DIRT-settet, som ligger innenfor
+spennet til de andre trommesettene. I det skitne siste refrenget i CHROME HORIZON ligger spilleren på −18,5 dB og
+trommene på −18,7 dB, bassen 3,3 dB under, og keys, arpeggio og pad lenger bak. Med GRIT 70 blir miksen omtrent 2 dB
+tettere, med lavere toppnivå, og ingen låt klipper på 0, 70 eller 100.
+
+**For FM-1.** Forvrengning, bitcrush og pumping er billige i fastkomma, mye billigere enn stor romklang. Det skitne
+er det enkleste å flytte over.
+
+**Sjekkes av.** `tests/reference.cjs`, med testene beskrevet i [reference/README.md](../reference/README.md).

@@ -91,7 +91,7 @@ Nivåene kan genereres fra én MIDI-fil: tonene flyttes inn i vinduet, akkorder 
 
 Lydmotoren er laget for synthwave og retrowave ([D4](DECISIONS.md)): detunede sagtann-pads med chorus og stor hall,
 pulserende åttedelsbass, arpeggio med tempo-delay, en sagtann-lead, FM-piano, skarptromme og klapp med gated reverb,
-og syndrum-tammer. Hvert instrument har flere patcher, som låta bytter med nøkkelnoter ([D6](DECISIONS.md)).
+og syndrum-tammer. GRIT gjør lyden skitnere, med pumping fra kicken, metning og crunch ([D7](DECISIONS.md)). Hvert instrument har flere patcher, som låta bytter med nøkkelnoter ([D6](DECISIONS.md)).
 Spilleren følger låtas valg (TONE SONG) eller velger sin egen stemme med KNOB 2: SYN LEAD, BELL EP, BRASS eller GLASS.
 
 ### Lyden svarer

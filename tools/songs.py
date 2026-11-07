@@ -207,81 +207,70 @@ def arrange_neon_carrier(s):
 
 # ---------------------------------------------------------------- two songs to hear the engine work
 
+TOUR_PHRASES = {                                                      # four bars each, on Am F C G
+    'plain': '''
+0: E4 0 1 | A4 1 1 | C5 2 1 | B4 3 1
+1: A4 0 2 | F4 2 1 | E4 3 1
+2: G4 0 1 | E4 1 .5 | G4 1.5 .5 | C5 2 2
+3: B4 0 1 | G4 1 1 | D4 2 2''',
+    'eighths': '''
+0: E4 0 .5 | A4 .5 .5 | C5 1 .5 | A4 1.5 .5 | E4 2 .5 | A4 2.5 .5 | B4 3 1
+1: A4 0 .5 | F4 .5 .5 | A4 1 .5 | C5 1.5 .5 | F4 2 1 | E4 3 1
+2: G4 0 .5 | C5 .5 .5 | E4 1 .5 | G4 1.5 .5 | C5 2 1 | B4 3 1
+3: D4 0 .5 | G4 .5 .5 | B4 1 1 | G4 2 1 | D4 3 1''',
+    'holds': '''
+0: A4 0 2 | C5 2 2
+1: A4+C5 0 4
+2: G4 0 2 | E4 2 2
+3: G4+B4 0 4''',
+    'holds2': '''
+0: A4 0 2 | C5 2 2
+1: F4+A4 0 4
+2: E4+G4 0 2 | G4+C5 2 2
+3: D4+G4 0 2 | B4 2 2''',
+}
+TOUR_PLAN = [(4, 'plain', 0), (8, 'plain', 0), (12, 'eighths', 0), (16, 'eighths', 0), (20, 'holds', 0), (24, 'holds2', 0),
+             (28, 'plain', 0), (32, 'plain', 12), (36, 'eighths', 0), (40, 'plain', 0), (44, 'eighths', 0)]
+TOUR_LEAD = {0: [(0, 'E5', 2), (2, 'C5', 2)], 1: [(0, 'F5', 2), (2, 'A5', 2)], 2: [(0, 'G5', 4)], 3: [(0, 'D5', 2), (2, 'B4', 2)]}
+
+
+def tour_play():
+    out = []
+    for bar, name, up in TOUR_PLAN:
+        out += [(t + bar * 4, p + up, ln, v) for t, p, ln, v in melody(TOUR_PHRASES[name])]
+    return out + [(192, pitch(n), 3, 100) for n in ('C4', 'E4', 'A4')]
+
+
 ENGINE_TOUR = dict(
     file='engine-tour.mid', title='ENGINE TOUR', bpm=120,
-    chords=['Am', 'F', 'C', 'G'] * 9 + ['Am'],
-    phrases=[(6, 7), (14, 15), (22, 23), (30, 31)],
-    play='''
-4: E4 0 1 | A4 1 1 | C5 2 1 | B4 3 1
-5: A4 0 2 | F4 2 1 | E4 3 1
-6: G4 0 1 | E4 1 .5 | G4 1.5 .5 | C5 2 2
-7: B4 0 1 | G4 1 1 | D4 2 2
-8: E4 0 1 | A4 1 1 | C5 2 1 | B4 3 1
-9: A4 0 2 | F4 2 1 | E4 3 1
-10: G4 0 1 | E4 1 .5 | G4 1.5 .5 | C5 2 2
-11: B4 0 1 | G4 1 1 | D4 2 2
-12: E4 0 .5 | A4 .5 .5 | C5 1 .5 | A4 1.5 .5 | E4 2 .5 | A4 2.5 .5 | B4 3 1
-13: A4 0 .5 | F4 .5 .5 | A4 1 .5 | C5 1.5 .5 | F4 2 1 | E4 3 1
-14: G4 0 .5 | C5 .5 .5 | E4 1 .5 | G4 1.5 .5 | C5 2 1 | B4 3 1
-15: D4 0 .5 | G4 .5 .5 | B4 1 1 | G4 2 1 | D4 3 1
-16: E4 0 .5 | A4 .5 .5 | C5 1 .5 | A4 1.5 .5 | E4 2 .5 | A4 2.5 .5 | B4 3 1
-17: A4 0 .5 | F4 .5 .5 | A4 1 .5 | C5 1.5 .5 | F4 2 1 | E4 3 1
-18: G4 0 .5 | C5 .5 .5 | E4 1 .5 | G4 1.5 .5 | C5 2 1 | B4 3 1
-19: D4 0 .5 | G4 .5 .5 | B4 1 1 | G4 2 1 | D4 3 1
-20: A4 0 2 | C5 2 2
-21: A4+C5 0 4
-22: G4 0 2 | E4 2 2
-23: G4+B4 0 4
-24: A4 0 2 | C5 2 2
-25: F4+A4 0 4
-26: E4+G4 0 2 | G4+C5 2 2
-27: D4+G4 0 2 | B4 2 2
-28: E5 0 1 | A5 1 1 | C6 2 1 | B5 3 1
-29: A5 0 2 | F5 2 1 | E5 3 1
-30: G5 0 1 | E5 1 .5 | G5 1.5 .5 | C6 2 2
-31: B5 0 1 | G5 1 1 | D5 2 2
-32: E4 0 1 | A4 1 1 | C5 2 1 | B4 3 1
-33: A4 0 2 | F4 2 1 | E4 3 1
-34: G4 0 1 | E4 1 .5 | G4 1.5 .5 | C5 2 2
-35: B4 0 1 | G4 1 1 | D4 2 2
-36: C4+E4+A4 0 3''',
-    lead='''
-20: E5 0 2 | C5 2 2
-21: F5 0 2 | A5 2 2
-22: G5 0 4
-23: D5 0 2 | B4 2 2
-24: E5 0 2 | C5 2 2
-25: F5 0 2 | A5 2 2
-32: E5 0 2 | C5 2 2
-33: F5 0 2 | A5 2 2
-34: G5 0 4
-35: D5 0 2 | B4 2 2''')
+    chords=['Am', 'F', 'C', 'G'] * 12 + ['Am'],
+    phrases=[(6, 7), (14, 15), (22, 23), (30, 31), (38, 39), (46, 47)],
+    play=tour_play())
 
 
 def arrange_engine_tour(s):
-    """a tour of the engine: drums alone, then bass, pad, arp, lead and keys come in one by one, each through all its
-    patches two bars at a time; the kits change on the way, the player's voice every eight bars; all together at the end"""
-    bass, pad, arp, keys, drums = [], [], [], [], []
+    """a tour of the engine: drums alone, then bass, pad, arp, lead and keys come in one by one, each through its four
+    patches two bars at a time, the clean ones first and the gritty one last (D7); the four kits and the player's five
+    voices change on the way; at the end all together on the gritty ones"""
+    bass, pad, arp, lead, keys, drums = [], [], [], [], [], []
     bars = len(s['chords'])
     for bar in range(bars):
-        last, finale = bar == bars - 1, 32 <= bar < bars - 1
+        last, finale = bar == bars - 1, 44 <= bar < bars - 1
         for t, ch, ln in segments(s['chords'], bar):
             if bar >= 4 and not last:
-                for k in range(int(ln * 2)):
-                    bass.append((t + k * .5, bass_root(ch) + (12 if finale and k % 2 else 0), .42, 112 if k % 4 == 0 else 92))
+                bass += [(t + k * .5, bass_root(ch) + (12 if finale and k % 2 else 0), .42, 112 if k % 4 == 0 else 92) for k in range(int(ln * 2))]
             if last:
                 bass.append((t, bass_root(ch), 3, 110))
-            if bar >= 8:
-                for p in voicing(ch):
-                    pad.append((t, p, 4 if last else ln, 70))
-            if 14 <= bar < bars - 1:
+            if bar >= 12:
+                pad += [(t, p, 4 if last else ln, 70) for p in voicing(ch)]
+            if 20 <= bar < bars - 1:
                 tones = [48 + iv for iv in CHORD[ch]] + [60 + CHORD[ch][0]]
-                for k in range(int(ln * 4)):
-                    arp.append((t + k * .25, tones[k % 4], .2, 70 if k % 4 == 0 else 54))
-            if 26 <= bar < 32 or finale:
-                for o in (.5, 1.5, 2.5, 3.5):
-                    for p in voicing(ch, 60):
-                        keys.append((t + o, p, .3, 76 if o == .5 else 64))
+                arp += [(t + k * .25, tones[k % 4], .2, 70 if k % 4 == 0 else 54) for k in range(int(ln * 4))]
+            if 28 <= bar < 36 or finale:
+                down = -12 if 32 <= bar < 36 else 0                    # under the play track when it goes up an octave
+                lead += [(t + o, pitch(n) + down, d, 80) for o, n, d in TOUR_LEAD[bar % 4]]
+            if 36 <= bar < 44 or finale:
+                keys += [(t + o, p, .3, 76 if o == .5 else 64) for o in (.5, 1.5, 2.5, 3.5) for p in voicing(ch, 60)]
         b0 = bar * 4
         if last:
             drums += [(b0, KICK, 120), (b0, CRASH, 110)]
@@ -292,22 +281,23 @@ def arrange_engine_tour(s):
             drums += [(b0 + 1, SNARE, 112), (b0 + 3, SNARE, 112)]
         if bar >= 2:
             drums.append((b0 + 2.5, KICK, 96))
-        if bar >= 2 and bar % 4 == 2 or finale:
+        if (bar >= 2 and bar % 4 == 2) or finale:
             drums += [(b0 + 1, CLAP, 90), (b0 + 3, CLAP, 90)]
+        if finale:
+            drums += [(b0 + o + .5, OHAT, 70) for o in range(4)] + [(b0 + 1, KICK, 104), (b0 + 3, KICK, 104)]
         if bar % 8 == 7 or bar == 3:
             drums += [(b0 + 3, TOM_HI, 104), (b0 + 3.25, TOM_MID, 108), (b0 + 3.5, TOM_LO, 112), (b0 + 3.75, TOM_LO, 116)]
         if bar % 4 == 0 and bar >= 4:
             drums.append((b0, CRASH, 100))
-        if bar in (12, 22):
-            drums.append((b0 + 3.5, OHAT, 80))
-    ks = dict(PLAY=[(16, 0), (48, 1), (80, 2), (112, 3), (128, 0)],    # SYN LEAD, BELL EP, BRASS, GLASS, SYN LEAD
-              BASS=[(16, 0), (24, 1), (32, 2), (40, 0)],                # PULSE, FM BASS, SUB, PULSE
-              PAD=[(32, 0), (40, 1), (48, 2), (56, 0)],                 # SUPERSAW, STRINGS, GLASS PAD, SUPERSAW
-              ARP=[(56, 0), (64, 1), (72, 2), (80, 0)],                 # PLUCK, BELL, SQUARE, PLUCK
-              LEAD=[(80, 0), (88, 1), (96, 2), (128, 0)],               # SAW, SQUARE, BRASS LEAD, SAW
-              KEYS=[(104, 0), (112, 1), (120, 2), (128, 0)],            # FM EP, TINE, ORGAN, FM EP
-              DRUMS=[(0, 0), (48, 1), (88, 2), (128, 0)])               # GATED, TIGHT, BOOM, GATED
-    return dict(BASS=bass, PAD=pad, ARP=arp, LEAD=melody(s['lead'], 80), KEYS=keys, DRUMS=drums, KS=ks)
+    end = 176                                                          # the finale, bar 45: every part on its gritty patch
+    ks = dict(PLAY=[(16, 0), (48, 1), (80, 2), (112, 3), (144, 4)],    # SYN LEAD, BELL EP, BRASS, GLASS, FUZZ
+              BASS=[(16, 0), (24, 1), (32, 2), (40, 3), (48, 0), (end, 3)],
+              PAD=[(48, 0), (56, 1), (64, 2), (72, 3), (80, 0), (end, 3)],
+              ARP=[(80, 0), (88, 1), (96, 2), (104, 3), (112, 0), (end, 3)],
+              LEAD=[(112, 0), (120, 1), (128, 2), (136, 3), (end, 3)],
+              KEYS=[(144, 0), (152, 1), (160, 2), (168, 3), (end, 3)],
+              DRUMS=[(0, 0), (48, 1), (96, 2), (144, 3)])               # GATED, TIGHT, BOOM, DIRT
+    return dict(BASS=bass, PAD=pad, ARP=arp, LEAD=lead, KEYS=keys, DRUMS=drums, KS=ks)
 
 
 CHROME_HORIZON = dict(
@@ -369,7 +359,7 @@ CHROME_HORIZON = dict(
 
 
 def arrange_chrome_horizon(s):
-    """a synthwave song in D minor, its play track on white keys only after the import's transpose:
+    """a synthwave song in D minor, gritty in its choruses (D7), its play track on white keys only after the import's transpose:
     intro on a glass pad and a bell arp, verse with pulse bass and the tight kit, a brass pre-chorus, a chorus on the
     gated kit with FM bass, supersaw and a saw lead, a breakdown on the boom kit with tine keys, the last chorus up an octave"""
     bass, pad, arp, keys, stabs, drums = [], [], [], [], [], []
@@ -401,7 +391,7 @@ def arrange_chrome_horizon(s):
             if brk:
                 keys += [(t + k, tones[k % 4], .9, 70) for k in range(4)]
             if final:
-                keys += [(t + o, p, .3, 60) for o in (.5, 1.5, 2.5, 3.5) for p in voicing(ch, 62)]
+                keys += [(t + o, p, .3, 60) for o in (.5, 2.5) for p in voicing(ch, 62)]
         b0 = bar * 4
         if last:
             drums += [(b0, KICK, 120), (b0, CRASH, 110)]
@@ -431,13 +421,13 @@ def arrange_chrome_horizon(s):
         if bar in (4, 12, 16, 24, 28, 32):
             drums.append((b0, CRASH, 102))
     lead = melody(s['lead'], 78)
-    ks = dict(PLAY=[(16, 1), (48, 2), (64, 0), (96, 3), (112, 0)],      # BELL EP, BRASS, SYN LEAD, GLASS, SYN LEAD
-              BASS=[(16, 0), (48, 2), (64, 1), (96, 2), (112, 1)],      # PULSE, SUB, FM BASS, SUB, FM BASS
-              PAD=[(0, 2), (16, 1), (48, 0), (96, 2), (112, 0)],        # GLASS PAD, STRINGS, SUPERSAW, GLASS PAD, SUPERSAW
-              ARP=[(0, 1), (64, 0), (112, 2)],                          # BELL, PLUCK, SQUARE
-              LEAD=[(48, 2), (64, 0), (128, 1)],                        # BRASS LEAD stabs, SAW LEAD, SQUARE LEAD up high
-              KEYS=[(96, 1), (112, 2)],                                 # TINE, ORGAN
-              DRUMS=[(16, 1), (48, 0), (96, 2), (112, 0)])              # TIGHT, GATED, BOOM, GATED
+    ks = dict(PLAY=[(16, 1), (48, 2), (64, 0), (96, 3), (112, 4)],      # BELL EP, BRASS, SYN LEAD, GLASS, FUZZ
+              BASS=[(16, 0), (48, 2), (64, 3), (96, 2), (112, 3)],      # PULSE, SUB, DIRT BASS, SUB, DIRT BASS
+              PAD=[(0, 2), (16, 1), (48, 0), (64, 3), (96, 2), (112, 3)],  # GLASS PAD, STRINGS, SUPERSAW, GRIT PAD, GLASS PAD, GRIT PAD
+              ARP=[(0, 1), (64, 0), (112, 3)],                          # BELL, PLUCK, CRUSH
+              LEAD=[(48, 2), (64, 3)],                                  # BRASS LEAD stabs, FUZZ LEAD
+              KEYS=[(96, 1), (112, 3)],                                 # TINE, GRIT EP
+              DRUMS=[(16, 1), (48, 0), (64, 3), (96, 2), (112, 3)])     # TIGHT, GATED, DIRT, BOOM, DIRT
     return dict(BASS=bass, PAD=pad, ARP=arp, LEAD=stabs + lead, KEYS=keys, DRUMS=drums, KS=ks)
 
 
@@ -487,7 +477,7 @@ def write_song(s, parts):
     us = round(60_000_000 / s['bpm'])
     conductor = [(0, 0, b'\xff\x51\x03' + us.to_bytes(3, 'big')), (0, 0, b'\xff\x58\x04\x04\x02\x18\x08')]
     tracks = [mtrk(s['title'], conductor)]
-    play = note_events(CH['PLAY'], melody(s['play']))
+    play = note_events(CH['PLAY'], s['play'] if isinstance(s['play'], list) else melody(s['play']))
     play += note_events(CH['PLAY'], [(a * 4, OP_NOTE, (b - a + 1) * 4, 100) for a, b in s['phrases']])   # OP phrases: B-1, held
     ks = parts.get('KS', {})
     tracks.append(mtrk('PLAY', play + keyswitch_events(CH['PLAY'], ks.get('PLAY', []))))
