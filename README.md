@@ -23,6 +23,10 @@ En låt er en vanlig MIDI-fil fra en DAW. Hvert instrument har sin kanal (2 BASS
 referansen, så får du en rapport og kan spille den med en gang. Koble DAW-en til med WebMIDI, så hører du låta
 gjennom lydmotoren mens du lager den. Alt står i [docs/songs.md](docs/songs.md), og malene ligger i [songs/](songs/).
 
+**MIDI MODE** (nederst i låtlista) kobler DAW-en rett til FM-1 med USB-C. LIVE gjør FM-1 til en lydmodul med en
+skjerm for kanalene, og tangentene sendes ut til DAW-en for opptak. PREVIEW forsinker alt én takt, slik at
+spillsporet faller ned banen som i spillet og du kan prøve å spille det mens du skriver det.
+
 ## To spillere, to FM-1-er
 
 Protokollen for to spillere er bakt inn fra start ([docs/link.md](docs/link.md)). Den består av MIDI-meldinger på
@@ -44,7 +48,7 @@ egen forstudie i fase 4. Via en datamaskin virker det uansett.
 | [docs/konsept.md](docs/konsept.md) | Idéskissen: spillmekanikk, nivåer, moduser og tekniske notater |
 | [docs/songs.md](docs/songs.md) | Lag dine egne låter: kanalene, reglene og eksporten |
 | [docs/link.md](docs/link.md) | LINK: lagene fra nettleser til USB-C, og protokollen |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D4 |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D5 |
 | [songs/](songs/) | De innebygde låtene som MIDI-filer, også maler (`python3 tools/songs.py` lager dem) |
 | [ROADMAP.md](ROADMAP.md) | Fasene, med avkrysning |
 | [reference/](reference/) | Nettleserreferansen, fasit før porten |

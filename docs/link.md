@@ -15,6 +15,8 @@ klokke og poeng som må over kabelen.
 
 Meldingene er de samme på alle lag. Det som virker i L1, virker i L2 og L3 uten endringer.
 
+LINK er av i MIDI MODE ([D5](DECISIONS.md)). Der hører MIDI-klokka og START/STOP til DAW-en.
+
 ### Hvorfor ikke bare én USB-C-kabel ennå
 
 USB har alltid én vert og én enhet. FM-1 er en USB-enhet (class compliant USB-MIDI), og Dinghys `usb.c` kjører i

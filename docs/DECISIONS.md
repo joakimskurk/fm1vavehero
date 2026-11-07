@@ -73,3 +73,28 @@ likt med trommene. Den sjekken gjentas når lyden endres.
 
 **Hva det koster.** Mange oscillatorer per tone (fire per pad-tone). På FM-1 må motoren lages i fastkomma og måles i
 fm1-emu. Hvis den er for tung, blir pad-stemmene og hallen enklere først.
+
+## D5 (2026-11-07): MIDI MODE, DAW-en rett i FM-1 mens låta lages
+
+**Beslutning.** FM-1 har en egen modus for å lage låter: MIDI MODE, nederst i låtlista. DAW-en kobles til FM-1 med
+USB-C, og hvert spor sendes på sin kanal som i D3. Modusen har to varianter, og PLAY bytter mellom dem:
+
+- **LIVE:** FM-1 er en lydmodul. Hver kanal spilles straks av sitt instrument. Skjermen viser aktivitet per kanal,
+  tempoet fra MIDI-klokka og takt og slag. Toner på kanal 1 lyser opp tangent-LED-ene, og toner på svarte tangenter
+  varsles i rødt (D1).
+- **PREVIEW:** alt forsinkes én takt, like langt som banen ser framover. Kanal 1 faller ned banen slik den blir i
+  spillet, med oktavskift. Bandet spilles i takt med banen, og du kan spille med og bli dømt. Svarte toner vises som
+  røde merker og telles ikke.
+
+Tangentene på FM-1 sendes ut på kanal 1 i begge variantene, så DAW-en kan ta opp spillsporet. Uten MIDI-klokke
+brukes tempoet fra KNOB 3 (BPM). MIDI MODE og LINK utelukker hverandre, fordi begge bruker MIDI-klokka og
+START/STOP.
+
+**Hvorfor.** Det er raskest å lage en spillbar låt når man hører den på FM-1 og ser spillsporet på banen mens man
+skriver. PREVIEW svarer på spørsmålet «kan dette spilles?» uten å eksportere fila.
+
+**Hva det koster.** Dinghy slipper ikke gjennom Song Position Pointer. Starter DAW-en midt i låta, teller FM-1 takt
+fra der den startet, ikke fra låtas takt. PREVIEW henger én takt etter DAW-en, så DAW-ens egen lyd må være av, eller
+bare spille MIDI.
+
+**Sjekkes av.** `tests/reference.cjs`, med testene beskrevet i [reference/README.md](../reference/README.md).

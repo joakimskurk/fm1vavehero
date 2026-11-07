@@ -71,9 +71,34 @@ høyst 15 tegn.
 
 <p><img src="screens/import-report.png" width="440" alt="Importrapporten for en testlåt i E-moll"></p>
 
-**Hør låta mens du lager den:** koble DAW-en til nettleseren med WebMIDI (Chrome eller Edge, *Koble til MIDI*).
-Kanal 2–6 og 10 spilles da av lydmotoren, og kanal 1 spilles med spillerens stemme. Du hører låta slik den blir i
-spillet. På Mac går det med IAC-driveren, på Windows med for eksempel loopMIDI.
+## MIDI MODE: DAW-en rett i FM-1 ([D5](DECISIONS.md))
+
+<p><img src="screens/midi-live.png" width="240" alt="MIDI MODE, LIVE"> <img src="screens/midi-preview.png" width="240" alt="MIDI MODE, PREVIEW"></p>
+
+1. Koble FM-1 til datamaskinen med USB-C. Den dukker opp som en MIDI-enhet.
+2. På FM-1: bla til **MIDI MODE** nederst i låtlista og trykk PLAY.
+3. I DAW-en: send hvert spor til FM-1 på sin kanal (1 spillsporet, 2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS,
+   10 trommer). Slå på **MIDI-klokke ut** til FM-1, så følger den tempoet og viser takt og slag.
+4. **LIVE** spiller alt med en gang, og viser aktivitet og siste tone per kanal. Toner på kanal 1 lyser opp
+   tangentene, og en tone på en svart tangent blir rød.
+5. Trykk PLAY for **PREVIEW**: alt forsinkes én takt, og spillsporet faller ned banen slik det blir i spillet. Spill
+   med på tangentene for å kjenne om det er spillbart. Røde merker er toner på svarte tangenter, som blir tatt ut ved
+   import.
+6. **Ta opp fra FM-1:** tangentene sendes ut på kanal 1. Slå av MIDI-ekko (thru) til FM-1 på sporet du tar opp på,
+   ellers spilles tonene to ganger.
+7. Uten klokke: still tempoet med KNOB 3 (BPM). HOME går tilbake til låtlista.
+
+Gode å vite:
+
+- Start DAW-en fra takt 1. FM-1 får ikke låtposisjonen (Song Position Pointer), så takttelleren starter der DAW-en
+  starter.
+- Skru av DAW-ens egen lyd i PREVIEW, ellers hører du alt to ganger med én takts mellomrom.
+- LINK må være av. MIDI MODE og tospiller-lenken bruker begge MIDI-klokka.
+
+**I referansen** er det det samme: koble DAW-en til nettleseren med WebMIDI (Chrome eller Edge, *Koble til MIDI*),
+velg den som «Inn», og eventuelt en port som «Ut» for opptak. På Mac går det med IAC-driveren, på Windows med for
+eksempel loopMIDI. Utenfor MIDI MODE spiller referansen også kanalene direkte, men uten skjermen for kanaler og
+uten PREVIEW.
 
 ## To spillere
 
