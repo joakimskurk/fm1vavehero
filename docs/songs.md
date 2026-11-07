@@ -4,8 +4,26 @@ En Keyfall-låt er en vanlig MIDI-fil (`.mid`), laget i hvilken som helst DAW. H
 MIDI-kanal, og spillsporet, tonene spilleren skal spille, ligger på en kanal for seg. Lydmotoren spiller resten i
 synthwave-drakt ([D3](DECISIONS.md), [D4](DECISIONS.md)).
 
-De to innebygde låtene er laget nøyaktig slik, og fungerer som maler: [`songs/first-light.mid`](../songs/first-light.mid)
-og [`songs/neon-carrier.mid`](../songs/neon-carrier.mid). Du kan også laste dem ned fra referansen.
+De fire innebygde låtene er laget nøyaktig slik, og fungerer som maler (de kan også lastes ned fra referansen):
+
+| Fil | Låt | Hva den viser |
+|---|---|---|
+| [`first-light.mid`](../songs/first-light.mid) | FIRST LIGHT, 96 BPM | Den enkle: fem hvite tangenter, BELL EP, SUB-bass og STRINGS |
+| [`neon-carrier.mid`](../songs/neon-carrier.mid) | NEON CARRIER, 112 BPM | Oktavskift, akkorder og patchbytter mellom delene |
+| [`engine-tour.mid`](../songs/engine-tour.mid) | ENGINE TOUR, 120 BPM | **Omvisning i lydmotoren.** Trommene alene først, så kommer bass, pad, arpeggio, lead og keys inn ett etter ett. Hvert instrument går gjennom alle patchene sine, to takter hver, og trommesettene og spillerens stemme byttes underveis. Til slutt spiller alt sammen. Alle 22 lydene høres. |
+| [`chrome-horizon.mid`](../songs/chrome-horizon.mid) | CHROME HORIZON, 104 BPM | **En hel synthwave-låt i D-moll:** intro, vers, pre-chorus, refreng, breakdown og et siste refreng en oktav opp. Spillsporet er skrevet i D-moll, og importen flytter det 5 halvtoner ned til hvite tangenter. |
+
+Hver patch i ENGINE TOUR (to takter hver, fra takt 1):
+
+| Takt | Hva som kommer inn |
+|---|---|
+| 1–4 | Trommer alene (GATED) |
+| 5–10 | BASS: PULSE, FM BASS, SUB. Spillerens stemme er SYN LEAD. |
+| 9–14 | PAD: SUPERSAW, STRINGS, GLASS PAD. Trommer TIGHT fra takt 13, stemme BELL EP. |
+| 15–20 | ARP: PLUCK, BELL, SQUARE |
+| 21–26 | LEAD: SAW LEAD, SQUARE LEAD, BRASS LEAD. Stemme BRASS, trommer BOOM fra takt 23. |
+| 27–32 | KEYS: FM EP, TINE, ORGAN. Stemme GLASS fra takt 29, en oktav opp. |
+| 33–37 | Alt sammen, på GATED |
 
 ## Kanalene
 

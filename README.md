@@ -50,7 +50,7 @@ egen forstudie i fase 4. Via en datamaskin virker det uansett.
 | [docs/songs.md](docs/songs.md) | Lag dine egne låter: kanalene, reglene og eksporten |
 | [docs/link.md](docs/link.md) | LINK: lagene fra nettleser til USB-C, og protokollen |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D6 |
-| [songs/](songs/) | De innebygde låtene som MIDI-filer, også maler (`python3 tools/songs.py` lager dem) |
+| [songs/](songs/) | De fire innebygde låtene som MIDI-filer, også maler. ENGINE TOUR viser alle 22 lydene, CHROME HORIZON er en hel låt i D-moll (`python3 tools/songs.py` lager dem). |
 | [ROADMAP.md](ROADMAP.md) | Fasene, med avkrysning |
 | [reference/](reference/) | Nettleserreferansen, fasit før porten |
 | [mockup/](mockup/) | Den første mockupen: enheten og fire skjermer (`node mockup/render.cjs` lager PNG-ene) |
