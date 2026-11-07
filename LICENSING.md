@@ -21,11 +21,12 @@ complete source under the same licence too.
 | What | Licence | Where |
 | --- | --- | --- |
 | Terminus font 8x16 (ter-u16n), rendered into `firmware/gen/felucca_font.h` | SIL OFL 1.1 | `assets/fonts/Terminus-LICENSE.txt` |
+| Inter Display Black Italic (Rasmus Andersson): the VAVEHERO logo's letters, drawn by `tools/gen_splash.py` into `firmware/gen/kf_splash.h`, `assets/vavehero-logo.png` and the reference (the font itself is not in this tree) | SIL OFL 1.1 | <https://rsms.me/inter> |
 | JieLi AC79 SDK: `uboot.boot`, `cfg_tool.bin`, `eq_cfg_hw.bin` are read from your SDK checkout at build time and placed in the package; no SDK files are in this tree | Apache-2.0 | <https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK> |
 
 ## The logo
 
-`assets/logo.svg` / `logo.png` carry the designburg signet: Copyright (C) designburg, all rights reserved, not under
+VaveHero's own logo is `assets/vavehero-logo.png` (made by `tools/gen_splash.py`, GPL-3.0 as the rest of VaveHero). `assets/logo.svg` / `logo.png` carry the designburg signet: Copyright (C) designburg, all rights reserved, not under
 the GPL. It marks Dinghy itself; a fork uses its own logo.
 
 ## Trademarks

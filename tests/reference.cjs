@@ -75,7 +75,18 @@ async function choose(page, song, level) {
 
   /* 1. one player, autoplay: every note must be PERFECT, both OCT shifts hit, OP BOOST used */
   const a = await open(ctx);
+  await a.page.waitForTimeout(300);
   await screen(a.page, '01-splash');
+  const art = await a.page.evaluate(() => { const d = document.getElementById('scr').getContext('2d').getImageData(120, 80, 1, 1).data; return [d[0], d[1], d[2]]; });
+  check(art[0] > 200 && art[1] > 120, 'the splash shows its art: the sun at (120, 80) is ' + art.join(','));
+  const autoWas = await a.page.evaluate(() => window.KF.G.auto);
+  await a.page.keyboard.press('Space');
+  await a.page.waitForTimeout(1500);
+  const dm = await a.page.evaluate(() => ({ scr: window.KF.G.scr, demo: !!(window.KF.play && window.KF.play.demo), beat: window.KF.play ? window.KF.play.beat : -1, title: window.KF.play ? window.KF.play.song.title : '' }));
+  check(dm.scr === 'play' && dm.demo && dm.title === 'ENGINE TOUR' && dm.beat >= 160 && dm.beat < 166, 'FX on the splash: the DEMO, ENGINE TOUR from bar 41 on autoplay: ' + JSON.stringify(dm));
+  await a.page.keyboard.press('Enter');
+  const back = await a.page.evaluate(() => ({ scr: window.KF.G.scr, play: !!window.KF.play, auto: window.KF.G.auto }));
+  check(back.scr === 'splash' && !back.play && back.auto === autoWas, 'PLAY ends the DEMO: back on the splash, autoplay as it was');
   await a.page.keyboard.press('Enter');
   check(await a.page.evaluate(() => window.KF.G.scr) === 'songs', 'PLAY on the splash opens SONGS');
   await screen(a.page, '02-songs');

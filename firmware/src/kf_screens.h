@@ -7,6 +7,7 @@
 #pragma once
 #include "kf_gfx.h"
 #include "kf_game.h"
+#include "kf_splash.h"
 
 static const char *const KS_LEVELS[4] = {"EASY", "MED", "HARD", "EXP"};
 static rgb_t kjcol(uint32_t j)
@@ -184,24 +185,63 @@ static void ks_keys(const uint8_t *st, const uint8_t *led, int32_t spread)   /* 
 }
 
 /* ---- the screens */
+/* the splash, as an 80s video game cover: the art above the horizon (tools/gen_splash.py: the sky, the stars, the
+ * striped sun, the mountains, the chrome logo, the project's mark), and under it, live, the neon grid coming at you
+ * with the notes in the game's lanes and colours, the sun's reflection, PRESS PLAY. The reference's drawSplash does the
+ * same, number for number. */
+#define KS_HZN 148                               /* the horizon: the art above, the floor below */
+static int32_t ks_floor_y(int32_t z_q8) { return KS_HZN + 92 * 256 / (256 + ((z_q8 * 141) >> 8)); }   /* z 0: the bottom */
+static int32_t ks_floor_x(int32_t k2, int32_t y) /* grid line k2 / 2 from the middle, 24 px apart at the bottom */
+{
+    int32_t q = k2 * 12 * (y - KS_HZN);
+    return 120 + (q >= 0 ? (q + 46) / 92 : -((-q + 46) / 92));
+}
+static rgb_t ks_floor_bg(int32_t y) { return kmix(0x1a0638u, 0x05010du, (y - KS_HZN) * 4096 / 91); }
 static void ks_splash(uint32_t ms, const char *version)
 {
-    int32_t i, x;
-    krect(0, 0, 240, 240, K_BG);
-    for (i = 0; i < 14; i++) {
-        int32_t lane = (i * 5) % 8, sp = 30 + (i * 13) % 25, y = (int32_t)((ms * (uint32_t)sp / 1000u + (uint32_t)i * 37u) % 280u) - 30;
-        kpcap(6 + lane * 29, y, 25, 9, kmix(K_BG, LANE[lane], Q12(.35)));
+    static const uint8_t LANES[7] = {3, 6, 1, 4, 7, 2, 5};
+    static const uint16_t OFFS[7] = {0, 1310, 450, 1890, 860, 2240, 1600};
+    int32_t i, x, y, k, n, phase = (int32_t)(ms % 640u) * 256 / 640;
+    const int32_t P = 2600;                      /* ms for a note from the horizon to you */
+    for (i = 0; i < (int32_t)(KF_SPLASH_W * KF_SPLASH_H); i++) cv_px[i] = KF_SPLASH[i];   /* the art, as the canvas keeps it */
+    for (y = KS_HZN; y < 240; y++) krect(0, y, 240, 1, ks_floor_bg(y));
+    for (y = KS_HZN + 2; y < KS_HZN + 50; y++) {   /* the sun on the floor: its reflection, in streaks */
+        int32_t f = (KS_HZN + 50 - y) * 4096 / 50, half = 46 - (y - KS_HZN) / 4, row = (y - KS_HZN) % 2 ? 40 : 100;
+        for (x = 120 - half; x < 120 + half; x++) {
+            int32_t d = x < 120 ? 120 - x : x - 119, e = d * 4096 / half, a = (int32_t)(((int64_t)f * (4096 - ((e * e) >> 12))) >> 12) * 9 / 10 * row / 100;
+            if (a > 0) kpx_blend(x, y, y < KS_HZN + 22 ? 0xffb35au : 0xff4f8au, a);
+        }
     }
-    krect(0, 58, 240, 44, kmix(K_BG, K_BLACK, Q12(.45)));
-    krect(0, 57, 240, 1, K_CYAN);
-    krect(0, 102, 240, 1, K_CYAN);
-    x = ktextOut(&FONT_L, 120 - (ktw(&FONT_L, "VAVEHERO") >> 1), 64, "VAVE", K_TEXT, K_BG, 1);
-    ktextOut(&FONT_L, x, 64, "HERO", K_CYAN, K_BG, 1);
-    krect(0, 108, 240, 18, kmix(K_BG, K_BLACK, Q12(.45)));
-    ktextC(&FONT_S, 120, 109, "A RHYTHM GAME FOR FM-1", K_DIM);
-    if ((ms / 500u) % 2u == 0u) { krect(70, 168, 100, 18, K_BG); ktextC(&FONT_S, 120, 169, "PRESS PLAY", K_AMBER); }
-    krect(168, 222, 72, 18, K_BG);
-    ktextR(&FONT_S, 236, 223, version, K_MUTE);
+    for (n = 1; n < 40; n++) {                   /* the lines across, moving towards you */
+        int32_t yy = ks_floor_y(n * 256 - phase), near = (yy - KS_HZN) * 4096 / 92;
+        if (yy - ks_floor_y((n + 1) * 256 - phase) < 3) break;   /* (where they would crowd: the haze) */
+        krect(0, yy, 240, 1, kmix(ks_floor_bg(yy), 0xff3df0u, (int32_t)(((int64_t)near * near) >> 12) * 85 / 100 + Q12(.12)));
+    }
+    for (y = KS_HZN + 1; y < 240; y++) {         /* the lines to the vanishing point */
+        int32_t near = (y - KS_HZN) * 4096 / 92;
+        rgb_t c = kmix(ks_floor_bg(y), 0xff3df0u, Q12(.08) + near * 85 / 100);
+        for (k = -24; k <= 24; k += 2) {
+            x = ks_floor_x(k, y);
+            if (x >= 0 && x < 240) krect(x, y, 1, 1, c);
+        }
+    }
+    krect(0, KS_HZN, 240, 1, 0xff4fd8u);         /* the horizon */
+    krect(0, KS_HZN + 1, 240, 1, kmix(0x1a0638u, 0xff4fd8u, Q12(.45)));
+    for (i = 0; i < 7; i++) {                    /* the notes, in the game's lanes and colours */
+        int32_t p = (int32_t)((ms + OFFS[i]) % (uint32_t)P), z = 14 * 256 * (P - p) / P, yy = ks_floor_y(z);
+        int32_t s = (yy - KS_HZN) * 4096 / 92, w = (30 * s + 2048) >> 12, h = (11 * s + 2048) >> 12;
+        rgb_t col = kmix(ks_floor_bg(yy), LANE[LANES[i]], s < 1638 ? Q12(.3) + s * 7 / 4 : 4096);
+        if (w < 3) w = 3;
+        if (h < 2) h = 2;
+        x = ks_floor_x(2 * LANES[i] - 7, yy) - w / 2;
+        kpcap(x - 1, yy - h / 2 - 1, w + 2, h + 2, kmix(ks_floor_bg(yy), col, Q12(.5)));
+        kpcap(x, yy - h / 2, w, h, col);
+        if (w > 6) krect(x + h / 2, yy - h / 2 + 1, w - h, 1, kmix(col, K_WHITE, Q12(.6)));
+    }
+    ktextOut(&FONT_S, 120 - (ktw(&FONT_S, "A RHYTHM GAME FOR FM-1") >> 1), 50, "A RHYTHM GAME FOR FM-1", K_CYAN, 0x0b0220u, 1);
+    if ((ms / 500u) % 2u == 0u) ktextOut(&FONT_S, 120 - (ktw(&FONT_S, "PRESS PLAY") >> 1), 202, "PRESS PLAY", K_AMBER, 0x0b0220u, 1);
+    ktextOut(&FONT_S, 4, 223, "FX DEMO", K_MUTE, 0x05010du, 1);
+    ktextOut(&FONT_S, 236 - ktw(&FONT_S, version), 223, version, K_MUTE, 0x05010du, 1);
 }
 
 typedef struct { uint32_t sel, level, speed, spread, tone; int32_t best[8][2]; uint32_t mm_mode; } ks_menu_t;   /* best: acc10, -1 none */

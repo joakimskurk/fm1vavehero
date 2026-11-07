@@ -6,14 +6,14 @@ RoboSeq og SkurkyMello.
 
 | Fil | Versjon | SHA-256 |
 |---|---|---|
-| `vavehero.html` | REF 0.1.9 (navnet VaveHero, D9) | `03a1c25d9c099874767c185c30f4b899bae69ce35cbdb8383f3e455cc88aeca2` |
+| `vavehero.html` | REF 0.1.10 (tittelskjermen som 80-tallsomslag, kromlogoen, DEMO på FX) | `7d0c1bca076368af10ccc2642e5bc38bb0efa3e51170d6aa0a133bd8579120e2` |
 
 En ny HTML er en ny referanse og får en egen commit med ny SHA-256 her.
 
 ## Kjør
 
 Åpne `vavehero.html` i en nettleser. Chrome og Edge har WebMIDI, de andre spiller med tastaturet og panelet. Trykk
-Enter (PLAY) på tittelskjermen, velg låt med pil opp og ned, og nivå med pil venstre og høyre.
+Enter (PLAY) på tittelskjermen, eller mellomrom (FX) for DEMO-en, velg låt med pil opp og ned, og nivå med pil venstre og høyre.
 
 To spillere på én maskin: åpne fila i to vinduer, velg **To vinduer** i begge, og gi hvert vindu sitt eget
 MIDI-keyboard. P1 velger låt og starter.
@@ -24,7 +24,8 @@ MIDI-keyboard. P1 velger låt og starter.
 node tests/reference.cjs          # krever Playwright med Chromium; skjermbilder i build/test/
 ```
 
-Testen spiller begge låtene på autospill og krever 100 % uten bom, begge oktavskiftene og OP BOOST. Den sjekker
+Testen ser at tittelskjermen viser bildet sitt, og at FX starter DEMO-en (ENGINE TOUR fra takt 41) og PLAY
+avslutter den. Den spiller begge låtene på autospill og krever 100 % uten bom, begge oktavskiftene og OP BOOST. Den sjekker
 at ingen notekart har svarte tangenter, og at en svart tangent under spill blir ignorert (D1). Med SPREAD (D2)
 sjekker den 100 % på autospill, at LED-ene bare lyser på SPREAD-tangentene, og at en tangent mellom to brukte ikke
 gjør noe. Den sjekker

@@ -27,6 +27,7 @@ fm1-emu. Ingen av FM-1-appene er målt på et ekte FM-1 ennå. Derfor er første
 |---|---|---|
 | Koden: spill, grafikk, lyd, MIDI, LINK | flash | omtrent 150 KB (Star Distroyer bruker rundt 111 KB) |
 | Terminus-fontene (16 og 32 px) | flash | 33 KB |
+| Tittelskjermens bilde over horisonten (240 × 148, RGB565) | flash | 69 KB. Gulvet under horisonten tegnes levende. |
 | Bølgetabeller og kurver (tanh, bitcrush) | flash | omtrent 10 KB |
 | Innebygde låter, 5 byte per tone | flash | FIRST LIGHT 2 KB, NEON CARRIER 5 KB, ENGINE TOUR 10 KB, CHROME HORIZON 7 KB. **30 låter er omtrent 180 KB.** |
 | **Sum flash** | | **omtrent 375 KB av 568** |

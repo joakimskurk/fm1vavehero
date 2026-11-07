@@ -15,6 +15,9 @@ if command -v node >/dev/null 2>&1; then
     run "firmware/gen/kf_tables.h is what tools/gen_kf_tables.mjs makes from the reference" node tools/gen_kf_tables.mjs --check
     run "firmware/gen/kf_songs.h is what the reference's import makes of songs/ (tools/mid2vavehero.mjs)" node tools/mid2vavehero.mjs --check
 fi
+if python3 -c 'import numpy' 2>/dev/null && [ -f "${INTER:-/usr/share/fonts/opentype/inter/InterDisplay-BlackItalic.otf}" ]; then
+    run "firmware/gen/kf_splash.h is what tools/gen_splash.py draws" python3 tools/gen_splash.py --check
+fi
 run "vavehero.c compiles for the host without a warning (-Werror)" \
     cc -O2 -Wall -Werror -Wno-unused-function -DDINGHY_HOST -DAPP_VER='"test"' -Ifirmware/hal -Ifirmware/src -Ifirmware/gen \
        -o "$OUT/vavehero-werror" firmware/src/vavehero.c
