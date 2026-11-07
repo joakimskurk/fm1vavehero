@@ -134,16 +134,16 @@ async function choose(page, song, level) {
   /* 1c. a song of your own: loaded through the file input, transposed to white keys, played perfectly */
   const em = path.join(OUT, 'em-drive.mid'); fs.writeFileSync(em, emDrive());
   await a.page.setInputFiles('#file', em);
-  await a.page.waitForFunction(() => window.KF.SONGS.length === 3, null, { timeout: 5000 });
-  const imp = await a.page.evaluate(() => { const s = window.KF.SONGS[2]; return { title: s.title, T: s.transpose, octs: s.octs.length, notes: s.melody.length, report: document.getElementById('report').textContent }; });
+  await a.page.waitForFunction(() => window.KF.SONGS.length === 5, null, { timeout: 5000 });
+  const imp = await a.page.evaluate(() => { const s = window.KF.SONGS[4]; return { title: s.title, T: s.transpose, octs: s.octs.length, notes: s.melody.length, report: document.getElementById('report').textContent }; });
   check(imp.title === 'EM DRIVE' && imp.T === -5, `EM DRIVE is transposed 5 up onto white keys: ${JSON.stringify({ title: imp.title, T: imp.T })}`);
   check(imp.octs >= 2 && /svarte tangenter/.test(imp.report) && /mer enn tre/.test(imp.report), `its climb gets OCT shifts (${imp.octs}), the chromatic note and the fourth chord note are reported`);
   check(/Kanal 16/.test(imp.report) && /Kanal 7/.test(imp.report), 'channels 7 and 16 are reported as not played');
   check(/Patcher: BASS FM BASS fra takt 1, PULSE fra takt 5/.test(imp.report) && /uten patch: kanal 2, note 7/.test(imp.report), 'the keyswitches are reported, and the one with no patch is flagged');
-  const emPh = await a.page.evaluate(() => window.KF.SONGS[2].phrases.map(r => r.a + '-' + r.b).join());
+  const emPh = await a.page.evaluate(() => window.KF.SONGS[4].phrases.map(r => r.a + '-' + r.b).join());
   check(emPh === '16-24' && /1 OP-frase fra OP-noten/.test(imp.report), 'the OP note (B-1 on channel 1, held) makes the OP phrase: ' + emPh);
   await a.page.evaluate(() => window.KF.setAuto(true));
-  await choose(a.page, 2, 1); await a.page.keyboard.press('Enter');
+  await choose(a.page, 4, 1); await a.page.keyboard.press('Enter');
   await waitResults(a.page);
   L = await a.page.evaluate(() => window.KF.G.last);
   check(L.acc === 100 && L.counts.M === 0, `EM DRIVE MED on autoplay: ${L.acc.toFixed(1)}%, ${L.counts.S} shifts`);
@@ -175,6 +175,34 @@ async function choose(page, song, level) {
     check(r.peak < 1 && r.rms > .03, `${name}: 20 s rendered, peak ${r.peak.toFixed(3)}, RMS ${r.rms.toFixed(3)}`);
   }
   await a.page.screenshot({ path: path.join(OUT, '11-page.png') });
+
+  /* 1h. the two songs to hear the engine: they import without a warning, ENGINE TOUR plays every patch, CHROME
+     HORIZON (D minor) is transposed onto white keys, and both play 100 % on autoplay, side by side in two windows */
+  const demo = await a.page.evaluate(() => window.KEYFALL_SONGS.slice(2).map(f => {
+    const K = window.KF, { song, report } = K.importSong(K.parseMidi(Uint8Array.from(atob(f.data), c => c.charCodeAt(0))), f.file);
+    const used = new Set(song.patchLog.map(e => e.part + ':' + e.ks)), all = Object.entries(K.PATCHSET).flatMap(([p, ns]) => ns.map((n, i) => p + ':' + i));
+    return { title: song.title, T: song.transpose, warn: report.warn.length, unused: all.filter(x => !used.has(x)).length, octs: song.octs.length, ph: song.phrases.length };
+  }));
+  check(demo[0].title === 'ENGINE TOUR' && demo[0].warn === 0 && demo[0].unused === 0, 'ENGINE TOUR imports cleanly and uses all 22 patches and kits: ' + JSON.stringify(demo[0]));
+  check(demo[1].title === 'CHROME HORIZON' && demo[1].warn === 0 && demo[1].T === 5 && demo[1].octs === 2, 'CHROME HORIZON (D minor) imports cleanly, its play track 5 semitones down on white keys: ' + JSON.stringify(demo[1]));
+  const pair = [await open(ctx), await open(ctx)];
+  await Promise.all(pair.map(async (x, i) => {
+    await x.page.evaluate(i => { window.KF.setAuto(true); window.KF.G.scr = 'songs'; window.KF.G.sel = 2 + i; window.KF.G.level = 1; }, i);
+    await x.page.keyboard.press('Enter');
+  }));
+  await waitBeat(pair[0].page, 92); await screen(pair[0].page, '21-engine-tour'); await screen(pair[1].page, '22-chrome-horizon');
+  for (const [i, x] of pair.entries()) {
+    await waitResults(x.page, 120000);
+    const R = await x.page.evaluate(() => window.KF.G.last);
+    check(R.acc === 100 && R.counts.M === 0 && R.counts.S === 2, `${demo[i].title} MED on autoplay: ${R.acc.toFixed(1)}%, ${R.counts.S} shifts, ${R.total} notes`);
+    check(x.errors.length === 0, `no page errors playing ${demo[i].title}` + (x.errors.length ? ': ' + x.errors.join(' | ') : ''));
+    await x.page.close();
+  }
+  for (const [i, name] of [[2, 'engine-tour'], [3, 'chrome-horizon']]) {
+    const r = await a.page.evaluate(async i => window.KF.renderSong(i, 20), i);
+    fs.writeFileSync(path.join(OUT, name + '-20s.wav'), Buffer.from(r.wav, 'base64'));
+    check(r.peak < 1 && r.rms > .03, `${name}: 20 s rendered, peak ${r.peak.toFixed(3)}, RMS ${r.rms.toFixed(3)}`);
+  }
 
   /* 1g. MIDI MODE (D5): a DAW plays into the FM-1 */
   await a.page.evaluate(() => { window.KF.setAuto(false); window.KF.G.scr = 'songs'; window.KF.G.sel = window.KF.SONGS.length; });
@@ -307,7 +335,7 @@ async function choose(page, song, level) {
   await sleep(4200);
   const roles = await Promise.all([p1, p2].map(x => x.page.evaluate(() => ({ role: window.KF.Link.role(), linked: window.KF.Link.linked(), id: window.KF.Link.id }))));
   check(roles[0].linked && roles[1].linked && roles[0].role !== roles[1].role && roles[0].id !== roles[1].id, 'two windows that start with the same id draw again and link up as P1 and P2: ' + JSON.stringify(roles));
-  check(await p2.page.evaluate(() => window.KF.SONGS.length) === 3, 'a song loaded in one window is kept for the next (EM DRIVE in the second window)');
+  check(await p2.page.evaluate(() => window.KF.SONGS.length) === 5, 'a song loaded in one window is kept for the next (EM DRIVE in the second window)');
   const lead = roles[0].role === 'P1' ? p1 : p2, follow = lead === p1 ? p2 : p1;
   await lead.page.evaluate(() => window.KF.setAuto(true));
   await follow.page.evaluate(() => window.KF.setAuto(true));
