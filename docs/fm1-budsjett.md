@@ -28,9 +28,10 @@ fm1-emu. Ingen av FM-1-appene er målt på et ekte FM-1 ennå. Derfor er første
 | Koden: spill, grafikk, lyd, MIDI, LINK | flash | omtrent 150 KB (Star Distroyer bruker rundt 111 KB) |
 | Terminus-fontene (16 og 32 px) | flash | 33 KB |
 | Tittelskjermens bilde over horisonten (240 × 148, RGB565) | flash | 69 KB. Gulvet under horisonten tegnes levende. |
+| Himmelen over spillbanen (240 × 20, RGB565, D10) | flash | 9,6 KB |
 | Bølgetabeller og kurver (tanh, bitcrush) | flash | omtrent 10 KB |
 | Innebygde låter, 5 byte per tone | flash | FIRST LIGHT 2 KB, NEON CARRIER 5 KB, ENGINE TOUR 10 KB, CHROME HORIZON 7 KB. **30 låter er omtrent 180 KB.** |
-| **Sum flash** | | **omtrent 375 KB av 568** |
+| **Sum flash** | | **omtrent 385 KB av 568** |
 | Spilltilstand, stemmer, MIDI MODE-buffer (en takt), LINK | RAM | omtrent 15 KB av 96 |
 | Skjermlerret | pool | 59 KB (240 × 124, to striper) eller 113 KB (hele skjermen) |
 | Tempo-delay, punktert åttedel ned til 80 BPM, mono | pool | omtrent 50 KB |
@@ -111,6 +112,8 @@ fleste innenfor 0,3 dB. Hver fjerde takt av de første 30 sekundene av alle fire
 - **Beregnet (firmware 0.1):** spillskjermen i ENGINE TOURs tyngste takter koster omtrent 0,69 millioner
   instruksjoner per bilde på brikken (callgrind × 0,8), det vil si omtrent 9 % av brikken ved 30 bilder i sekundet.
   Fargene på banen blandes én gang ved oppstart, og tekst blandes i RGB565. Hele skjermen er ett lerret på 113 KB.
+  Med D10 (gulvet, rutenettet og himmelen) koster samme takter omtrent 7 % mindre, fordi tekst hopper over tomme
+  glyfbyte.
 
 ## Låter og poeng
 

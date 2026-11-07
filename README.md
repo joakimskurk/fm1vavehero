@@ -11,7 +11,7 @@ hverandre. En Dinghy 0.5-app, i samme familie som [RoboSeq](https://github.com/j
 > låtene, lydmotoren og MIDI MODE LIVE. Den er testet på verten og målt i fm1-emu, men ikke prøvd på et ekte FM-1 ennå.
 > Planen står i [ROADMAP.md](ROADMAP.md).
 
-<p align="center"><img src="docs/screens/splash.gif" width="360" alt="Tittelskjermen: kromlogoen VAVEHERO over en stripete sol, fjell og et neongitter der notene kommer mot deg"></p>
+<p align="center"><img src="docs/screens/splash.gif" width="360" alt="Tittelskjermen: kromlogoen VAVEHERO over en stripete sol og fjell, og spillets bane som veien inn i solnedgangen, med notene på vei mot deg"></p>
 
 <p align="center"><img src="docs/screens/reference-page.png" width="820" alt="Referansen i nettleseren: skjermen og FM-1-panelet med tangent-LED-er"></p>
 
@@ -64,7 +64,7 @@ Dinghy). Den spiller som referansen: samme regler, samme notekart, samme skjerme
 
 | | |
 |---|---|
-| Tittelskjermen | Et 80-tallsomslag: kromlogoen, en stripete sol, fjell og et neongitter med notene på vei mot deg. PLAY går til låtene. FX starter DEMO-en, ENGINE TOUR fra takt 41 på autospill. |
+| Tittelskjermen | Et 80-tallsomslag: kromlogoen, en stripete sol og fjell. Spillets egen bane er veien inn i solnedgangen og spiller seg selv på et neongulv. PLAY går til låtene. FX starter DEMO-en, ENGINE TOUR fra takt 41 på autospill. |
 | Låtene | SELECT velger låt. KNOB 1 velger nivå, KNOB 2 stemme (TONE), KNOB 3 fart og KNOB 4 MIX. ALGORITHM styrer GRIT. GLO slår SPREAD av og på, og SEQ slår AUTO av og på (låta spiller seg selv, og resultatet lagres ikke). PLAY starter. |
 | Under en låt | De åtte tangentene i oppsettet spiller banene. OCT− og OCT+ følger oktavskiftene, FX gir OP BOOST, PLAY er pause og HOME avslutter. |
 | Resultatet | Beste resultat per låt og nivå lagres i flash. PLAY spiller igjen, HOME går til låtene. |

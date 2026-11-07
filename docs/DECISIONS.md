@@ -178,3 +178,31 @@ endres bare for navnets skyld.
 **Å sjekke før utgivelse.** «Hero» i Guitar Hero er Activisions varemerke, som konseptet allerede nevnte. VaveHero er
 et eget navn, men det bør vurderes før spillet legges ut på Firmware Hub.
 
+## D10 (2026-11-07): tittelskjermens synthwave i hele spillet
+
+**Beslutning.** Tittelskjermens uttrykk brukes i hele spillet, ikke omvendt. Det gjelder kromlogoen, solnedgangen,
+fjellene med neonkant, neongulvet og fiolett natt.
+
+- **Fargene:** de nøytrale fargene er flyttet fra marineblått til fiolett natt (P i referansen, `K_*` i
+  `kf_gfx.h`). Magenta neon (`#ff4fd8`) er horisontens linje, og rutenettet er `#ff3df0`.
+- **Banen:** banen ligger på tittelskjermens gulv. Rutenettet fortsetter banens linjer utenfor kantene mot samme
+  forsvinningspunkt, og slaglinjene går over hele gulvet, så det beveger seg med takten. Kantene lyser magenta.
+  Den fjerne enden blekner inn i gulvets dis, ikke i svart. Over banen er solnedgangen klemt sammen til 20 rader:
+  gløden, noen stjerner og fjellene. Den lages av `tools/gen_splash.py` (`KF_SKY`) og har neonhorisonten under seg.
+- **Tittelskjermen:** gulvet er spillets egen bane som veien inn i solnedgangen, og den spiller seg selv. Banene,
+  slaglinjene, notene, treffelinja med glimt og tangentene ser ut som i spillet, i en sløyfe på 125 BPM. FX DEMO og
+  versjonen står øverst.
+- **Menyene:** låtlista, resultatet og MIDI MODE ligger i nattehimmelen med stjerner. Overskriften har
+  neonhorisonten under seg, framdriften er solnedgangen fra magenta til gull, og valgt rad har neon som blekner mot
+  høyre.
+- **Krom:** de store ordene (låttittelen ved start, nedtellingen, FULL COMBO, CLEAR, PAUSE) og karakteren på
+  resultatet står i logoens krom (`ktext_chrome`, `textChrome`). OP BOOST er gull, som før.
+
+**Logoen** har fått mindre svart. Det sorte båndet midt i kromen var en feil: fargeovergangen ble sort forbi siste
+stopp. Kanten og konturen er nå fiolett i stedet for nesten sort.
+
+**Hva det koster.** Tegningen er ikke blitt dyrere. Tekst hopper nå over tomme glyfbyte, og ytterlinje brukes bare der
+bakgrunnen krever det (poengsummen over himmelen og treffordene). Callgrind på samme skript (`-Os`) gir dette:
+spillskjermen koster omtrent 7 % mindre per bilde i DEMO-en (ENGINE TOUR fra takt 41) og omtrent 15 % mindre over hele
+`tests/kf/game.txt`. Tittelskjermen koster omtrent 35 % mindre. Himmelen bruker 9,6 KB flash.
+

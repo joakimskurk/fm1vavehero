@@ -16,7 +16,37 @@ static rgb_t kjcol(uint32_t j)
     return C[j < 7u ? j : 0u];
 }
 
-/* ---- the strips at the top and the bottom */
+/* ---- the night the menus sit in (the splash's sky): its colour down the screen, and its stars, some twinkling */
+#define KS_NSTAR 44
+static uint8_t ks_star[KS_NSTAR][3];             /* x, y, brightness (1/255) */
+static void ks_night(uint32_t ms)
+{
+    int32_t y, k;
+    if (!ks_star[0][2]) {                        /* (placed once, the reference's way: the same numbers) */
+        uint32_t r = 1985u;
+        for (k = 0; k < KS_NSTAR; k++) {
+            r = r * 1664525u + 1013904223u; ks_star[k][0] = (uint8_t)(3u + (r >> 8) % 234u);
+            r = r * 1664525u + 1013904223u; ks_star[k][1] = (uint8_t)(22u + (r >> 8) % 196u);
+            r = r * 1664525u + 1013904223u; ks_star[k][2] = (uint8_t)(70u + (r >> 8) % 180u);
+        }
+    }
+    for (y = 0; y < 240; y++) krect(0, y, 240, 1, kmix(0x07021au, 0x2a0c50u, y * 4096 / 239));
+    for (k = 0; k < KS_NSTAR; k++) {
+        int32_t b = ks_star[k][2], x = ks_star[k][0], yy = ks_star[k][1];
+        if (k % 4 == 0) {                        /* a quarter twinkle, each in its own time */
+            int32_t ph = (int32_t)((ms / 40u + (uint32_t)k * 13u) % 64u);
+            b = b * (32 + (ph < 32 ? ph : 63 - ph)) / 64;
+        }
+        kpx_blend(x, yy, K_WHITE, b * 16);
+        if (b > 200) {
+            kpx_blend(x - 1, yy, 0xffd6f8u, b * 5); kpx_blend(x + 1, yy, 0xffd6f8u, b * 5);
+            kpx_blend(x, yy - 1, 0xffd6f8u, b * 5); kpx_blend(x, yy + 1, 0xffd6f8u, b * 5);
+        }
+    }
+}
+
+/* ---- the strips at the top and the bottom: the splash's neon horizon under the header, the song's progress as its
+ * sunset (magenta to gold) */
 static void ks_header(const char *num, const char *title, const char *right, int32_t prog_q12, rgb_t rcol)
 {
     int32_t x = 4;
@@ -24,8 +54,22 @@ static void ks_header(const char *num, const char *title, const char *right, int
     if (num) { char s[8]; kput(kput(s, num), " "); x = ktext(&FONT_S, x, 1, s, K_AMBER); }
     ktext(&FONT_S, x, 1, title, K_TEXT);
     if (right) ktextR(&FONT_S, 236, 1, right, rcol);
-    if (prog_q12 >= 0) { krect(0, 18, 240, 2, 0x25244au); krect(0, 18, (240 * prog_q12 + 2048) >> 12, 2, K_CYAN); }
-    else krect(0, 18, 240, 1, K_LINE);
+    if (prog_q12 >= 0) {
+        int32_t w = (240 * prog_q12 + 2048) >> 12;
+        krect(0, 18, 240, 2, 0x3a1a56u);
+        for (x = 0; x < w; x++) krect(x, 18, 1, 2, kmix(K_NEON, K_GOLD, x * 4096 / 239));
+    } else { krect(0, 18, 240, 1, K_NEON); krect(0, 19, 240, 1, kmix(K_BG, K_NEON, Q12(.3))); }
+}
+static void ks_panel(int32_t x, int32_t y, int32_t w, int32_t h)   /* a box on the night, a neon line along its top */
+{
+    krect(x, y, w, h, K_SURF);
+    krect(x, y, w, 1, kmix(K_SURF, K_NEON, Q12(.55)));
+}
+static void ks_selbar(int32_t x, int32_t y, int32_t w, int32_t h)  /* the chosen row: neon fading to the right */
+{
+    int32_t i;
+    for (i = 0; i < w; i++) krect(x + i, y, 1, h, kmix(kmix(K_SURF2, K_NEON, Q12(.34)), K_SURF2, i * 4096 / (w - 1)));
+    krect(x, y, 3, h, K_CYAN);
 }
 static void ks_knobs(const char *const *labels, uint32_t muted)   /* muted: bit i */
 {
@@ -39,12 +83,14 @@ static void ks_knobs(const char *const *labels, uint32_t muted)   /* muted: bit 
         ktextC(&FONT_S, cx, 223, labels[i], col);
     }
 }
-static void ks_banner(const char *big, const char *small, rgb_t col, int32_t y)
+static void ks_banner(const char *big, const char *small, rgb_t col, int32_t y)   /* the big words in the logo's chrome */
 {
-    krect(0, y, 240, small ? 56 : 42, kmix(K_BG, K_BLACK, Q12(.35)));
-    krect(0, y, 240, 1, col);
-    krect(0, y + (small ? 55 : 41), 240, 1, col);
-    ktextOut(&FONT_L, KH_CX - (ktw(&FONT_L, big) >> 1), y + 4, big, col, K_BG, 1);
+    int32_t h = small ? 56 : 42;
+    rgb_t band = kmix(K_BG, K_BLACK, Q12(.35));
+    krect(0, y, 240, h, band);
+    krect(0, y, 240, 1, col); krect(0, y + 1, 240, 1, kmix(band, col, Q12(.35)));
+    krect(0, y + h - 1, 240, 1, col); krect(0, y + h - 2, 240, 1, kmix(band, col, Q12(.35)));
+    ktext_chrome(&FONT_L, KH_CX - (ktw(&FONT_L, big) >> 1) - 1, y + 4, big, 1);
     if (small) ktextC(&FONT_S, KH_CX, y + 36, small, K_TEXT);
 }
 static void ks_pill(int32_t x, int32_t y, const char *t, int32_t on, rgb_t oncol, int32_t locked)
@@ -56,14 +102,18 @@ static void ks_pill(int32_t x, int32_t y, const char *t, int32_t on, rgb_t oncol
 }
 
 /* ---- the highway */
-static void ks_highway_bg(int32_t boost, int32_t spread)   /* the lanes and their lines, row by row (kh_init's colours) */
+/* the floor and the lanes on it, row by row (kh_init's colours): the floor's grid beside the highway, the lanes, their lines */
+static void ks_highway_bg(int32_t boost, int32_t spread)
 {
     int32_t y, i;
     for (y = KH_TOPY; y < KH_HIT; y++) {
-        const uint8_t *xs = kh_x[y - KH_TOPY];
+        const uint8_t *xs = kh_x[y - KH_TOPY], *gx = kh_gx[y - KH_TOPY];
         const uint16_t *lc = kh_lane[boost ? 1 : 0][y - KH_TOPY], *nc = kh_line[boost ? 1 : spread ? 2 : 0][y - KH_TOPY];
-        uint16_t *row = cv_px + (uint32_t)y * 240u;
+        uint16_t *row = cv_px + (uint32_t)y * 240u, fc = kh_floor565[y - KH_TOPY], gc = kh_gridc[y - KH_TOPY];
         int32_t x;
+        for (x = 0; x < xs[0]; x++) row[x] = fc;
+        for (x = xs[8]; x < 240; x++) row[x] = fc;
+        for (i = 0; i < 2 * KH_NGX; i++) if (gx[i] != 255u) row[gx[i]] = gc;
         for (i = 0; i < 8; i++) { uint16_t c = lc[i]; for (x = xs[i]; x < xs[i + 1]; x++) row[x] = c; }
         for (i = 0; i <= 8; i++) row[xs[i] - (i == 8)] = i == 0 || i == 8 ? nc[i] : (boost ? nc[i] : nc[i]);
     }
@@ -79,9 +129,10 @@ static void ks_beat_lines(int32_t pos, int32_t boost)
         y = kh_round(kh_Yq(z));
         s = kh_s_at(2 * y + 1);
         bar = b % 4 == 0;
-        xl = kh_X(KH_NL * 16, s); xr = kh_X(KH_NR * 16, s);
-        krect(kh_round(xl), y, kh_round(xr - xl), 1,
-              kmix(K_BG, boost ? (bar ? 0xc79a3cu : 0x6b5330u) : (bar ? 0x45438au : 0x26254du), kh_fade_at(y)));
+        xl = kh_round(kh_X(KH_NL * 16, s)); xr = kh_round(kh_X(KH_NR * 16, s));
+        krect(xl, y, xr - xl, 1, kh_fc(y, boost ? (bar ? 0xc79a3cu : 0x6b5330u) : (bar ? 0x8a2f9eu : 0x3b1a58u)));
+        krect(0, y, xl, 1, kh_grid_h(y, bar));   /* (carried on across the floor: the splash's grid, moving with the beat) */
+        krect(xr, y, 240 - xr, 1, kh_grid_h(y, bar));
     }
 }
 static void ks_tail(int32_t lane, int32_t z0, int32_t z1, rgb_t col, int32_t held)
@@ -91,29 +142,32 @@ static void ks_tail(int32_t lane, int32_t z0, int32_t z1, rgb_t col, int32_t hel
     for (y = y1; y <= y0; y++) {
         int32_t s = kh_s_at(2 * y + 1), half = KH_LW * 15 * s / 100, xc = kh_X(kh_U4(lane * 256 + 128), s);   /* .15 LW s */
         if (half < 4096) half = 4096;
-        krect(kh_round(xc - half), y, kh_round(xc + half) - kh_round(xc - half), 1, kmix(K_BG, body, kh_fade_at(y)));
+        krect(kh_round(xc - half), y, kh_round(xc + half) - kh_round(xc - half), 1, kh_fc(y, body));
         if (held) krect(kh_round(xc) - 1, y, 2, 1, core);
     }
 }
+/* a gem: its halo, its body, a light row at the top and a shade at the foot, all faded into fl by f (the splash's too) */
+static void ks_gem_px(int32_t x0, int32_t y0, int32_t w, int32_t h, rgb_t col, rgb_t halo, int32_t ha, rgb_t fl, int32_t f)
+{
+    int32_t r = (h + 1) / 2, iw = w - 2 * r > 1 ? w - 2 * r : 1;
+    kpcap(x0 - 1, y0 - 1, w + 2, h + 2, kmix(fl, kmix(K_BG, halo, ha), f));
+    kpcap(x0, y0, w, h, kmix(fl, col, f));
+    krect(x0 + r, y0 + 1, iw, 1, kmix(fl, kmix(col, K_WHITE, Q12(.6)), f));
+    krect(x0 + r, y0 + h - 1, iw, 1, kmix(fl, kmix(col, K_BLACK, Q12(.3)), f));
+}
 static void ks_gem(int32_t lane, int32_t z, rgb_t col, int32_t boost, int32_t op)
 {
-    int32_t s = kh_sc(z) >> 4, yq = kh_Yq(z), f = kh_fade_at(kh_round(yq)), w, h, x0, y0, r;
-    rgb_t halo = boost ? K_GOLD : op ? 0xfff0c0u : col;
+    int32_t s = kh_sc(z) >> 4, yq = kh_Yq(z), yr = kh_round(yq), w, h;
     w = (84 * KH_LW * s / 100 + 2048) >> 12;
     h = (10 * s + 2048) >> 12;
     if (h < 3) h = 3;
-    x0 = kh_round(kh_X(kh_U4(lane * 256 + 128), s) - w * 2048);
-    y0 = kh_round(yq - h * 2048);
-    kpcap(x0 - 1, y0 - 1, w + 2, h + 2, kmix(K_BG, kmix(K_BG, halo, op || boost ? Q12(.8) : Q12(.5)), f));
-    kpcap(x0, y0, w, h, kmix(K_BG, col, f));
-    r = (h + 1) / 2;
-    krect(x0 + r, y0 + 1, w - 2 * r > 1 ? w - 2 * r : 1, 1, kmix(K_BG, kmix(col, K_WHITE, Q12(.6)), f));
-    krect(x0 + r, y0 + h - 1, w - 2 * r > 1 ? w - 2 * r : 1, 1, kmix(K_BG, kmix(col, K_BLACK, Q12(.3)), f));
+    ks_gem_px(kh_round(kh_X(kh_U4(lane * 256 + 128), s) - w * 2048), kh_round(yq - h * 2048), w, h, col,
+              boost ? K_GOLD : op ? 0xfff0c0u : col, op || boost ? Q12(.8) : Q12(.5), kh_floor_at(yr), kh_fade_at(yr));
 }
 static void ks_chord_bar(int32_t lane_lo, int32_t lane_hi, int32_t z)
 {
     int32_t s = kh_sc(z) >> 4, y = kh_round(kh_Yq(z)), xa = kh_X(kh_U4(lane_lo * 256 + 128), s), xb = kh_X(kh_U4(lane_hi * 256 + 128), s);
-    krect(kh_round(xa), y, kh_round(xb - xa), 1, kmix(K_BG, K_WHITE, Q12(.4) * kh_fade_at(y) / 4096));
+    krect(kh_round(xa), y, kh_round(xb - xa), 1, kmix(kh_floor_at(y), K_WHITE, Q12(.4) * kh_fade_at(y) / 4096));
 }
 static void ks_oct_band(int32_t z, int32_t dir, int32_t auto_)
 {
@@ -159,8 +213,8 @@ static void ks_cap(int32_t cx, int32_t y, int32_t w, int32_t h, rgb_t col, int32
 {
     int32_t x = cx - w / 2;
     if (state == 2) { kpcap(x - 1, y - 1, w + 2, h + 2, kmix(K_BG, col, Q12(.55))); kpcap(x, y, w, h, col); krect(x + h / 2, y + 2, w - h, 1, kmix(col, K_WHITE, Q12(.65))); }
-    else if (state == 1) { kpcap(x, y, w, h, col); kpcap(x + 1, y + 1, w - 2, h - 2, kmix(black ? 0x1a1930u : 0x2b2a46u, col, Q12(.22))); }
-    else { kpcap(x, y, w, h, black ? 0x37366au : 0x3d3c64u); kpcap(x + 1, y + 1, w - 2, h - 2, black ? 0x191830u : 0x2b2a46u); }
+    else if (state == 1) { kpcap(x, y, w, h, col); kpcap(x + 1, y + 1, w - 2, h - 2, kmix(black ? 0x261336u : 0x39224eu, col, Q12(.22))); }
+    else { kpcap(x, y, w, h, black ? 0x532878u : 0x52316fu); kpcap(x + 1, y + 1, w - 2, h - 2, black ? 0x251137u : 0x39224eu); }
 }
 static void ks_keys(const uint8_t *st, const uint8_t *led, int32_t spread)   /* st[lane]: 0 / 1 next / 2 lit; led[lane]: 0 1 2 */
 {
@@ -174,83 +228,122 @@ static void ks_keys(const uint8_t *st, const uint8_t *led, int32_t spread)   /* 
     for (j = 1; j <= 15; j++) {
         int32_t x = (29 * j - 3 + 1) / 2, y = 194, h = 26, w = 11, lv, s;   /* round(NL + j LW / 2 - 5.5) */
         rgb_t col, base;
-        if (j % 2 == 0) { kpcap(x + 1, 198, w - 2, 18, 0x26254au); kpcap(x + 2, 199, w - 4, 16, 0x131226u); continue; }
+        if (j % 2 == 0) { kpcap(x + 1, 198, w - 2, 18, 0x391b54u); kpcap(x + 2, 199, w - 4, 16, 0x1d0c2cu); continue; }
         i = (j - 1) / 2; col = LANE[i]; s = st[i]; lv = led[i];
         if (s == 2) { kpcap(x - 1, y - 1, w + 2, h + 2, kmix(K_BG, col, Q12(.55))); kpcap(x, y, w, h, col); }
-        else if (s == 1) { kpcap(x, y, w, h, col); kpcap(x + 1, y + 1, w - 2, h - 2, kmix(0x2b2a46u, col, Q12(.22))); }
-        else { kpcap(x, y, w, h, 0x3d3c64u); kpcap(x + 1, y + 1, w - 2, h - 2, 0x2b2a46u); }
-        base = s == 2 ? kmix(col, K_BLACK, Q12(.35)) : 0x1b1a30u;
+        else if (s == 1) { kpcap(x, y, w, h, col); kpcap(x + 1, y + 1, w - 2, h - 2, kmix(0x39224eu, col, Q12(.22))); }
+        else { kpcap(x, y, w, h, 0x52316fu); kpcap(x + 1, y + 1, w - 2, h - 2, 0x39224eu); }
+        base = s == 2 ? kmix(col, K_BLACK, Q12(.35)) : 0x261436u;
         kpcap(x + 4, y + 5, 3, 12, lv == 2 ? K_WHITE : lv == 1 ? kmix(base, K_WHITE, Q12(.4)) : base);
     }
 }
 
 /* ---- the screens */
 /* the splash, as an 80s video game cover: the art above the horizon (tools/gen_splash.py: the sky, the stars, the
- * striped sun, the mountains, the chrome logo, the project's mark), and under it, live, the neon grid coming at you
- * with the notes in the game's lanes and colours, the sun's reflection, PRESS PLAY. The reference's drawSplash does the
- * same, number for number. */
+ * striped sun, the mountains, the chrome logo, the project's mark), and under it, live, the game's own highway as the
+ * road into the sunset, playing itself: the floor's neon grid beside it, the lanes, the beat lines, the gems, the hit
+ * line with its bursts, the keys lighting. A loop of 16 notes at 125 BPM. The reference's drawSplash does the same,
+ * number for number. */
 #define KS_HZN 148                               /* the horizon: the art above, the floor below */
-static int32_t ks_floor_y(int32_t z_q8) { return KS_HZN + 92 * 256 / (256 + ((z_q8 * 141) >> 8)); }   /* z 0: the bottom */
-static int32_t ks_floor_x(int32_t k2, int32_t y) /* grid line k2 / 2 from the middle, 24 px apart at the bottom */
+#define KS_HIT 214                               /* the hit line */
+#define KS_HY 124                                /* the vanishing point, in the sun */
+#define KS_NL 28                                 /* the lanes at the hit line: 28 to 212, 23 px */
+#define KS_LW 23
+#define KS_BEAT 480                              /* ms a beat */
+#define KS_ZTOP 33792                            /* the horizon's depth, 3 / s(148) - 3 = 8.25, Q12 */
+#define KS_ZBOT (-2662)                          /* the bottom row's */
+static const uint8_t KS_NOTES[16][2] = {{0, 1}, {1, 3}, {2, 5}, {3, 4}, {4, 2}, {4, 6}, {6, 7}, {7, 5},
+                                        {8, 3}, {9, 1}, {10, 0}, {10, 4}, {12, 6}, {13, 5}, {14, 3}, {15, 2}};   /* half beat, lane */
+static int32_t ks_s(int32_t y) { return (2 * y + 1 - 2 * KS_HY) * 4096 / (2 * (KS_HIT - KS_HY)); }   /* a row's scale, Q12 */
+static int32_t ks_xu(int32_t b16, int32_t s)     /* the x (Q12) of lane position b16 (1/16 lane) at scale s */
 {
-    int32_t q = k2 * 12 * (y - KS_HZN);
-    return 120 + (q >= 0 ? (q + 46) / 92 : -((-q + 46) / 92));
+    return 120 * 4096 + ((((KS_NL * 16 + b16 * KS_LW) - 120 * 16) * s) >> 4);
 }
-static rgb_t ks_floor_bg(int32_t y) { return kmix(0x1a0638u, 0x05010du, (y - KS_HZN) * 4096 / 91); }
+static int32_t ks_scz(int32_t z) { return 50331648 / (12288 + z); }   /* 3 / (3 + z), Q12 */
+static int32_t ks_Yq(int32_t z) { return KS_HY * 4096 + (KS_HIT - KS_HY) * ks_scz(z); }
+static rgb_t ks_fl(int32_t y) { return kmix(K_FLOOR0, K_FLOOR1, (y - KS_HZN) * 4096 / 92); }
+static int32_t ks_near(int32_t y) { int32_t n = (y - KS_HZN) * 4096 / (KS_HIT - KS_HZN); return n > 4096 ? 4096 : n; }
+static int32_t ks_f(int32_t y) { int32_t f = (y - KS_HZN) * 4096 / 16; return f < 0 ? 0 : f > 4096 ? 4096 : f; }
 static void ks_splash(uint32_t ms, const char *version)
 {
-    static const uint8_t LANES[7] = {3, 6, 1, 4, 7, 2, 5};
-    static const uint16_t OFFS[7] = {0, 1310, 450, 1890, 860, 2240, 1600};
-    int32_t i, x, y, k, n, phase = (int32_t)(ms % 640u) * 256 / 640;
-    const int32_t P = 2600;                      /* ms for a note from the horizon to you */
+    static const uint8_t BLACK_B[9] = {0, 1, 1, 0, 1, 1, 1, 0, 0};
+    int32_t i, k, x, y, beat = (int32_t)(ms % (8u * KS_BEAT)) * 4096 / KS_BEAT;
+    uint8_t st[8] = {0};
     for (i = 0; i < (int32_t)(KF_SPLASH_W * KF_SPLASH_H); i++) cv_px[i] = KF_SPLASH[i];   /* the art, as the canvas keeps it */
-    for (y = KS_HZN; y < 240; y++) krect(0, y, 240, 1, ks_floor_bg(y));
-    for (y = KS_HZN + 2; y < KS_HZN + 50; y++) {   /* the sun on the floor: its reflection, in streaks */
-        int32_t f = (KS_HZN + 50 - y) * 4096 / 50, half = 46 - (y - KS_HZN) / 4, row = (y - KS_HZN) % 2 ? 40 : 100;
-        for (x = 120 - half; x < 120 + half; x++) {
-            int32_t d = x < 120 ? 120 - x : x - 119, e = d * 4096 / half, a = (int32_t)(((int64_t)f * (4096 - ((e * e) >> 12))) >> 12) * 9 / 10 * row / 100;
-            if (a > 0) kpx_blend(x, y, y < KS_HZN + 22 ? 0xffb35au : 0xff4f8au, a);
+    for (y = KS_HZN; y < 240; y++) {             /* the floor, its grid, the lanes */
+        int32_t s = ks_s(y), near = ks_near(y), f = ks_f(y);
+        rgb_t fl = ks_fl(y);
+        uint16_t *row = cv_px + (uint32_t)y * 240u, fc = swap16(c565(fl)), gc = swap16(c565(kmix(fl, K_GRID, Q12(.16) + near / 2)));
+        for (x = 0; x < 240; x++) row[x] = fc;
+        for (k = -9; k <= 17; k++) {
+            if (y < KS_HIT && k >= 0 && k <= 8) continue;
+            x = kh_round(ks_xu(k * 16, s));
+            if (x >= 0 && x < 240) row[x] = gc;
         }
-    }
-    for (n = 1; n < 40; n++) {                   /* the lines across, moving towards you */
-        int32_t yy = ks_floor_y(n * 256 - phase), near = (yy - KS_HZN) * 4096 / 92;
-        if (yy - ks_floor_y((n + 1) * 256 - phase) < 3) break;   /* (where they would crowd: the haze) */
-        krect(0, yy, 240, 1, kmix(ks_floor_bg(yy), 0xff3df0u, (int32_t)(((int64_t)near * near) >> 12) * 85 / 100 + Q12(.12)));
-    }
-    for (y = KS_HZN + 1; y < 240; y++) {         /* the lines to the vanishing point */
-        int32_t near = (y - KS_HZN) * 4096 / 92;
-        rgb_t c = kmix(ks_floor_bg(y), 0xff3df0u, Q12(.08) + near * 85 / 100);
-        for (k = -24; k <= 24; k += 2) {
-            x = ks_floor_x(k, y);
-            if (x >= 0 && x < 240) krect(x, y, 1, 1, c);
+        if (y >= KS_HIT) continue;
+        for (i = 0; i < 8; i++) {
+            int32_t xl = kh_round(ks_xu(i * 16, s)), xr = kh_round(ks_xu(i * 16 + 16, s));
+            rgb_t col = kmix(i % 2 ? 0x1a0a29u : 0x14071fu, LANE[i], Q12(.06) + near * 615 / 4096);
+            krect(xl, y, xr - xl, 1, kmix(fl, col, f));
         }
+        for (i = 0; i <= 8; i++)
+            krect(kh_round(ks_xu(i * 16, s)) - (i == 8), y, 1, 1, kmix(fl, i == 0 || i == 8 ? 0xd043b8u : BLACK_B[i] ? 0x4a1f6eu : 0x2b1340u, f));
     }
-    krect(0, KS_HZN, 240, 1, 0xff4fd8u);         /* the horizon */
-    krect(0, KS_HZN + 1, 240, 1, kmix(0x1a0638u, 0xff4fd8u, Q12(.45)));
-    for (i = 0; i < 7; i++) {                    /* the notes, in the game's lanes and colours */
-        int32_t p = (int32_t)((ms + OFFS[i]) % (uint32_t)P), z = 14 * 256 * (P - p) / P, yy = ks_floor_y(z);
-        int32_t s = (yy - KS_HZN) * 4096 / 92, w = (30 * s + 2048) >> 12, h = (11 * s + 2048) >> 12;
-        rgb_t col = kmix(ks_floor_bg(yy), LANE[LANES[i]], s < 1638 ? Q12(.3) + s * 7 / 4 : 4096);
-        if (w < 3) w = 3;
-        if (h < 2) h = 2;
-        x = ks_floor_x(2 * LANES[i] - 7, yy) - w / 2;
-        kpcap(x - 1, yy - h / 2 - 1, w + 2, h + 2, kmix(ks_floor_bg(yy), col, Q12(.5)));
-        kpcap(x, yy - h / 2, w, h, col);
-        if (w > 6) krect(x + h / 2, yy - h / 2 + 1, w - h, 1, kmix(col, K_WHITE, Q12(.6)));
+    for (k = -1; k <= 9; k++) {                  /* the beat lines, carried on across the floor: its grid moves with the beat */
+        int32_t z = (k * 4096 - beat) * 3 / 2, bar = (k + 8) % 4 == 0, near, s, xl, xr;
+        rgb_t fl, gcol;
+        if (z > KS_ZTOP || z < KS_ZBOT) continue;
+        y = kh_round(ks_Yq(z));
+        if (y <= KS_HZN + 1 || y >= 240) continue;
+        near = ks_near(y); fl = ks_fl(y); s = ks_s(y);
+        gcol = kmix(fl, K_GRID, (bar ? Q12(.30) : Q12(.16)) + near * (bar ? 55 : 40) / 100);
+        if (y >= KS_HIT) { krect(0, y, 240, 1, gcol); continue; }
+        xl = kh_round(ks_xu(0, s)); xr = kh_round(ks_xu(128, s));
+        krect(xl, y, xr - xl, 1, kmix(fl, bar ? 0x8a2f9eu : 0x3b1a58u, ks_f(y)));
+        krect(0, y, xl, 1, gcol);
+        krect(xr, y, 240 - xr, 1, gcol);
     }
-    ktextOut(&FONT_S, 120 - (ktw(&FONT_S, "A RHYTHM GAME FOR FM-1") >> 1), 50, "A RHYTHM GAME FOR FM-1", K_CYAN, 0x0b0220u, 1);
-    if ((ms / 500u) % 2u == 0u) ktextOut(&FONT_S, 120 - (ktw(&FONT_S, "PRESS PLAY") >> 1), 202, "PRESS PLAY", K_AMBER, 0x0b0220u, 1);
-    ktextOut(&FONT_S, 4, 223, "FX DEMO", K_MUTE, 0x05010du, 1);
-    ktextOut(&FONT_S, 236 - ktw(&FONT_S, version), 223, version, K_MUTE, 0x05010du, 1);
+    krect(0, KS_HZN, 240, 1, K_NEON);            /* the horizon */
+    krect(0, KS_HZN + 1, 240, 1, kmix(K_FLOOR0, K_NEON, Q12(.45)));
+    for (k = 1; k >= 0; k--)                     /* the notes: this loop's and the next's, chords barred */
+        for (i = 0; i < 16; i++) {
+            int32_t tq = KS_NOTES[i][0] * 2048 + k * 8 * 4096 - beat, z = tq * 3 / 2, sc, yq, yr, w, h, lane = KS_NOTES[i][1];
+            if (tq <= 0 || z > KS_ZTOP) continue;
+            sc = ks_scz(z); yq = ks_Yq(z); yr = kh_round(yq);
+            if (i + 1 < 16 && KS_NOTES[i + 1][0] == KS_NOTES[i][0]) {
+                int32_t xa = ks_xu(lane * 16 + 8, sc), xb = ks_xu(KS_NOTES[i + 1][1] * 16 + 8, sc);
+                krect(kh_round(xa), yr, kh_round(xb - xa), 1, kmix(ks_fl(yr), K_WHITE, Q12(.4) * ks_f(yr) / 4096));
+            }
+            w = (84 * KS_LW * sc / 100 + 2048) >> 12;
+            h = (8 * sc + 2048) >> 12;
+            if (h < 3) h = 3;
+            ks_gem_px(kh_round(ks_xu(lane * 16 + 8, sc) - w * 2048), kh_round(yq - h * 2048), w, h, LANE[lane], LANE[lane],
+                      Q12(.5), ks_fl(yr), ks_f(yr));
+            if (tq <= 4096 && !st[lane]) st[lane] = 1;
+        }
+    krect(KS_NL, KS_HIT - 2, 8 * KS_LW, 1, kmix(K_BG, K_CYAN, Q12(.4)));   /* the hit line */
+    krect(KS_NL, KS_HIT - 1, 8 * KS_LW, 2, K_CYAN);
+    for (k = 0; k >= -1; k--)                    /* the notes hitting it: a burst, the key lit */
+        for (i = 0; i < 16; i++) {
+            int32_t tq = KS_NOTES[i][0] * 2048 + k * 8 * 4096 - beat, age = -tq * KS_BEAT / 4096, lane = KS_NOTES[i][1];
+            if (tq > 0 || age >= 260) continue;
+            ks_burst(KS_NL + KS_LW * lane + 12, KS_HIT - 1, LANE[lane], age * 4096 / 260, 1);
+            if (age < 150) st[lane] = 2;
+        }
+    for (i = 0; i < 8; i++) ks_cap(39 + KS_LW * i, 218, 19, 11, LANE[i], st[i], 0);
+    ktextOut(&FONT_S, 120 - (ktw(&FONT_S, "A RHYTHM GAME FOR FM-1") >> 1), 50, "A RHYTHM GAME FOR FM-1", K_CYAN, K_OUT, 1);
+    if ((ms / 500u) % 2u == 0u) ktextOut(&FONT_S, 120 - (ktw(&FONT_S, "PRESS PLAY") >> 1), 186, "PRESS PLAY", K_AMBER, K_OUT, 1);
+    ktextOut(&FONT_S, 4, 0, "FX DEMO", K_DIM, K_OUT, 1);
+    ktextOut(&FONT_S, 236 - ktw(&FONT_S, version), 0, version, K_DIM, K_OUT, 1);
 }
 
-typedef struct { uint32_t sel, level, speed, spread, tone; int32_t best[8][2]; uint32_t mm_mode; } ks_menu_t;   /* best: acc10, -1 none */
+typedef struct { uint32_t sel, level, speed, spread, tone; int32_t best[8][2]; uint32_t mm_mode, ms; } ks_menu_t;   /* best: acc10, -1 none */
 static void ks_songs(const ks_menu_t *m, const char *tone)
 {
     static const char *const KN[4] = {"LEVEL", "TONE", "SPEED", "MIX"}, *const KM[4] = {"MODE", "TONE", "BPM", "MIX"};
     uint32_t total = KF_NSONG + 1u, top, r;
     char s[40], *p;
-    krect(0, 0, 240, 240, K_BG);
+    ks_night(m->ms);
     p = knum(s, m->sel + 1u, 2); p = kput(p, "/"); knum(p, total, 2);
     ks_header(0, "SONGS", m->spread ? "SPREAD" : s, -1, m->spread ? K_AMBER : K_DIM);
     top = m->sel < 2u ? 0u : m->sel - 2u;
@@ -259,7 +352,7 @@ static void ks_songs(const ks_menu_t *m, const char *tone)
     for (r = 0; r < 6u && top + r < total; r++) {
         uint32_t i = top + r, sel = i == m->sel;
         int32_t y = 22 + (int32_t)r * 20, best, medals, k;
-        if (sel) { krect(2, y - 1, 236, 19, K_SURF2); krect(2, y - 1, 3, 19, K_CYAN); }
+        if (sel) ks_selbar(2, y - 1, 236, 19);
         if (i == KF_NSONG) {
             ktext(&FONT_S, 9, y, "MI", K_CYAN); ktext(&FONT_S, 33, y, "MIDI MODE", sel ? K_CYAN : K_TEXT); ktextR(&FONT_S, 236, y, "DAW", K_DIM);
             continue;
@@ -273,14 +366,14 @@ static void ks_songs(const ks_menu_t *m, const char *tone)
         for (k = 0; k < 3; k++) {
             int32_t mx = 181 + k * 8, my = y + 6;
             if (k < medals) { krect(mx, my, 5, 5, K_AMBER); krect(mx + 1, my + 1, 2, 1, 0xffe2b0u); }
-            else { krect(mx, my, 5, 5, 0x3b3a66u); krect(mx + 1, my + 1, 3, 3, K_BG); }
+            else { krect(mx, my, 5, 5, 0x522e72u); krect(mx + 1, my + 1, 3, 3, K_BG); }
         }
         p = knum(s, (uint32_t)(best + 5) / 10u, 0); kput(p, "%");
         ktextR(&FONT_S, 236, y, s, sel ? K_TEXT : K_DIM);
     }
     if (m->sel == KF_NSONG) {                    /* MIDI MODE */
         int32_t x;
-        krect(2, 144, 236, 74, K_SURF);
+        ks_panel(2, 144, 236, 74);
         ktext(&FONT_S, 9, 148, "DAW > USB > FM-1", K_TEXT);
         ktext(&FONT_S, 9, 168, "CH 1 PLAY", K_CYAN); ktextR(&FONT_S, 231, 168, "2-6 10 BAND", K_VIOLET);
         x = 120 - (ktw(&FONT_S, "LIVE") + 10 + ktw(&FONT_S, "PREVIEW") + 10 + 6) / 2;
@@ -294,7 +387,7 @@ static void ks_songs(const ks_menu_t *m, const char *tone)
         uint32_t bpm = so->bpm_x100 * m->speed / 100u, secs, i, x, tw = 0;
         int32_t lo = so->oct0, hi = so->oct0, o = so->oct0;
         secs = (uint32_t)so->end * 60u * 100u / (bpm ? bpm : 1u);
-        krect(2, 144, 236, 74, K_SURF);
+        ks_panel(2, 144, 236, 74);
         p = kput(s, "BPM "); knum(p, (bpm + 50u) / 100u, 0);
         ktext(&FONT_S, 9, 148, s, K_TEXT);
         if (m->speed != 100u) { p = knum(s, m->speed, 0); kput(p, "%"); ktext(&FONT_S, 81, 148, s, K_AMBER); }
@@ -326,13 +419,13 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
     int32_t pos = kg.pos, boost = kg_boosting(), i, ocn;
     uint8_t st[8] = {0};
     char s[24], *p;
-    /* (the canvas starts as the background: vavehero.c's draw) */
-    krect(0, 0, 240, KH_TOPY, K_BG);
-    krect(0, KH_HIT, 240, 240 - KH_HIT, K_BG);
-    krect(0, KH_TOPY, KH_NL, KH_HIT - KH_TOPY, K_BG);
-    krect(KH_NR, KH_TOPY, 240 - KH_NR, KH_HIT - KH_TOPY, K_BG);
+    /* (the canvas starts as the background: vavehero.c's draw) the splash's sunset over the highway's far end, the
+     * highway on the floor, its neon horizon */
+    for (i = 0; i < (int32_t)(240u * KF_SKY_H); i++) cv_px[KF_SKY_Y * 240u + (uint32_t)i] = KF_SKY[i];
     ks_highway_bg(boost, kg.spread);
     ks_beat_lines(pos, boost);
+    krect(0, KH_TOPY, 240, 1, K_NEON);
+    krect(0, KH_TOPY + 1, 240, 1, kmix(K_FLOOR0, K_NEON, Q12(.45)));
     for (i = 0; i < 8; i++) if (keys_lit[i]) ks_beam(i, LANE[i]);
     for (i = (int32_t)kg.first; i < (int32_t)kg.n; i++) {   /* the holds' tails */
         const kf_cnote_t *n = &kg.notes[i];
@@ -342,7 +435,7 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
         if (z1 > KH_ZTOP_Q12) z1 = KH_ZTOP_Q12;
         if (z1 < 0) continue;
         dead = kg.nst[i] == KN_MISSED || kg.nst[i] == KN_BROKEN;
-        ks_tail(n->lane, z0 < 0 ? 0 : z0, z1, dead ? 0x4a4866u : LANE[n->lane], kg.nst[i] == KN_HELD);
+        ks_tail(n->lane, z0 < 0 ? 0 : z0, z1, dead ? 0x59406eu : LANE[n->lane], kg.nst[i] == KN_HELD);
     }
     for (i = (int32_t)kg.first; i < (int32_t)kg.n; i++) {   /* chords: a bar under the notes that start together */
         const kf_cnote_t *n = &kg.notes[i];
@@ -380,14 +473,14 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
     if (kg.judge && ms - kg.judge_ms < 450u) {
         const char *jt = KJ_TEXT[kg.judge];
         int32_t y = 150 - (int32_t)((ms - kg.judge_ms) * 4u / 450u);
-        ktextOut(&FONT_S, KH_CX - (ktw(&FONT_S, jt) >> 1), y, jt, kjcol(kg.judge), K_BG, 1);
+        ktextOut(&FONT_S, KH_CX - (ktw(&FONT_S, jt) >> 1), y, jt, kjcol(kg.judge), K_OUT, 1);
     }
     {
         int32_t prog = pos <= 0 ? 0 : pos / (((int32_t)so->end * KG_BEAT) >> 12);   /* Q12 (32-bit) */
         ks_header(num, so->title, right ? right : KS_LEVELS[kg.level], prog > 4096 ? 4096 : prog, right ? K_MUTE : K_AMBER);
     }
     knum(s, (uint32_t)kg.score, 6);
-    ktext(&FONT_S, 4, 21, s, K_TEXT);
+    ktextOut(&FONT_S, 4, 21, s, K_TEXT, K_OUT, 1);
     {                                            /* the OP meter */
         int32_t n = kg_ops_shown(), x0 = 120 - (6 * 12 + 5 * 2) / 2;
         rgb_t c = boost ? K_GOLD : K_AMBER;
@@ -395,7 +488,7 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
             int32_t x = x0 + i * 14, y = 22;
             char d[2] = {(char)('1' + i), 0};
             if (i < n) { krect(x, y, 12, 14, c); krect(x + 1, y + 1, 10, 1, kmix(c, K_WHITE, Q12(.6))); }
-            else { krect(x, y, 12, 14, 0x3b3a66u); krect(x + 1, y + 1, 10, 12, 0x14132au); }
+            else { krect(x, y, 12, 14, 0x522e72u); krect(x + 1, y + 1, 10, 12, 0x200d30u); }
             ktext(&FONT_S, x + 2, y - 1, d, i < n ? K_INK : K_MUTE);
         }
     }
@@ -409,11 +502,11 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
     if (ocn != 0) ktext(&FONT_S, 4, 92, ocn > 0 ? "OCT+" : "OCT-", (kg.oct == ocn || kg.level == 0 || kg.midi_used) ? K_VIOLET : K_CORAL);
     {
         int32_t banner_up = boost && pos - kg.boost_from < 3 * KG_BEAT;
-        if (kg.plus_ms && ms - kg.plus_ms < 700u && !banner_up) ktextOut(&FONT_S, 108, 38, "+OP", K_AMBER, K_BG, 1);
+        if (kg.plus_ms && ms - kg.plus_ms < 700u && !banner_up) ktextOut(&FONT_S, 108, 38, "+OP", K_AMBER, K_OUT, 1);
         if (banner_up) {
             krect(56, 44, 128, 30, kmix(K_BG, K_BLACK, Q12(.3)));
             krect(56, 43, 128, 1, K_GOLD); krect(56, 74, 128, 1, K_GOLD);
-            ktextOut(&FONT_L, KH_CX - (ktw(&FONT_L, "OP BOOST") >> 1), 42, "OP BOOST", K_GOLD, K_BG, 1);
+            ktextOut(&FONT_L, KH_CX - (ktw(&FONT_L, "OP BOOST") >> 1), 42, "OP BOOST", K_GOLD, K_OUT, 1);
         }
     }
     {
@@ -431,7 +524,7 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
     if (kg.done) ks_banner(kg.full ? "FULL COMBO" : "CLEAR", 0, kg.full ? K_GOLD : K_GREEN, 99);
 }
 
-static void ks_results(const char *num)
+static void ks_results(const char *num, uint32_t ms)
 {
     const kf_song_t *so = kg.song;
     char s[24], *p;
@@ -440,9 +533,9 @@ static void ks_results(const char *num)
     const rgb_t COL[4] = {K_CYAN, K_BLUE, K_VIOLET, K_CORAL};
     int32_t i, x, m;
     char g[2] = {(char)kg.grade, 0};
-    krect(0, 0, 240, 240, K_BG);
+    ks_night(ms);
     ks_header(num, so->title, KS_LEVELS[kg.level], -1, K_AMBER);
-    ktextOut(&FONT_L, 10, 14, g, kg.grade == 'S' ? K_GOLD : K_AMBER, 0x3a2606u, 2);
+    ktext_chrome(&FONT_L, 8, 14, g, 2);           /* the grade in the logo's chrome */
     ktext(&FONT_S, 62, 24, "ACCURACY", K_DIM);
     p = knum(s, (uint32_t)kg.acc10 / 10u, 0); p = kput(p, "."); p = knum(p, (uint32_t)kg.acc10 % 10u, 0); kput(p, "%");
     ktext(&FONT_L, 62, 38, s, K_TEXT);
@@ -452,12 +545,12 @@ static void ks_results(const char *num)
     for (i = 0; i < 4; i++) {
         int32_t y = 96 + i * 18;
         ktext(&FONT_S, 4, y, NAME[i], COL[i]);
-        krect(70, y + 7, 128, 4, 0x1d1c38u);
+        krect(70, y + 7, 128, 4, 0x2b1440u);
         if (V[i] && kg.total) { int32_t w = (128 * V[i] + kg.total / 2) / kg.total; krect(70, y + 7, w < 3 ? 3 : w, 4, COL[i]); }
         knum(s, (uint32_t)V[i], 0);
         ktextR(&FONT_S, 236, y, s, K_TEXT);
     }
-    krect(2, 172, 236, 46, K_SURF);
+    ks_panel(2, 172, 236, 46);
     ktext(&FONT_S, 9, 176, "MAX COMBO", K_DIM);
     knum(s, (uint32_t)kg.max_combo, 0);
     ktextR(&FONT_S, 231, 176, s, K_TEXT);
@@ -476,7 +569,7 @@ static void ks_results(const char *num)
 static void ks_toast(const char *t)
 {
     int32_t w = ktw(&FONT_S, t) + 20, x = 120 - w / 2;
-    krect(x, 96, w, 28, K_LINE);
+    krect(x, 96, w, 28, kmix(K_SURF2, K_NEON, Q12(.6)));
     krect(x + 1, 97, w - 2, 26, K_SURF2);
     ktextC(&FONT_S, 120, 102, t, K_TEXT);
 }

@@ -276,7 +276,7 @@ static void draw_midi_mode(void)
     static const char *const KM[4] = {"MODE", "TONE", "BPM", "MIX"};
     char s[32], *p;
     uint32_t i;
-    krect(0, 0, 240, 240, K_BG);
+    ks_night(fm1_ms);
     ks_header(0, "MIDI MODE", "LIVE", -1, K_CYAN);
     if (clk_bpm_x100 && fm1_ms - clk_t0 < 3000u) { p = knum(s, (clk_bpm_x100 + 50u) / 100u, 0); kput(p, " BPM"); ktext(&FONT_S, 4, 21, s, K_GREEN); }
     else ktext(&FONT_S, 4, 21, "NO CLOCK", K_DIM);
@@ -309,7 +309,7 @@ static void draw(void)
     knum(num, (scr == SCR_PLAY || scr == SCR_RESULTS ? kg.idx : set.sel) + 1u, 2);
     if (scr == SCR_SPLASH) ks_splash(fm1_ms, VER);
     else if (scr == SCR_SONGS) {
-        m.sel = set.sel; m.level = set.level; m.speed = set.speed; m.spread = set.spread; m.tone = set.tone; m.mm_mode = 0;
+        m.sel = set.sel; m.level = set.level; m.speed = set.speed; m.spread = set.spread; m.tone = set.tone; m.mm_mode = 0; m.ms = fm1_ms;
         for (i = 0; i < KF_NSONG && i < 8u; i++) { m.best[i][0] = best_of(i, 0); m.best[i][1] = best_of(i, 1); }
         ks_songs(&m, tone_name());
     } else if (scr == SCR_PLAY) {
@@ -321,7 +321,7 @@ static void draw(void)
         }
         ks_play(fm1_ms, lit, led, num, demo ? "DEMO" : kg.auto_on ? "AUTO" : 0);
         if (paused) ks_banner("PAUSE", "PLAY GOES ON, HOME QUITS", K_AMBER, 92);
-    } else if (scr == SCR_RESULTS) ks_results(num);
+    } else if (scr == SCR_RESULTS) ks_results(num, fm1_ms);
     else draw_midi_mode();
     if (toast_ms && fm1_ms - toast_ms < 900u) ks_toast(toast_s);
     else toast_ms = 0;
