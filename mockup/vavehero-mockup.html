@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="no">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1840">
@@ -55,22 +55,22 @@
 <body>
 <div class="page">
   <header>
-    <div class="brand"><h1><img src="../assets/vavehero-logo.png" alt="VaveHero" width="288" height="60"></h1><div class="sub">Rytmespill for M-VAVE FM-1 · konsept-mockup</div></div>
-    <div class="tags"><span class="tag">Dinghy 0.5-app, samme familie som RoboSeq og Star Distroyer</span><span class="tag">Ikke et offisielt M-VAVE-produkt</span></div>
+    <div class="brand"><h1><img src="../assets/vavehero-logo.png" alt="VaveHero" width="288" height="60"></h1><div class="sub">A rhythm game for the M-VAVE FM-1 · concept mockup</div></div>
+    <div class="tags"><span class="tag">A Dinghy 0.5 app, the same family as RoboSeq and Star Distroyer</span><span class="tag">Not an official M-VAVE product</span></div>
   </header>
 
   <div class="row1">
     <div>
-      <svg id="device" width="904" height="566" viewBox="0 0 904 566" role="img" aria-label="FM-1 med VaveHero på skjermen"></svg>
+      <svg id="device" width="904" height="566" viewBox="0 0 904 566" role="img" aria-label="An FM-1 with VaveHero on its screen"></svg>
       <div class="chips">
-        <span class="chip"><span class="led lit"></span>Tangent-LED lyser: trykk nå</span>
-        <span class="chip"><span class="led dim"></span>Glød: neste tone</span>
-        <span class="chip"><span class="bracket"></span>Spillvinduet på skjermen, én oktav</span>
+        <span class="chip"><span class="led lit"></span>Key LED lit: press now</span>
+        <span class="chip"><span class="led dim"></span>Glow: the next note</span>
+        <span class="chip"><span class="bracket"></span>The play window on the screen, one octave</span>
       </div>
     </div>
     <div>
       <div class="bezel" id="bigwrap"><canvas id="big" width="240" height="240"></canvas></div>
-      <div class="cap">Skjermen i full oppløsning, 240 × 240 px, med Dinghys egne Terminus-fonter (16 og 32 px). Forstørret 2×.</div>
+      <div class="cap">The screen at full resolution, 240 × 240 px, with Dinghy's own Terminus fonts (16 and 32 px). Enlarged 2×.</div>
     </div>
     <ol class="legend" id="legend"></ol>
   </div>
@@ -78,29 +78,29 @@
   <div class="row2">
     <div class="screens">
       <div class="scard"><div class="sbez"><canvas id="songs" width="240" height="240"></canvas></div>
-        <h3>Låtvalg</h3><p>SELECT blar, KNOB 1 velger nivå, PLAY starter. Medaljer og beste prosent lagres i flash.</p></div>
+        <h3>Song select</h3><p>SELECT scrolls, KNOB 1 picks the level, PLAY starts. Medals and the best percentage are kept in flash.</p></div>
       <div class="scard"><div class="sbez"><canvas id="boost" width="240" height="240"></canvas></div>
-        <h3>OP BOOST</h3><p>Seks operatorer fulle og FX trykket: banen gløder, poengene dobles, og lyden åpner seg med mer modulasjon.</p></div>
+        <h3>OP BOOST</h3><p>Six operators full and FX pressed: the highway glows, the score doubles, and the sound opens up with more modulation.</p></div>
       <div class="scard"><div class="sbez"><canvas id="results" width="240" height="240"></canvas></div>
-        <h3>Resultat</h3><p>Karakter, treff og timing. Snittavviket finjusterer latenskalibreringen.</p></div>
+        <h3>Results</h3><p>Grade, hits and timing. The average offset fine-tunes the latency calibration.</p></div>
     </div>
     <div class="controls">
-      <h2>Kontroller under spill</h2>
+      <h2>Controls during play</h2>
       <div class="grid">
-        <div class="ctl"><span class="k">HVITE TANGENTER</span><span>Spill tonene. LED-en viser hva som kommer.</span></div>
-        <div class="ctl"><span class="k">FX</span><span>Utløs OP BOOST når måleren er full.</span></div>
-        <div class="ctl"><span class="k">OCT− / OCT+</span><span>Flytt spillvinduet en oktav når låta ber om det.</span></div>
-        <div class="ctl"><span class="k">PLAY</span><span>Pause og fortsett. Blinker i takt.</span></div>
-        <div class="ctl"><span class="k">KNOB 1</span><span>SWEEP: vri inn i målbuen på sweep-partier.</span></div>
-        <div class="ctl"><span class="k">HOME</span><span>Tilbake til låtvalget.</span></div>
-        <div class="ctl"><span class="k">KNOB 2</span><span>TONE: FM-lyden på din stemme.</span></div>
-        <div class="ctl"><span class="k">SELECT</span><span>Bla i låter og menyer.</span></div>
-        <div class="ctl"><span class="k">KNOB 3</span><span>SPEED: øvetempo, 50–100 %.</span></div>
-        <div class="ctl"><span class="k">REC</span><span>Spill inn din egen låt som et nytt notekart.</span></div>
-        <div class="ctl"><span class="k">KNOB 4</span><span>MIX: din stemme mot kompet.</span></div>
-        <div class="ctl"><span class="k">MASTER</span><span>Volum.</span></div>
+        <div class="ctl"><span class="k">WHITE KEYS</span><span>Play the notes. The LED shows what is coming.</span></div>
+        <div class="ctl"><span class="k">FX</span><span>Set off OP BOOST when the meter is full.</span></div>
+        <div class="ctl"><span class="k">OCT− / OCT+</span><span>Move the play window an octave when the song asks for it.</span></div>
+        <div class="ctl"><span class="k">PLAY</span><span>Pause and go on. Blinks in time.</span></div>
+        <div class="ctl"><span class="k">KNOB 1</span><span>SWEEP: turn into the target arc in sweep parts.</span></div>
+        <div class="ctl"><span class="k">HOME</span><span>Back to song select.</span></div>
+        <div class="ctl"><span class="k">KNOB 2</span><span>TONE: the FM sound of your voice.</span></div>
+        <div class="ctl"><span class="k">SELECT</span><span>Scroll songs and menus.</span></div>
+        <div class="ctl"><span class="k">KNOB 3</span><span>SPEED: practice tempo, 50–100 %.</span></div>
+        <div class="ctl"><span class="k">REC</span><span>Record your own song as a new note chart.</span></div>
+        <div class="ctl"><span class="k">KNOB 4</span><span>MIX: your voice against the backing.</span></div>
+        <div class="ctl"><span class="k">MASTER</span><span>Volume.</span></div>
       </div>
-      <div class="note">Kompet (trommer, bass, akkorder) og stemmen din spilles av appens egen motor, slik som i RoboSeq og SkurkyMello. Bare de hvite tangentene spilles. De svarte vises, men har ingen funksjon. Med SPREAD brukes annenhver hvit tangent, for store fingre. LED-ene er hvite og har to nivåer (<code>fm1_led_key</code> og <code>fm1_led_key_glow</code>), så farge finnes bare på skjermen.</div>
+      <div class="note">The backing (drums, bass, chords) and your voice are played by the app's own engine, as in RoboSeq and SkurkyMello. Only the white keys are played. The black ones are shown but do nothing. With SPREAD, every other white key is used, for big fingers. The LEDs are white and have two levels (<code>fm1_led_key</code> and <code>fm1_led_key_glow</code>), so colour exists only on the screen.</div>
     </div>
   </div>
 </div>
@@ -453,7 +453,7 @@ function drawDevice(svg, screenURL) {
     if (stock) stxt(svg, cx, y + 64, stock, { 'font-size': 8.5, fill: '#6c6c76' });
   }
   el('path', { d: 'M264 489 v7 H595 v-7', fill: 'none', stroke: '#5fe3ff', 'stroke-width': 2 }, svg);
-  stxt(svg, 429.5, 524, 'SPILLVINDU C4–C5', { 'font-size': 12, 'font-weight': 800, fill: '#5fe3ff', 'letter-spacing': 1.5 });
+  stxt(svg, 429.5, 524, 'PLAY WINDOW C4–C5', { 'font-size': 12, 'font-weight': 800, fill: '#5fe3ff', 'letter-spacing': 1.5 });
 
   /* encoders */
   const ENC = [['MASTER', 95, 101, 40, true], ['SELECT', 186.5, 101, -60], ['PRESETS', 95, 191, 120], ['ALGORITHM', 186.5, 191, -20],
@@ -472,7 +472,7 @@ function drawDevice(svg, screenURL) {
   /* buttons: the 2 x 6 block and OCT */
   const IDS = ['FX', 'SEL', 'ENV', 'LFO', 'EDIT', 'GLO', 'HOME', 'SAVE', 'ARP', 'SEQ', 'PLAY', 'REC'];
   const BX = [500, 554, 608, 661, 715, 768], BY = [177, 231];
-  const GAME = { FX: ['BOOST', '#ffb347'], HOME: ['MENY', '#5fe3ff'], PLAY: ['PAUSE', '#5fe3ff'], REC: ['SPILL INN', '#5fe3ff'] };
+  const GAME = { FX: ['BOOST', '#ffb347'], HOME: ['MENU', '#5fe3ff'], PLAY: ['PAUSE', '#5fe3ff'], REC: ['RECORD', '#5fe3ff'] };
   IDS.forEach((id, i) => {
     const x = BX[i % 6], y = BY[Math.floor(i / 6)], cx = x + 18;
     el('rect', { x, y, width: 36, height: 36, rx: 5, fill: '#2b2b31', stroke: '#0a0a0c' }, svg);
@@ -491,7 +491,7 @@ function drawDevice(svg, screenURL) {
     if (on) el('circle', { cx: x + 7, cy: 261, r: 4.5, fill: '#f4f4ff', opacity: .35, filter: 'url(#b3)' }, svg);
     el('circle', { cx: x + 7, cy: 261, r: 2, fill: on ? 'rgba(244,244,255,0.5)' : '#1a1a1e' }, svg);
   }
-  stxt(svg, 140.5, 295, 'SKIFT VINDU', { 'font-size': 8, 'font-weight': 800, fill: '#5fe3ff', 'letter-spacing': .4 });
+  stxt(svg, 140.5, 295, 'SHIFT WINDOW', { 'font-size': 8, 'font-weight': 800, fill: '#5fe3ff', 'letter-spacing': .4 });
 
   /* the screen */
   el('rect', { x: 247, y: 59, width: 201, height: 201, rx: 10, fill: '#0b0b0e', stroke: '#000' }, svg);
@@ -501,14 +501,14 @@ function drawDevice(svg, screenURL) {
 
 /* ================================================================ the legend: marker positions in screen pixels */
 const LEGEND = [
-  [150, 9,   '<b>Låt og fremdrift.</b> Nummer, tittel og nivå i toppstripa, som på FM-1s egne skjermer. Linja under er hvor langt i låta du er.'],
-  [184, 29,  '<b>OP-måler og multiplikator.</b> Seks operatorer fylles av feilfrie fraser. Full måler: trykk <b>FX</b> for OP BOOST.'],
-  [190, 80,  '<b>Oktavskift.</b> Trykk OCT+ når båndet når trefflinja, så flytter spillvinduet seg en oktav opp.'],
-  [22, 96,   '<b>Combo.</b> Hver tiende treff på rad øker multiplikatoren, opp til ×4.'],
-  [232, 100, '<b>Sweep-parti.</b> Vri KNOB 1 inn i målbuen og hold den der. Det styrer FM-modulasjonen i sanntid.'],
-  [160, 140, '<b>Notebanen.</b> Én bane per hvit tangent, og bare de hvite spilles. Haler er toner du holder, streker binder akkorder.'],
-  [226, 199, '<b>Trefflinja</b> over to rader kapseltangenter, formet som FM-1s egne. De svarte vises der de sitter, men har ingen funksjon.'],
-  [118, 231, '<b>Knotterad.</b> Hva KNOB 1–4 gjør akkurat nå, i knottenes farger.'],
+  [150, 9,   '<b>Song and progress.</b> Number, title and level in the top strip, as on the FM-1\'s own screens. The line under it is how far into the song you are.'],
+  [184, 29,  '<b>OP meter and multiplier.</b> Six operators, filled by flawless phrases. A full meter: press <b>FX</b> for OP BOOST.'],
+  [190, 80,  '<b>Octave shift.</b> Press OCT+ when the band reaches the hit line, and the play window moves an octave up.'],
+  [22, 96,   '<b>Combo.</b> Every tenth hit in a row raises the multiplier, up to ×4.'],
+  [232, 100, '<b>Sweep part.</b> Turn KNOB 1 into the target arc and hold it there. It drives the FM modulation in real time.'],
+  [160, 140, '<b>The note highway.</b> One lane per white key, and only the white keys are played. Tails are notes you hold, bars join chords.'],
+  [226, 199, '<b>The hit line</b> above two rows of capsule keys, shaped like the FM-1\'s own. The black keys are shown where they sit but do nothing.'],
+  [118, 231, '<b>Knob row.</b> What KNOB 1–4 do right now, in the knobs\' colours.'],
 ];
 
 /* ================================================================ go */

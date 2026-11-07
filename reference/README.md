@@ -1,62 +1,62 @@
-# Referansen
+# The reference
 
-`vavehero.html` er VaveHero i nettleseren: én fil, uten nettverk og uten byggesteg. Til Dinghy-porten finnes, er den
-fasit for hvordan VaveHero føles, times og høres. Når C-koden og HTML-en er uenige, vinner HTML-en, slik som i
-RoboSeq og SkurkyMello.
+`vavehero.html` is VaveHero in the browser: one file, with no network and no build step. Until the Dinghy port exists,
+it is the ground truth for VaveHero's feel, timing and sound. When the C code and the HTML disagree, the HTML wins,
+as in RoboSeq and SkurkyMello.
 
-| Fil | Versjon | SHA-256 |
+| File | Version | SHA-256 |
 |---|---|---|
-| `vavehero.html` | REF 0.1.11 (tittelskjermens synthwave i hele spillet: banen på neongulvet under solnedgangen, tittelskjermens gulv er spillets bane, menyene i nattehimmelen, krom på de store ordene, D10) | `38e17f2ce67eed9d923cd746311eb84e99cc4dd385ee978475886f958798145c` |
+| `vavehero.html` | REF 0.1.12 (the page, its help and its import report in English; the look of D10) | `af0eff493867057e5c0474ecddd3d6a1048b8534625a46c52fddf16d8c291dbc` |
 
-En ny HTML er en ny referanse og får en egen commit med ny SHA-256 her.
+A new HTML is a new reference and gets its own commit with a new SHA-256 here.
 
-## Kjør
+## Run
 
-Åpne `vavehero.html` i en nettleser. Chrome og Edge har WebMIDI, de andre spiller med tastaturet og panelet. Trykk
-Enter (PLAY) på tittelskjermen, eller mellomrom (FX) for DEMO-en, velg låt med pil opp og ned, og nivå med pil venstre og høyre.
+Open `vavehero.html` in a browser. Chrome and Edge have WebMIDI; the others play with the computer keyboard and the
+panel. Press Enter (PLAY) on the title screen, or Space (FX) for the DEMO, choose a song with the up and down arrows,
+and the level with the left and right arrows.
 
-To spillere på én maskin: åpne fila i to vinduer, velg **To vinduer** i begge, og gi hvert vindu sitt eget
-MIDI-keyboard. P1 velger låt og starter.
+Two players on one machine: open the file in two windows, choose **Two windows** in both, and give each window its own
+MIDI keyboard. P1 chooses the song and starts.
 
 ## Test
 
 ```sh
-node tests/reference.cjs          # krever Playwright med Chromium; skjermbilder i build/test/
+node tests/reference.cjs          # requires Playwright with Chromium; screenshots in build/test/
 ```
 
-Testen ser at tittelskjermen viser bildet sitt, og at FX starter DEMO-en (ENGINE TOUR fra takt 41) og PLAY
-avslutter den. Den spiller begge låtene på autospill og krever 100 % uten bom, begge oktavskiftene og OP BOOST. Den sjekker
-at ingen notekart har svarte tangenter, og at en svart tangent under spill blir ignorert (D1). Med SPREAD (D2)
-sjekker den 100 % på autospill, at LED-ene bare lyser på SPREAD-tangentene, og at en tangent mellom to brukte ikke
-gjør noe. Den sjekker
-også at et trykk 80 ms for sent gir GOOD, at feil tangent bryter comboen, kampen mot boten, og to vinduer over
-LINK (roller, start, klokke, poeng og stopp). De to vinduene starter med samme ID med vilje, og må trekke på nytt
-for å koble opp.
+The test checks that the title screen shows its image, and that FX starts the DEMO (ENGINE TOUR from bar 41) and PLAY
+ends it. It plays both songs on autoplay and requires 100 % with no misses, both octave shifts and OP BOOST. It checks
+that no note chart has black keys, and that a black key during play is ignored (D1). With SPREAD (D2) it checks 100 % on
+autoplay, that the LEDs light only on the SPREAD keys, and that a key between two used ones does nothing. It also
+checks that a press 80 ms late gives GOOD, that a wrong key breaks the combo, the match against the bot, and two
+windows over LINK (roles, start, clock, score and stop). The two windows start with the same ID on purpose, and must
+draw again to connect.
 
-Låtene (D3): de innebygde MIDI-filene gir samme notekart og oktavskift som før. En testlåt i E-moll (format 0,
-running status) blir lastet inn via filvelgeren, transponert, får oktavskift og spilles 100 %. Rapporten nevner det
-som er tatt ut eller ignorert. Live-MIDI går til riktig del per kanal, og malen lastes ned identisk med
-`songs/neon-carrier.mid`. Lyden (D4): begge låtene rendres offline i 20 sekunder uten klipping, og WAV-filene havner
-i `build/test/`.
+The songs (D3): the built-in MIDI files give the same note charts and octave shifts as before. A test song in E minor
+(format 0, running status) is loaded through the file picker, transposed, gets octave shifts and is played 100 %. The
+report mentions what has been removed or ignored. Live MIDI goes to the right part per channel, and the template
+downloads identical to `songs/neon-carrier.mid`. The sound (D4): both songs are rendered offline for 20 seconds without
+clipping, and the WAV files end up in `build/test/`.
 
-MIDI MODE (D5): den åpnes fra siste rad i låtlista, og en MIDI-klokke på 120 BPM gir 120 BPM og riktig
-pulstelling. I LIVE lyser kanal 1, 2 og 10, og E4 fra DAW-en tenner E4-LED-en. Tangenten C4 sendes ut på kanal 1. I
-PREVIEW havner kanal 1 én takt foran, med oktavskift og holdtone. C#4 vises som varsel, og autospill treffer begge
-tonene og skiftet. HOME går ut, og MIDI MODE holdes stengt mens LINK er på.
+MIDI MODE (D5): it opens from the last row of the song list, and a MIDI clock at 120 BPM gives 120 BPM and the right
+pulse count. In LIVE, channels 1, 2 and 10 light up, and E4 from the DAW lights the E4 LED. The key C4 is sent out on
+channel 1. In PREVIEW, channel 1 ends up one bar ahead, with an octave shift and a hold note. C#4 is shown as a
+warning, and autoplay hits both notes and the shift. HOME exits, and MIDI MODE is kept closed while LINK is on.
 
-Lydprøvene: ENGINE TOUR og CHROME HORIZON importeres uten advarsler. ENGINE TOUR bruker alle 29 patcher og
-trommesett, og CHROME HORIZON (D-moll) flyttes 5 halvtoner ned til hvite tangenter. Begge spilles 100 % på
-autospill, i to vinduer samtidig, og rendres uten klipping.
+The sound demos: ENGINE TOUR and CHROME HORIZON import without warnings. ENGINE TOUR uses all 29 patches and drum kits,
+and CHROME HORIZON (D minor) is moved 5 semitones down to white keys. Both are played 100 % on autoplay, in two windows
+at the same time, and rendered without clipping.
 
-GRIT (D7): ved GRIT 70 dukker bandet til omtrent halve nivået rett etter kicket, sammenlignet med GRIT 0.
-CHROME HORIZON klipper verken på GRIT 0 eller 100, og innstillingen når motoren og sidepanelet.
+GRIT (D7): at GRIT 70 the band ducks to about half the level right after the kick, compared with GRIT 0.
+CHROME HORIZON clips neither at GRIT 0 nor at 100, and the setting reaches the engine and the side panel.
 
-Patcher (D6): de innebygde låtene bytter patch der nøkkelnotene sier det. Alle 22 patcher og trommesett høres alene,
-og ingen klipper. Testlåtas nøkkelnoter havner i rapporten, og den uten patch flagges. Live flytter nøkkelnoter kanalens
-patch, mens Program Change, OP-noten og en nøkkelnote uten patch ikke endrer noe. OP-fraser kommer fra note 11
-på kanal 1, ikke CC.
+Patches (D6): the built-in songs change patch where the keyswitch notes say so. All 22 patches and drum kits are heard
+alone, and none of them clips. The test song's keyswitch notes end up in the report, and the one without a patch is
+flagged. Live, keyswitch notes change the channel's patch, while Program Change, the OP note and a keyswitch note
+without a patch change nothing. OP phrases come from note 11 on channel 1, not CC.
 
-## Låtene
+## The songs
 
-`window.VAVEHERO_SONGS` i HTML-en er de innebygde MIDI-filene i base64. `python3 tools/songs.py` lager `songs/*.mid`
-og oppdaterer blokka. HTML-en får da ny SHA-256.
+`window.VAVEHERO_SONGS` in the HTML holds the built-in MIDI files in base64. `python3 tools/songs.py` makes
+`songs/*.mid` and updates the block. The HTML then gets a new SHA-256.

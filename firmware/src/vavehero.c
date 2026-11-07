@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Copyright (C) 2026 Joakim (joakimskurk); from Dinghy's dinghy.c by zvenson */
-/* VaveHero: a rhythm game for the M-VAVE FM-1 (README.md, docs/konsept.md). The notes fall down a highway, a lane
+/* VaveHero: a rhythm game for the M-VAVE FM-1 (README.md, docs/concept.md). The notes fall down a highway, a lane
  * a white key; you play them on the keys, the key LEDs show what comes. The browser reference
  * (reference/vavehero.html) is the fasit for how it plays, looks and sounds; this is it on the FM-1.
  *

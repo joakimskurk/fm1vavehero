@@ -148,11 +148,11 @@ async function choose(page, song, level) {
   await a.page.waitForFunction(() => window.KF.SONGS.length === 5, null, { timeout: 5000 });
   const imp = await a.page.evaluate(() => { const s = window.KF.SONGS[4]; return { title: s.title, T: s.transpose, octs: s.octs.length, notes: s.melody.length, report: document.getElementById('report').textContent }; });
   check(imp.title === 'EM DRIVE' && imp.T === -5, `EM DRIVE is transposed 5 up onto white keys: ${JSON.stringify({ title: imp.title, T: imp.T })}`);
-  check(imp.octs >= 2 && /svarte tangenter/.test(imp.report) && /mer enn tre/.test(imp.report), `its climb gets OCT shifts (${imp.octs}), the chromatic note and the fourth chord note are reported`);
-  check(/Kanal 16/.test(imp.report) && /Kanal 7/.test(imp.report), 'channels 7 and 16 are reported as not played');
-  check(/Patcher: BASS FM BASS fra takt 1, PULSE fra takt 5/.test(imp.report) && /uten patch: kanal 2, note 7/.test(imp.report), 'the keyswitches are reported, and the one with no patch is flagged');
+  check(imp.octs >= 2 && /black keys/.test(imp.report) && /more than three/.test(imp.report), `its climb gets OCT shifts (${imp.octs}), the chromatic note and the fourth chord note are reported`);
+  check(/Channel 16/.test(imp.report) && /Channel 7/.test(imp.report), 'channels 7 and 16 are reported as not played');
+  check(/Patches: BASS FM BASS from bar 1, PULSE from bar 5/.test(imp.report) && /without a patch: channel 2, note 7/.test(imp.report), 'the keyswitches are reported, and the one with no patch is flagged');
   const emPh = await a.page.evaluate(() => window.KF.SONGS[4].phrases.map(r => r.a + '-' + r.b).join());
-  check(emPh === '16-24' && /1 OP-frase fra OP-noten/.test(imp.report), 'the OP note (B-1 on channel 1, held) makes the OP phrase: ' + emPh);
+  check(emPh === '16-24' && /1 OP phrase from the OP note/.test(imp.report), 'the OP note (B-1 on channel 1, held) makes the OP phrase: ' + emPh);
   await a.page.evaluate(() => window.KF.setAuto(true));
   await choose(a.page, 4, 1); await a.page.keyboard.press('Enter');
   await waitResults(a.page);

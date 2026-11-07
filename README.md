@@ -2,117 +2,118 @@
 
 # VaveHero for M-VAVE FM-1
 
-Et rytmespill i Guitar Hero-sjangeren for FM-1. Tonene glir ned en notebane, du spiller dem på de
-hvite tangentene, og LED-ene i tangentene viser hva som kommer. To spillere med hvert sitt FM-1 kan spille mot
-hverandre. En Dinghy 0.5-app, i samme familie som [RoboSeq](https://github.com/joakimskurk/fm1roboseq),
-[Star Distroyer](https://github.com/joakimskurk/fm1stardistroyer) og [SkurkyMello](https://github.com/joakimskurk/fm1mello).
+A rhythm game in the Guitar Hero genre for the FM-1. The notes slide down a note highway, you play them on the
+white keys, and the LEDs in the keys show what is coming. Two players, each with their own FM-1, can play against
+each other. A Dinghy 0.5 app, in the same family as [RoboSeq](https://github.com/joakimskurk/fm1roboseq),
+[Star Distroyer](https://github.com/joakimskurk/fm1stardistroyer) and [SkurkyMello](https://github.com/joakimskurk/fm1mello).
 
-> **Status: nettleserreferanse 0.1 og firmware 0.1 under arbeid, begge spillbare.** Firmwaren har spillet, alle fire
-> låtene, lydmotoren og MIDI MODE LIVE. Den er testet på verten og målt i fm1-emu, men ikke prøvd på et ekte FM-1 ennå.
-> Planen står i [ROADMAP.md](ROADMAP.md).
+> **Status: browser reference 0.1 and firmware 0.1 in progress, both playable.** The firmware has the game, all four
+> songs, the audio engine and MIDI MODE LIVE. It is tested on the host and measured in fm1-emu, but not yet tried on a
+> real FM-1. The plan is in [ROADMAP.md](ROADMAP.md).
 
-<p align="center"><img src="docs/screens/splash.gif" width="360" alt="Tittelskjermen: kromlogoen VAVEHERO over en stripete sol og fjell, og spillets bane som veien inn i solnedgangen, med notene på vei mot deg"></p>
+<p align="center"><img src="docs/screens/splash.gif" width="360" alt="The title screen: the chrome logo VAVEHERO over a striped sun and mountains, and the game's highway as the road into the sunset, with the notes on their way towards you"></p>
 
-<p align="center"><img src="docs/screens/reference-page.png" width="820" alt="Referansen i nettleseren: skjermen og FM-1-panelet med tangent-LED-er"></p>
+<p align="center"><img src="docs/screens/reference-page.png" width="820" alt="The reference in the browser: the screen and the FM-1 panel with key LEDs"></p>
 
-## Prøv det
+## Try it
 
-Åpne [`reference/vavehero.html`](reference/vavehero.html) i en nettleser og trykk Enter. De hvite tangentene C4–C5 ligger
-på `A S D F G H J K`, OCT− og OCT+ på `Z` og `X`, og FX (OP BOOST) på mellomromstasten. `Q` (GLO) slår på
-SPREAD, som legger banene på annenhver hvit tangent for store fingre. Du kan også bruke et
-MIDI-keyboard (Chrome og Edge), eller klikke og ta på panelet. Mer i [reference/README.md](reference/README.md).
+Open [`reference/vavehero.html`](reference/vavehero.html) in a browser and press Enter. The white keys C4–C5 are
+on `A S D F G H J K`, OCT− and OCT+ on `Z` and `X`, and FX (OP BOOST) on the space bar. `Q` (GLO) turns on
+SPREAD, which puts the lanes on every other white key for big fingers. You can also use a
+MIDI keyboard (Chrome and Edge), or click and touch the panel. More in [reference/README.md](reference/README.md).
 
-## Lag dine egne låter
+## Make your own songs
 
-En låt er en vanlig MIDI-fil fra en DAW. Hvert instrument har sin kanal (2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS,
-10 trommer), og spillsporet ligger på kanal 1. Lydmotoren spiller det hele i synthwave-drakt, og hvert
-instrument har flere patcher du velger med nøkkelnoter (note 0–11) på kanalen. GRIT-innstillingen og de skitne
-patchene (DIRT BASS, FUZZ LEAD, DIRT-trommer og flere) gir den franske, skitne lyden. Last fila inn i
-referansen, så får du en rapport og kan spille den med en gang. Koble DAW-en til med WebMIDI, så hører du låta
-gjennom lydmotoren mens du lager den. Alt står i [docs/songs.md](docs/songs.md), og malene ligger i [songs/](songs/).
+A song is an ordinary MIDI file from a DAW. Each instrument has its own channel (2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS,
+10 drums), and the play track is on channel 1. The audio engine plays it all in synthwave style, and each
+instrument has several patches you select with keyswitch notes (notes 0–11) on the channel. The GRIT setting and the
+dirty patches (DIRT BASS, FUZZ LEAD, DIRT drums and more) give the dirty French sound. Load the file into the
+reference, and you get a report and can play it right away. Connect the DAW with WebMIDI, and you hear the song
+through the audio engine while you make it. It is all in [docs/songs.md](docs/songs.md), and the templates are in [songs/](songs/).
 
-**MIDI MODE** (nederst i låtlista) kobler DAW-en rett til FM-1 med USB-C. LIVE gjør FM-1 til en lydmodul med en
-skjerm for kanalene, og tangentene sendes ut til DAW-en for opptak. PREVIEW forsinker alt én takt, slik at
-spillsporet faller ned banen som i spillet og du kan prøve å spille det mens du skriver det.
+**MIDI MODE** (at the bottom of the song list) connects the DAW straight to the FM-1 over USB-C. LIVE turns the FM-1
+into a sound module with a screen for the channels, and the keys are sent out to the DAW for recording. PREVIEW delays
+everything by one bar, so the play track falls down the highway as in the game and you can try to play it while you
+write it.
 
-## To spillere, to FM-1-er
+## Two players, two FM-1s
 
-Protokollen for to spillere er bakt inn fra start ([docs/link.md](docs/link.md)). Den består av MIDI-meldinger på
-kanal 16 og klokke, de eneste meldingene en Dinghy-app mottar. I referansen virker den mellom to vinduer og mot en
-bot. Målet er én USB-C-kabel mellom to FM-1-er, men det krever at det ene FM-1 kan være USB-vert. Det avklares i en
-egen forstudie i fase 4. Via en datamaskin virker det uansett.
+The two-player protocol is built in from the start ([docs/link.md](docs/link.md)). It consists of MIDI messages on
+channel 16 and clock, the only messages a Dinghy app receives. In the reference it works between two windows and
+against a bot. The goal is one USB-C cable between two FM-1s, but that requires one of the FM-1s to be able to act as
+USB host. That will be settled in a separate feasibility study in phase 4. Through a computer it works regardless.
 
 <p align="center">
-  <img src="docs/screens/link-p1.png" width="240" alt="P1 i en kamp, P2s poeng i toppstripa">
-  <img src="docs/screens/link-p2.png" width="240" alt="P2 i samme kamp">
-  <img src="docs/screens/oct-band.png" width="240" alt="Et oktavskift på vei ned banen">
-  <img src="docs/screens/spread.png" width="240" alt="SPREAD: banene på annenhver hvit tangent">
+  <img src="docs/screens/link-p1.png" width="240" alt="P1 in a match, P2's score in the top strip">
+  <img src="docs/screens/link-p2.png" width="240" alt="P2 in the same match">
+  <img src="docs/screens/oct-band.png" width="240" alt="An octave shift on its way down the highway">
+  <img src="docs/screens/spread.png" width="240" alt="SPREAD: the lanes on every other white key">
 </p>
 
 ## Firmware
 
-Firmwaren er en Dinghy 0.5-app (`firmware/src/vavehero.c`, [PLATFORM.md](PLATFORM.md) sier hva som er endret fra
-Dinghy). Den spiller som referansen: samme regler, samme notekart, samme skjermer og samme lyd.
+The firmware is a Dinghy 0.5 app (`firmware/src/vavehero.c`; [PLATFORM.md](PLATFORM.md) says what has been changed
+from Dinghy). It plays like the reference: same rules, same note chart, same screens and same sound.
 
 <p align="center">
-  <img src="docs/screens/fw-splash.png" width="200" alt="Firmwaren: tittelskjermen">
-  <img src="docs/screens/fw-songs.png" width="200" alt="Firmwaren: låtlista">
-  <img src="docs/screens/fw-play.png" width="200" alt="Firmwaren: banen i ENGINE TOUR">
-  <img src="docs/screens/fw-results.png" width="200" alt="Firmwaren: resultatet">
-  <img src="docs/screens/fw-midi.png" width="200" alt="Firmwaren: MIDI MODE LIVE">
+  <img src="docs/screens/fw-splash.png" width="200" alt="The firmware: the title screen">
+  <img src="docs/screens/fw-songs.png" width="200" alt="The firmware: the song list">
+  <img src="docs/screens/fw-play.png" width="200" alt="The firmware: the highway in ENGINE TOUR">
+  <img src="docs/screens/fw-results.png" width="200" alt="The firmware: the results">
+  <img src="docs/screens/fw-midi.png" width="200" alt="The firmware: MIDI MODE LIVE">
 </p>
 
 | | |
 |---|---|
-| Tittelskjermen | Et 80-tallsomslag: kromlogoen, en stripete sol og fjell. Spillets egen bane er veien inn i solnedgangen og spiller seg selv på et neongulv. PLAY går til låtene. FX starter DEMO-en, ENGINE TOUR fra takt 41 på autospill. |
-| Låtene | SELECT velger låt. KNOB 1 velger nivå, KNOB 2 stemme (TONE), KNOB 3 fart og KNOB 4 MIX. ALGORITHM styrer GRIT. GLO slår SPREAD av og på, og SEQ slår AUTO av og på (låta spiller seg selv, og resultatet lagres ikke). PLAY starter. |
-| Under en låt | De åtte tangentene i oppsettet spiller banene. OCT− og OCT+ følger oktavskiftene, FX gir OP BOOST, PLAY er pause og HOME avslutter. |
-| Resultatet | Beste resultat per låt og nivå lagres i flash. PLAY spiller igjen, HOME går til låtene. |
-| MIDI MODE | LIVE: FM-1 er lydmodul for låta, én del per kanal, med nøkkelnoter. Tangentene sendes ut på kanal 1. PREVIEW kommer senere. |
+| The title screen | An 80s video game cover: the chrome logo, a striped sun and mountains. The game's own highway is the road into the sunset and plays itself on a neon floor. PLAY goes to the songs. FX starts the DEMO, ENGINE TOUR from bar 41 on autoplay. |
+| The songs | SELECT chooses the song. KNOB 1 chooses the level, KNOB 2 the voice (TONE), KNOB 3 the speed and KNOB 4 MIX. ALGORITHM controls GRIT. GLO turns SPREAD on and off, and SEQ turns AUTO on and off (the song plays itself, and the result is not saved). PLAY starts. |
+| During a song | The eight keys in the layout play the lanes. OCT− and OCT+ follow the octave shifts, FX triggers OP BOOST, PLAY pauses and HOME quits. |
+| The results | The best result per song and level is saved in flash. PLAY plays again, HOME goes to the songs. |
+| MIDI MODE | LIVE: the FM-1 is a sound module for the song, one part per channel, with keyswitch notes. The keys are sent out on channel 1. PREVIEW comes later. |
 
-Tangent-LED-ene viser hva som kommer: lyser når tonen er ved linja, gløder når den kommer innen to slag.
+The key LEDs show what is coming: lit when the note is at the line, glowing when it arrives within two beats.
 
-**Målt i fm1-emu:** det tyngste stedet i låtene, takt 41–44 i ENGINE TOUR, spilt av DEMO-en med spillet i gang,
-bruker 30,8 % av brikken til lyd, og 33,6 % med plattformens avbrudd. Den tyngste lydblokka bruker 42 % av tida si,
-og et bilde tegnes på 3,1 ms (median) av de 16,7 ms det har ved 60 bilder i sekundet (`tools/emu_timing.py`). Alle 25
-patcher og 4 trommesett ligger innenfor 1,5 dB av referansen, og hele låtene innenfor 0,8 dB. Mer i
-[docs/fm1-budsjett.md](docs/fm1-budsjett.md).
+**Measured in fm1-emu:** the heaviest spot in the songs, bars 41–44 of ENGINE TOUR, played by the DEMO with the game
+running, uses 30.8 % of the chip for audio, and 33.6 % with the platform's interrupts. The heaviest audio block uses
+42 % of its time budget, and a frame is drawn in 3.1 ms (median) of the 16.7 ms it has at 60 frames per second
+(`tools/emu_timing.py`). All 25 patches and 4 drum kits are within 1.5 dB of the reference, and the full songs within
+0.8 dB. More in [docs/fm1-budget.md](docs/fm1-budget.md).
 
 ```sh
-make test          # VaveHeros vertstester: lyden mot referansen, reglene, skjermene; uten FM-1
-make fw            # build/vavehero.fwsc: krever JieLis verktøykjede og AC79-SDK-en (docs/DINGHY_README.md)
+make test          # VaveHero's host tests: the sound against the reference, the rules, the screens; no FM-1 needed
+make fw            # build/vavehero.fwsc: requires JieLi's toolchain and the AC79 SDK (docs/DINGHY_README.md)
 ```
 
-GitHub Actions bygger `.fwsc`-pakken ved hver push, kjører testene og måler DEMO-en i fm1-emu
-(`.github/workflows/build.yml`, via zvenson/fm1-build). Pakken heter `FM-1_95N`, der N er mindreversjonen, og 0 er
-en utviklerbygging.
+GitHub Actions builds the `.fwsc` package on every push, runs the tests and measures the DEMO in fm1-emu
+(`.github/workflows/build.yml`, via zvenson/fm1-build). The package is named `FM-1_95N`, where N is the minor version,
+and 0 is a developer build.
 
-**Prøv den uten FM-1:** last ned `packages` fra en bygging under *Actions* på GitHub, pakk ut `vavehero.fwsc` og åpne
-den i [fm1-emu](https://joakimeriksson.github.io/fm1-emu/) i nettleseren. Siden kan åpne en lokal pakke. Tangentene
-og knappene ligger på datamaskinens tastatur og mus, og et MIDI-keyboard virker i Chrome og Edge.
+**Try it without an FM-1:** download `packages` from a build under *Actions* on GitHub, extract `vavehero.fwsc` and
+open it in [fm1-emu](https://joakimeriksson.github.io/fm1-emu/) in the browser. The page can open a local package. The
+keys and buttons are on the computer's keyboard and mouse, and a MIDI keyboard works in Chrome and Edge.
 
-## Innhold
+## Contents
 
 | | |
 |---|---|
-| [docs/konsept.md](docs/konsept.md) | Idéskissen: spillmekanikk, nivåer, moduser og tekniske notater |
-| [docs/songs.md](docs/songs.md) | Lag dine egne låter: kanalene, reglene og eksporten |
-| [docs/link.md](docs/link.md) | LINK: lagene fra nettleser til USB-C, og protokollen |
-| [docs/fm1-budsjett.md](docs/fm1-budsjett.md) | Får alt plass på FM-1? Minne, CPU, grafikk, låter og poeng |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D9 |
-| [songs/](songs/) | De fire innebygde låtene som MIDI-filer, også maler. ENGINE TOUR viser alle 29 lydene, CHROME HORIZON er en hel låt i D-moll (`python3 tools/songs.py` lager dem). |
-| [ROADMAP.md](ROADMAP.md) | Fasene, med avkrysning |
-| [reference/](reference/) | Nettleserreferansen, fasit før porten |
-| [mockup/](mockup/) | Den første mockupen: enheten og fire skjermer (`node mockup/render.cjs` lager PNG-ene) |
-| [tests/reference.cjs](tests/reference.cjs) | Spiller referansen i Chromium og sjekker poeng, LINK og bot |
-| [firmware/](firmware/) | Firmwaren: Dinghy 0.5 og appen `src/vavehero.c` |
-| [PLATFORM.md](PLATFORM.md) | Hvilken Dinghy, og hva som er endret fra den |
-| [docs/API.md](docs/API.md), [docs/RULES.md](docs/RULES.md) | Dinghys API og brikkens regler (fra Dinghy) |
+| [docs/concept.md](docs/concept.md) | The idea sketch: game mechanics, levels, modes and technical notes |
+| [docs/songs.md](docs/songs.md) | Make your own songs: the channels, the rules and the export |
+| [docs/link.md](docs/link.md) | LINK: the layers from browser to USB-C, and the protocol |
+| [docs/fm1-budget.md](docs/fm1-budget.md) | Does it all fit on the FM-1? Memory, CPU, graphics, songs and score |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | The decisions D1–D10 |
+| [songs/](songs/) | The four built-in songs as MIDI files, which are also templates. ENGINE TOUR shows all 29 sounds, CHROME HORIZON is a full song in D minor (`python3 tools/songs.py` makes them). |
+| [ROADMAP.md](ROADMAP.md) | The phases, with checkboxes |
+| [reference/](reference/) | The browser reference, the ground truth before the port |
+| [mockup/](mockup/) | The first mockup: the device and four screens (`node mockup/render.cjs` makes the PNGs) |
+| [tests/reference.cjs](tests/reference.cjs) | Plays the reference in Chromium and checks score, LINK and the bot |
+| [firmware/](firmware/) | The firmware: Dinghy 0.5 and the app `src/vavehero.c` |
+| [PLATFORM.md](PLATFORM.md) | Which Dinghy, and what has been changed from it |
+| [docs/API.md](docs/API.md), [docs/RULES.md](docs/RULES.md) | Dinghy's API and the chip's rules (from Dinghy) |
 
-<p align="center"><img src="mockup/vavehero-mockup.png" width="820" alt="Mockup: FM-1 med VaveHero på skjermen"></p>
+<p align="center"><img src="mockup/vavehero-mockup.png" width="820" alt="Mockup: FM-1 with VaveHero on the screen"></p>
 
-Panelgeometrien er hentet fra målene i [Quixotic7/MvaveFM1-Designer](https://github.com/Quixotic7/MvaveFM1-Designer).
-Låtene er egne komposisjoner. Firmwaren er fri programvare under GPL-3.0 ([LICENSE](LICENSE), hvem som har laget
-hva står i [LICENSING.md](LICENSING.md)). Terminus-fonten er lisensiert under SIL OFL 1.1
-([assets/fonts/Terminus-LICENSE.txt](assets/fonts/Terminus-LICENSE.txt)). Dette er et fanprosjekt og ikke et
-offisielt M-VAVE-produkt.
+The panel geometry is taken from the measurements in [Quixotic7/MvaveFM1-Designer](https://github.com/Quixotic7/MvaveFM1-Designer).
+The songs are original compositions. The firmware is free software under GPL-3.0 ([LICENSE](LICENSE); who made
+what is in [LICENSING.md](LICENSING.md)). The Terminus font is licensed under SIL OFL 1.1
+([assets/fonts/Terminus-LICENSE.txt](assets/fonts/Terminus-LICENSE.txt)). This is a fan project and not an
+official M-VAVE product.

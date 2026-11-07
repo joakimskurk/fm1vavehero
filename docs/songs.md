@@ -1,162 +1,165 @@
-# Lag dine egne låter
+# Make your own songs
 
-En VaveHero-låt er en vanlig MIDI-fil (`.mid`), laget i hvilken som helst DAW. Hvert instrument har sin egen
-MIDI-kanal, og spillsporet, tonene spilleren skal spille, ligger på en kanal for seg. Lydmotoren spiller resten i
-synthwave-drakt ([D3](DECISIONS.md), [D4](DECISIONS.md)).
+A VaveHero song is an ordinary MIDI file (`.mid`), made in any DAW. Each instrument has its own MIDI channel, and the
+play track, the notes the player is to play, sits on a channel of its own. The audio engine plays the rest in
+synthwave style ([D3](DECISIONS.md), [D4](DECISIONS.md)).
 
-De fire innebygde låtene er laget nøyaktig slik, og fungerer som maler (de kan også lastes ned fra referansen):
+The four built-in songs are made exactly this way and work as templates (they can also be downloaded from the
+reference):
 
-| Fil | Låt | Hva den viser |
+| File | Song | What it shows |
 |---|---|---|
-| [`first-light.mid`](../songs/first-light.mid) | FIRST LIGHT, 96 BPM | Den enkle: fem hvite tangenter, BELL EP, SUB-bass og STRINGS |
-| [`neon-carrier.mid`](../songs/neon-carrier.mid) | NEON CARRIER, 112 BPM | Oktavskift, akkorder og patchbytter mellom delene |
-| [`engine-tour.mid`](../songs/engine-tour.mid) | ENGINE TOUR, 120 BPM | **Omvisning i lydmotoren.** Trommene alene først, så kommer bass, pad, arpeggio, lead og keys inn ett etter ett. Hvert instrument går gjennom alle fire patchene sine, to takter hver, med den skitne til slutt. Trommesettene og spillerens stemme byttes underveis, og til slutt spiller alt sammen på de skitne lydene. Alle 29 lydene høres. |
-| [`chrome-horizon.mid`](../songs/chrome-horizon.mid) | CHROME HORIZON, 104 BPM | **En hel synthwave-låt i D-moll:** intro, vers, pre-chorus, skitne refrenger med DIRT BASS, DIRT-trommer og FUZZ LEAD, en breakdown, og et siste refreng en oktav opp med FUZZ som spillerstemme. Spillsporet er skrevet i D-moll, og importen flytter det 5 halvtoner ned til hvite tangenter. |
+| [`first-light.mid`](../songs/first-light.mid) | FIRST LIGHT, 96 BPM | The simple one: five white keys, BELL EP, SUB bass and STRINGS |
+| [`neon-carrier.mid`](../songs/neon-carrier.mid) | NEON CARRIER, 112 BPM | Octave shifts, chords and patch changes between the sections |
+| [`engine-tour.mid`](../songs/engine-tour.mid) | ENGINE TOUR, 120 BPM | **A tour of the audio engine.** The drums alone first, then bass, pad, arpeggio, lead and keys come in one by one. Each instrument goes through all four of its patches, two bars each, with the dirty one last. The drum kits and the player's voice change along the way, and at the end everything plays together on the dirty sounds. All 29 sounds are heard. |
+| [`chrome-horizon.mid`](../songs/chrome-horizon.mid) | CHROME HORIZON, 104 BPM | **A full synthwave song in D minor:** intro, verse, pre-chorus, dirty choruses with DIRT BASS, DIRT drums and FUZZ LEAD, a breakdown, and a final chorus an octave up with FUZZ as the player's voice. The play track is written in D minor, and the import moves it 5 semitones down to white keys. |
 
-Hver patch i ENGINE TOUR (to takter hver, de rene først og den skitne sist):
+Each patch in ENGINE TOUR (two bars each, the clean ones first and the dirty one last):
 
-| Takt | Hva som kommer inn |
+| Bars | What comes in |
 |---|---|
-| 1–4 | Trommer alene (GATED) |
-| 5–12 | BASS: PULSE, FM BASS, SUB, DIRT BASS. Spillerens stemme er SYN LEAD. |
-| 13–20 | PAD: SUPERSAW, STRINGS, GLASS PAD, GRIT PAD. Trommer TIGHT, stemme BELL EP. |
-| 21–28 | ARP: PLUCK, BELL, SQUARE, CRUSH. Stemme BRASS. Trommer BOOM fra takt 25. |
-| 29–36 | LEAD: SAW, SQUARE, BRASS og FUZZ LEAD. Stemme GLASS, en oktav opp i takt 33–36. |
-| 37–44 | KEYS: FM EP, TINE, ORGAN, GRIT EP. Trommer DIRT, stemme FUZZ. |
-| 45–49 | Alt sammen, på de skitne patchene |
+| 1–4 | Drums alone (GATED) |
+| 5–12 | BASS: PULSE, FM BASS, SUB, DIRT BASS. The player's voice is SYN LEAD. |
+| 13–20 | PAD: SUPERSAW, STRINGS, GLASS PAD, GRIT PAD. Drums TIGHT, voice BELL EP. |
+| 21–28 | ARP: PLUCK, BELL, SQUARE, CRUSH. Voice BRASS. Drums BOOM from bar 25. |
+| 29–36 | LEAD: SAW, SQUARE, BRASS and FUZZ LEAD. Voice GLASS, an octave up in bars 33–36. |
+| 37–44 | KEYS: FM EP, TINE, ORGAN, GRIT EP. Drums DIRT, voice FUZZ. |
+| 45–49 | Everything together, on the dirty patches |
 
-## Kanalene
+## The channels
 
-| Kanal | Del | Lyd i referansen |
+| Channel | Part | Sound in the reference |
 |---|---|---|
-| **1** | **PLAY**, spillsporet | Tonene som faller ned banen. Spilleren lager lyden selv (TONE: SYN LEAD, BELL EP, BRASS, GLASS). |
-| 2 | BASS | To detunede sagtann-oscillatorer og en sub, resonant lavpass. Laget for pulserende åttedeler. |
-| 3 | PAD | Fire detunede sagtann-oscillatorer, langsomt filtersveip, chorus og stor hall |
-| 4 | ARP | Firkant og sagtann, kort og lys, med tempo-delay |
-| 5 | LEAD | Sagtann-lead med vibrato og delay (motstemme, intro) |
-| 6 | KEYS | FM-piano |
-| 10 | DRUMS | General MIDI-trommer (under), tre trommesett |
-| 16 | *LINK* | Satt av til tospillerprotokollen. Noter her blir ikke spilt. |
+| **1** | **PLAY**, the play track | The notes that fall down the highway. The player makes the sound themselves (TONE: SYN LEAD, BELL EP, BRASS, GLASS). |
+| 2 | BASS | Two detuned sawtooth oscillators and a sub, resonant low-pass. Made for pulsing eighth notes. |
+| 3 | PAD | Four detuned sawtooth oscillators, slow filter sweep, chorus and a large hall |
+| 4 | ARP | Square and sawtooth, short and bright, with tempo delay |
+| 5 | LEAD | Sawtooth lead with vibrato and delay (counter-melody, intro) |
+| 6 | KEYS | FM piano |
+| 10 | DRUMS | General MIDI drums (below), three drum kits |
+| 16 | *LINK* | Reserved for the two-player protocol. Notes here are not played. |
 
-Kanal 7–9 og 11–15 har ingen lyd ennå. Importen sier fra hvis de brukes.
+Channels 7–9 and 11–15 have no sound yet. The import tells you if they are used.
 
-### Patcher: flere lyder per instrument ([D6](DECISIONS.md))
+### Patches: several sounds per instrument ([D6](DECISIONS.md))
 
-Hvert instrument har flere patcher. Du velger patch med en **nøkkelnote** (keyswitch) på instrumentets egen kanal:
-note 0–11, under ethvert musikalsk register, som aldri høres. Note 0 gir patch 1, note 1 patch 2, og så videre.
-Patchen gjelder fra nøkkelnoten og til neste. Uten nøkkelnote brukes patch 1. En nøkkelnote kan ligge samtidig med
-første tone den skal gjelde for.
+Each instrument has several patches. You choose the patch with a **keyswitch note** on the instrument's own channel:
+notes 0–11, below any musical register, which are never heard. Note 0 gives patch 1, note 1 patch 2, and so on. The
+patch applies from the keyswitch note until the next one. Without a keyswitch note, patch 1 is used. A keyswitch note
+can sit at the same time as the first note it applies to.
 
-| Kanal | Note 0 (C-1) | Note 1 (C#-1) | Note 2 (D-1) | Note 3 (D#-1) | Note 4 (E-1) |
+| Channel | Note 0 (C-1) | Note 1 (C#-1) | Note 2 (D-1) | Note 3 (D#-1) | Note 4 (E-1) |
 |---|---|---|---|---|---|
 | 1 PLAY | SYN LEAD | BELL EP | BRASS | GLASS | **FUZZ** |
-| 2 BASS | PULSE (pulserende sagtann) | FM BASS | SUB | **DIRT BASS** |  |
+| 2 BASS | PULSE (pulsing sawtooth) | FM BASS | SUB | **DIRT BASS** |  |
 | 3 PAD | SUPERSAW | STRINGS | GLASS PAD (FM) | **GRIT PAD** |  |
 | 4 ARP | PLUCK | BELL (FM) | SQUARE | **CRUSH** |  |
 | 5 LEAD | SAW LEAD | SQUARE LEAD | BRASS LEAD | **FUZZ LEAD** |  |
 | 6 KEYS | FM EP | TINE | ORGAN | **GRIT EP** |  |
-| 10 DRUMS | GATED (80-talls gated reverb) | TIGHT (tørt) | BOOM (lang kick, lange tammer) | **DIRT** (forvrengt og knust) |  |
+| 10 DRUMS | GATED (80s gated reverb) | TIGHT (dry) | BOOM (long kick, long toms) | **DIRT** (distorted and crushed) |  |
 
-De uthevede er de skitne patchene ([D7](DECISIONS.md)). De har forvrengning etter filteret, og noen har en knust
-kopi (bitcrush) blandet inn. Sammen med GRIT-innstillingen gir de den franske, skitne lyden (Kavinsky, Justice).
+The ones in bold are the dirty patches ([D7](DECISIONS.md)). They have distortion after the filter, and some have a
+crushed copy (bitcrush) mixed in. Together with the GRIT setting they give the French, dirty sound (Kavinsky, Justice).
 
-- Mange DAW-er kaller note 0 for **C-1**. Noen, blant annet Cubase, kaller den **C-2**. Det er samme note.
-- På kanal 1 velger nøkkelnoten spillerens stemme gjennom låta, når TONE (KNOB 2) står på **SONG**, som er standard.
-  Spilleren kan alltid velge en fast stemme med KNOB 2 i stedet.
-- På kanal 1 er note 11 (B-1) satt av til OP-fraser (se under), så stemmene ligger på note 0–4.
-- En nøkkelnote uten patch, for eksempel note 7 på BASS, gjør ingenting og vises i importrapporten.
-- Alt er noter. Program Change og CC brukes ikke, så alt kan tegnes rett i pianorullen.
-- Det virker likt live: send nøkkelnoter fra DAW-en, så bytter lyden med en gang (i PREVIEW i takt med resten), og
-  LIVE-skjermen viser patchen på hver kanal.
+- Many DAWs call note 0 **C-1**. Some, Cubase among them, call it **C-2**. It is the same note.
+- On channel 1 the keyswitch note chooses the player's voice through the song, when TONE (KNOB 2) is set to **SONG**,
+  which is the default. The player can always choose a fixed voice with KNOB 2 instead.
+- On channel 1, note 11 (B-1) is reserved for OP phrases (see below), so the voices are on notes 0–4.
+- A keyswitch note with no patch, for example note 7 on BASS, does nothing and is shown in the import report.
+- Everything is notes. Program Change and CC are not used, so everything can be drawn straight into the piano roll.
+- It works the same live: send keyswitch notes from the DAW, and the sound changes at once (in PREVIEW in time with the
+  rest), and the LIVE screen shows the patch on each channel.
 
-NEON CARRIER viser hvordan: bassen går til FM BASS i refrenget, padden til STRINGS og spillerens stemme til BELL EP i
-det høye verset.
+NEON CARRIER shows how: the bass goes to FM BASS in the chorus, the pad to STRINGS and the player's voice to BELL EP in
+the high verse.
 
-### Trommer på kanal 10
+### Drums on channel 10
 
-| Note | Lyd |
+| Note | Sound |
 |---|---|
 | 35, 36 | Kick |
-| 38, 40 | Skarptromme med gated reverb |
-| 39 | Klapp (gated) |
-| 37 | Kantslag |
-| 42, 44 | Lukket hi-hat |
-| 46 | Åpen hi-hat |
+| 38, 40 | Snare with gated reverb |
+| 39 | Clap (gated) |
+| 37 | Rimshot |
+| 42, 44 | Closed hi-hat |
+| 46 | Open hi-hat |
 | 49, 57 | Crash |
-| 41, 43, 45, 47, 48, 50 | Syndrum-tammer, fra lav til høy |
+| 41, 43, 45, 47, 48, 50 | Syndrum toms, from low to high |
 
-## Spillsporet (kanal 1)
+## The play track (channel 1)
 
-- **Bare hvite tangenter** ([D1](DECISIONS.md)). Du kan skrive i hvilken som helst toneart. Importen finner den
-  transponeringen som legger flest toner på de hvite tangentene, og låta høres likevel i originaltonearten. En låt i
-  E-moll spilles da med A-moll-grep. Toner som fortsatt havner på svarte tangenter, tas ut og vises i rapporten.
-- **Oktaver ordner seg selv.** Banen viser én oktav (C til C). Når melodien går ut av den, legger importen inn et
-  oktavskift (OCT+ eller OCT−) mellom to toner. Gi gjerne melodien minst et halvt slag pause før store sprang.
-- **Akkorder:** høyst tre toner samtidig, innenfor én oktav. Toner ut over det tas ut.
-- **Holdtoner:** en tone på 1,5 slag eller mer blir en holdtone med hale. Kortere toner er vanlige trykk.
-- **OP-fraser:** legg note 11 (B-1) på kanal 1 og hold den så lenge frasen varer. I pianorullen er det en strek
-  under frasen. Feilfrie fraser fyller OP-måleren. Uten OP-noter lager importen fraser selv (to takter av hver
-  fjerde).
-- **EASY** lages av samme spor: tonene på slaget (eller hvert andre slag over 105 BPM), og bare den øverste tonen i
-  en akkord.
+- **White keys only** ([D1](DECISIONS.md)). You can write in any key. The import finds the transposition that puts the
+  most notes on the white keys, and the song still sounds in its original key. A song in E minor is then played with
+  A minor fingering. Notes that still end up on black keys are removed and shown in the report.
+- **Octaves sort themselves out.** The highway shows one octave (C to C). When the melody goes outside it, the import
+  inserts an octave shift (OCT+ or OCT−) between two notes. Ideally, give the melody at least half a beat of rest
+  before big leaps.
+- **Chords:** at most three notes at once, within one octave. Notes beyond that are removed.
+- **Hold notes:** a note of 1.5 beats or more becomes a hold note with a tail. Shorter notes are ordinary presses.
+- **OP phrases:** put note 11 (B-1) on channel 1 and hold it for as long as the phrase lasts. In the piano roll it is a
+  line under the phrase. Flawless phrases fill the OP meter. Without OP notes the import makes phrases itself (two bars
+  out of every four).
+- **EASY** is made from the same track: the notes on the beat (or every other beat above 105 BPM), and only the top
+  note in a chord.
 
-## Tempo og takt
+## Tempo and time signature
 
-- Ett tempo per låt. Har fila tempoendringer, brukes det første.
-- VaveHero teller i 4/4. Andre taktarter importeres, men banens taktstreker følger 4/4.
-- Låta slutter ved slutten av takten der den siste tonen slutter.
+- One tempo per song. If the file has tempo changes, the first one is used.
+- VaveHero counts in 4/4. Other time signatures are imported, but the highway's bar lines follow 4/4.
+- The song ends at the end of the bar in which the last note ends.
 
-## Eksporter
+## Export
 
-Eksporter som **Standard MIDI File**, format 0 eller 1. Begge virker, og tiden må være i takt og slag (PPQ, ikke
-SMPTE). Navnet på det første sporet blir låtens tittel, ellers filnavnet. Tittelen vises med store bokstaver og
-høyst 15 tegn.
+Export as a **Standard MIDI File**, format 0 or 1. Both work, and the time must be in bars and beats (PPQ, not SMPTE).
+The name of the first track becomes the song's title, otherwise the file name. The title is shown in capital letters
+and with at most 15 characters.
 
-## Prøv låta i referansen
+## Try the song in the reference
 
-1. Åpne `reference/vavehero.html`.
-2. Trykk **Last inn .mid** under *Egne låter*, eller slipp fila på siden.
-3. Rapporten viser tempo, lengde, toner per nivå, transponering, oktavskift, OP-fraser og alt som er tatt ut eller
-   ignorert.
-4. Låta havner nederst i låtlista og huskes i nettleseren. **Fjern egne låter** tømmer lista.
+1. Open `reference/vavehero.html`.
+2. Press **Load .mid** under *Your own songs*, or drop the file on the page.
+3. The report shows tempo, length, notes per level, transposition, octave shifts, OP phrases and everything that has
+   been removed or ignored.
+4. The song ends up at the bottom of the song list and is remembered in the browser. **Remove your own songs** empties
+   the list.
 
-<p><img src="screens/import-report.png" width="440" alt="Importrapporten for en testlåt i E-moll"></p>
+<p><img src="screens/import-report.png" width="440" alt="The import report for a test song in E minor"></p>
 
-## MIDI MODE: DAW-en rett i FM-1 ([D5](DECISIONS.md))
+## MIDI MODE: the DAW straight into the FM-1 ([D5](DECISIONS.md))
 
 <p><img src="screens/midi-live.png" width="240" alt="MIDI MODE, LIVE"> <img src="screens/midi-preview.png" width="240" alt="MIDI MODE, PREVIEW"></p>
 
-1. Koble FM-1 til datamaskinen med USB-C. Den dukker opp som en MIDI-enhet.
-2. På FM-1: bla til **MIDI MODE** nederst i låtlista og trykk PLAY.
-3. I DAW-en: send hvert spor til FM-1 på sin kanal (1 spillsporet, 2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS,
-   10 trommer). Slå på **MIDI-klokke ut** til FM-1, så følger den tempoet og viser takt og slag.
-4. **LIVE** spiller alt med en gang, og viser aktivitet og siste tone per kanal. Toner på kanal 1 lyser opp
-   tangentene, og en tone på en svart tangent blir rød.
-5. Trykk PLAY for **PREVIEW**: alt forsinkes én takt, og spillsporet faller ned banen slik det blir i spillet. Spill
-   med på tangentene for å kjenne om det er spillbart. Røde merker er toner på svarte tangenter, som blir tatt ut ved
-   import.
-6. **Ta opp fra FM-1:** tangentene sendes ut på kanal 1. Slå av MIDI-ekko (thru) til FM-1 på sporet du tar opp på,
-   ellers spilles tonene to ganger.
-7. Uten klokke: still tempoet med KNOB 3 (BPM). HOME går tilbake til låtlista.
+1. Connect the FM-1 to the computer with USB-C. It shows up as a MIDI device.
+2. On the FM-1: scroll to **MIDI MODE** at the bottom of the song list and press PLAY.
+3. In the DAW: send each track to the FM-1 on its channel (1 the play track, 2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS,
+   10 drums). Turn on **MIDI clock out** to the FM-1, and it follows the tempo and shows bar and beat.
+4. **LIVE** plays everything at once, and shows activity and the last note per channel. Notes on channel 1 light up
+   the keys, and a note on a black key turns red.
+5. Press PLAY for **PREVIEW**: everything is delayed by one bar, and the play track falls down the highway as it will
+   in the game. Play along on the keys to feel whether it is playable. Red marks are notes on black keys, which are
+   removed on import.
+6. **Record from the FM-1:** the keys are sent out on channel 1. Turn off MIDI echo (thru) to the FM-1 on the track you
+   record on, otherwise the notes are played twice.
+7. Without a clock: set the tempo with KNOB 3 (BPM). HOME goes back to the song list.
 
-Gode å vite:
+Good to know:
 
-- Start DAW-en fra takt 1. FM-1 får ikke låtposisjonen (Song Position Pointer), så takttelleren starter der DAW-en
-  starter.
-- Skru av DAW-ens egen lyd i PREVIEW, ellers hører du alt to ganger med én takts mellomrom.
-- LINK må være av. MIDI MODE og tospiller-lenken bruker begge MIDI-klokka.
+- Start the DAW from bar 1. The FM-1 does not get the song position (Song Position Pointer), so the bar counter starts
+  where the DAW starts.
+- Turn off the DAW's own sound in PREVIEW, otherwise you hear everything twice, one bar apart.
+- LINK must be off. MIDI MODE and the two-player link both use the MIDI clock.
 
-**I referansen** er det det samme: koble DAW-en til nettleseren med WebMIDI (Chrome eller Edge, *Koble til MIDI*),
-velg den som «Inn», og eventuelt en port som «Ut» for opptak. På Mac går det med IAC-driveren, på Windows med for
-eksempel loopMIDI. Utenfor MIDI MODE spiller referansen også kanalene direkte, men uten skjermen for kanaler og
-uten PREVIEW.
+**In the reference** it is the same: connect the DAW to the browser with WebMIDI (Chrome or Edge, *Connect MIDI*),
+choose it as "In", and optionally a port as "Out" for recording. On a Mac this works with the IAC driver, on Windows
+with, for example, loopMIDI. Outside MIDI MODE the reference also plays the channels directly, but without the channel
+screen and without PREVIEW.
 
-## To spillere
+## Two players
 
-I VS sender P1 låtens identitet, en hash av spillsporet (se [link.md](link.md)). P2 må ha samme fil lastet inn. Hvis
-ikke viser P2s skjerm `SONG NOT HERE`.
+In VS, P1 sends the song's identity, a hash of the play track (see [link.md](link.md)). P2 must have the same file
+loaded. If not, P2's screen shows `SONG NOT HERE`.
 
-## På FM-1
+## On the FM-1
 
-I firmwaren blir låtene gjort om til et kompakt notekart i flash av et lite verktøy. Kanalene og reglene over er de
-samme, så en låt som virker i referansen, virker på FM-1. Se fase 3 i [ROADMAP.md](../ROADMAP.md).
+In the firmware, a small tool turns the songs into a compact note chart in flash. The channels and rules above are the
+same, so a song that works in the reference works on the FM-1. See phase 3 in [ROADMAP.md](../ROADMAP.md).

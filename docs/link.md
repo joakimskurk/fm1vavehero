@@ -1,88 +1,89 @@
-# LINK: to spillere på to FM-1-er
+# LINK: two players on two FM-1s
 
-To spillere har hvert sitt FM-1 og spiller samme låt samtidig. Alt i spillet er bygget for dette fra start:
-notekartet er deterministisk og hver enhet dømmer sine egne trykk mot sin egen klokke. Derfor er det bare start,
-klokke og poeng som må over kabelen.
+Two players each have their own FM-1 and play the same song at the same time. Everything in the game is built for this
+from the start: the note chart is deterministic, and each unit judges its own presses against its own clock. So only the
+start, the clock and the score have to go over the cable.
 
-## Lagene: fra nettleser til USB-C
+## The layers: from browser to USB-C
 
-| Lag | Kobling | Status |
+| Layer | Connection | Status |
 |---|---|---|
-| **L0** | Protokollen: MIDI-kanalmeldinger på kanal 16, pluss klokke, start og stopp (under) | Versjon 1, i referansen |
-| **L1** | To vinduer i samme nettleser (BroadcastChannel), og en bot som snakker samme protokoll | Ferdig i referanse 0.1 |
-| **L2** | To FM-1-er via en USB-vert: en datamaskin eller et nettbrett med en relé-side (WebMIDI), eller en USB-MIDI-vertsboks | Mulig med Dinghy slik den er. Trenger firmware-porten. |
-| **L3** | To FM-1-er med én USB-C-kabel direkte mellom seg | Krever USB-vertsmodus i firmware. Avklares i en forstudie. |
+| **L0** | The protocol: MIDI channel messages on channel 16, plus clock, start and stop (below) | Version 1, in the reference |
+| **L1** | Two windows in the same browser (BroadcastChannel), and a bot that speaks the same protocol | Done in reference 0.1 |
+| **L2** | Two FM-1s via a USB host: a computer or a tablet with a relay page (WebMIDI), or a USB-MIDI host box | Possible with Dinghy as it is. Needs the firmware port. |
+| **L3** | Two FM-1s with one USB-C cable directly between them | Requires USB host mode in the firmware. To be settled in a feasibility study. |
 
-Meldingene er de samme på alle lag. Det som virker i L1, virker i L2 og L3 uten endringer.
+The messages are the same on all layers. What works in L1 works in L2 and L3 without changes.
 
-LINK er av i MIDI MODE ([D5](DECISIONS.md)). Der hører MIDI-klokka og START/STOP til DAW-en.
+LINK is off in MIDI MODE ([D5](DECISIONS.md)). There the MIDI clock and START/STOP belong to the DAW.
 
-### Hvorfor ikke bare én USB-C-kabel ennå
+### Why not just one USB-C cable yet
 
-USB har alltid én vert og én enhet. FM-1 er en USB-enhet (class compliant USB-MIDI), og Dinghys `usb.c` kjører i
-enhetsmodus. Kobles to FM-1-er sammen med en C-til-C-kabel, venter begge på en vert, og ingenting skjer. SLOOP-guiden
-sier det samme om USB-keyboard rett i FM-1. TRS-kontakten er bare MIDI inn, så den kan heller ikke koble to FM-1-er
-alene.
+USB always has one host and one device. The FM-1 is a USB device (class compliant USB-MIDI), and Dinghy's `usb.c` runs
+in device mode. If two FM-1s are connected with a C-to-C cable, both wait for a host, and nothing happens. The SLOOP
+guide says the same about a USB keyboard straight into the FM-1. The TRS jack is MIDI in only, so it cannot connect two
+FM-1s on its own either.
 
-Forstudien for L3 må svare på dette:
+The feasibility study for L3 must answer this:
 
-1. **Vertsmodus.** Kan USB-kontrolleren i JieLi AC791N kjøre som vert (OTG)? Jeg har ikke funnet databladet for
-   akkurat AC791N, så dette er ikke avklart.
-2. **Strøm.** En vert må gi 5 V på VBUS. Kan FM-1 det fra batteriet, eller trengs en OTG-adapter med eget
-   strøminntak?
-3. **Vertsdriver.** Firmware trenger en liten USB-MIDI-vertsdriver (enumerering og bulk-endepunkter). Det er en
-   betydelig jobb, men avgrenset: den trenger bare å kjenne én enhet, et annet FM-1.
-4. **Roller.** Hvem er vert? Mest naturlig er at P1 er vert og P2 er enhet, valgt i menyen før kampen.
+1. **Host mode.** Can the USB controller in the JieLi AC791N run as a host (OTG)? I have not found the datasheet for
+   the AC791N specifically, so this is not settled.
+2. **Power.** A host must supply 5 V on VBUS. Can the FM-1 do that from the battery, or is an OTG adapter with its own
+   power input needed?
+3. **Host driver.** The firmware needs a small USB-MIDI host driver (enumeration and bulk endpoints). It is a
+   substantial job, but a bounded one: it only needs to know one device, another FM-1.
+4. **Roles.** Who is the host? The most natural is that P1 is the host and P2 is the device, chosen in the menu before
+   the match.
 
-Svarer forstudien nei, blir L2 standardkoblingen. Den virker uansett. Noen FM-1-versjoner har også Bluetooth-MIDI,
-som kan bli et senere lag (L4), men Dinghy har ikke Bluetooth.
+If the feasibility study answers no, L2 becomes the standard connection. It works regardless. Some FM-1 versions also
+have Bluetooth MIDI, which may become a later layer (L4), but Dinghy has no Bluetooth.
 
-## Protokoll, versjon 1
+## Protocol, version 1
 
-En Dinghy-app mottar bare kanalmeldinger, og av systemmeldingene bare klokke, start, fortsett og stopp (`0xF8`,
-`0xFA`, `0xFB`, `0xFC`). SysEx tilhører plattformens oppdaterer, og Song Position Pointer (`0xF2`) kastes. Derfor
-bruker protokollen kontrollmeldinger (CC) på kanal 16, status `0xBF`, og posisjonen er START pluss antall
-klokkepulser.
+A Dinghy app receives only channel messages, and of the system messages only clock, start, continue and stop (`0xF8`,
+`0xFA`, `0xFB`, `0xFC`). SysEx belongs to the platform's updater, and Song Position Pointer (`0xF2`) is discarded. So
+the protocol uses control change messages (CC) on channel 16, status `0xBF`, and the position is START plus the number
+of clock pulses.
 
-| Melding | Bytes | Fra | Betydning |
+| Message | Bytes | From | Meaning |
 |---|---|---|---|
-| HELLO | `BF 64 v` (CC 100) | Begge, hvert sekund | Protokollversjon, nå 1 |
-| ID | `BF 65 id` (CC 101) | Begge, hvert sekund | Tilfeldig 1–126. Lavest blir P1 (boten er 127). Ved likhet trekker mottakeren nytt. |
-| SONG | `BF 66 n` (CC 102) | P1 | Låtens plass i P1s liste, bare til visning |
-| SONG-ID | `BF 69 hi` `BF 6A lo` (CC 105–106) | P1 | Låtens identitet: 14 bits hash av spillsporet og tempoet. P2 finner låta ut fra den, ikke ut fra plassen i lista. |
+| HELLO | `BF 64 v` (CC 100) | Both, every second | Protocol version, currently 1 |
+| ID | `BF 65 id` (CC 101) | Both, every second | Random 1–126. The lowest becomes P1 (the bot is 127). On a tie, the receiver draws again. |
+| SONG | `BF 66 n` (CC 102) | P1 | The song's place in P1's list, for display only |
+| SONG-ID | `BF 69 hi` `BF 6A lo` (CC 105–106) | P1 | The song's identity: a 14-bit hash of the play track and the tempo. P2 finds the song from it, not from the place in the list. |
 | LEVEL | `BF 67 n` (CC 103) | P1 | 0 EASY, 1 MED, 2 HARD, 3 EXP |
-| SPEED | `BF 68 %` (CC 104) | P1 | Tempo i prosent, 50–100 |
-| START | `FA` | P1 | Begge starter låta nå. P2 bruker siste SONG-ID, LEVEL og SPEED. Har ikke P2 låta, vises `SONG NOT HERE` og P2 starter ikke. |
-| CLOCK | `F8` | P1 | 24 pulser per beat, fra START |
-| STOP | `FC` | P1 | Kampen avbrytes, begge går til SONGS |
-| SCORE | `BF 6E hi` `BF 6F mid` `BF 70 lo` (CC 110–112) | Begge | Poeng i tre 7-bits deler, opptil 2 097 151. Tas i bruk når `lo` kommer. |
-| COMBO | `BF 71 hi` `BF 72 lo` (CC 113–114) | Begge | Combo. Tas i bruk når `lo` kommer. |
-| JUDGE | `BF 73 j` (CC 115) | Begge | 1 PERFECT, 2 GREAT, 3 GOOD, 4 MISS |
-| BOOST | `BF 74 0/1` (CC 116) | Begge | OP BOOST av eller på |
-| OPS | `BF 75 n` (CC 117) | Begge | Operatorer tent, 0–6 |
-| DONE | `BF 76 %` (CC 118) | Begge | Ferdig, med treffprosent |
-| BYE | `BF 77 0` (CC 119) | Begge | Kobler fra |
+| SPEED | `BF 68 %` (CC 104) | P1 | Tempo in percent, 50–100 |
+| START | `FA` | P1 | Both start the song now. P2 uses the last SONG-ID, LEVEL and SPEED. If P2 does not have the song, `SONG NOT HERE` is shown and P2 does not start. |
+| CLOCK | `F8` | P1 | 24 pulses per beat, from START |
+| STOP | `FC` | P1 | The match is aborted, both go to SONGS |
+| SCORE | `BF 6E hi` `BF 6F mid` `BF 70 lo` (CC 110–112) | Both | Score in three 7-bit parts, up to 2,097,151. Applied when `lo` arrives. |
+| COMBO | `BF 71 hi` `BF 72 lo` (CC 113–114) | Both | Combo. Applied when `lo` arrives. |
+| JUDGE | `BF 73 j` (CC 115) | Both | 1 PERFECT, 2 GREAT, 3 GOOD, 4 MISS |
+| BOOST | `BF 74 0/1` (CC 116) | Both | OP BOOST off or on |
+| OPS | `BF 75 n` (CC 117) | Both | Operators lit, 0–6 |
+| DONE | `BF 76 %` (CC 118) | Both | Finished, with hit percentage |
+| BYE | `BF 77 0` (CC 119) | Both | Disconnects |
 
-Noter på kanal 16 (`9F` og `8F`) er satt av til senere, når hver spiller kan høre den andres stemme i band-modus.
+Notes on channel 16 (`9F` and `8F`) are reserved for later, when each player can hear the other's voice in band mode.
 
-**Regler**
+**Rules**
 
-- SCORE og COMBO sendes bare når de endrer seg, og høyst 15 ganger i sekundet.
-- P2 starter på START og teller klokka. I firmware skal P2 justere tempoet litt når egen posisjon avviker fra
-  pulstellingen med mer enn 10 ms. Referansen teller foreløpig bare pulsene. Hver spiller hører sin egen enhet, så
-  bare startforskjellen merkes.
-- Hver enhet dømmer sine egne trykk lokalt. Forsinkelse i kabelen påvirker aldri PERFECT eller GREAT, bare hvor fort
-  den andres poeng vises.
-- En linje som har vært stille i 3,5 sekunder regnes som frakoblet.
+- SCORE and COMBO are sent only when they change, and at most 15 times a second.
+- P2 starts on START and counts the clock. In the firmware, P2 is to adjust the tempo slightly when its own position
+  differs from the pulse count by more than 10 ms. For now the reference only counts the pulses. Each player hears
+  their own unit, so only the difference at the start is noticeable.
+- Each unit judges its own presses locally. Latency in the cable never affects PERFECT or GREAT, only how quickly the
+  other player's score is shown.
+- A line that has been silent for 3.5 seconds is treated as disconnected.
 
-## Moduser
+## Modes
 
-| Modus | Hva | Status |
+| Mode | What | Status |
 |---|---|---|
-| **VS** | Samme låt samtidig. Motstanderens poeng står i toppstripa, og vinneren vises på resultatskjermen. | Ferdig i referanse 0.1 (to vinduer og bot) |
-| **Annenhver** | Spillerne tar hver sin frase. Lengst combo vinner runden. | Planlagt |
-| **Band** | Samarbeid: P1 spiller melodien, P2 bass eller akkorder fra eget notekart. Notene på kanal 16 lar begge høre helheten. | Planlagt |
-| **Battle** | OP BOOST sender en ulempe til motstanderen, for eksempel at notene først blir synlige nær trefflinja i to takter. | Idé |
+| **VS** | The same song at the same time. The opponent's score is in the top bar, and the winner is shown on the results screen. | Done in reference 0.1 (two windows and bot) |
+| **Alternate** | The players take a phrase each. The longest combo wins the round. | Planned |
+| **Band** | Co-op: P1 plays the melody, P2 bass or chords from its own note chart. The notes on channel 16 let both hear the whole. | Planned |
+| **Battle** | OP BOOST sends a handicap to the opponent, for example that the notes only become visible near the hit line for two bars. | Idea |
 
-En enklere variant med to spillere på ett FM-1, hver med sin ende av klaviaturet som i RoboSeqs battle, kan komme i
-tillegg. Hovedsporet er to FM-1-er.
+A simpler variant with two players on one FM-1, each with their own end of the keyboard as in RoboSeq's battle, may
+come as well. The main focus is two FM-1s.

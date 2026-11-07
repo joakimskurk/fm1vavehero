@@ -1,101 +1,103 @@
 # ROADMAP
 
-Den gjeldende fasen er den første med et punkt som ikke er krysset av. Samme oppskrift som RoboSeq og Star Distroyer:
-først en spillbar nettleserreferanse som er fasit for følelse, timing og lyd, deretter en Dinghy 0.5-app som testes
-på verten og i fm1-emu.
+The current phase is the first one with an item that is not checked off. Same recipe as RoboSeq and Star Distroyer:
+first a playable browser reference that is the ground truth for feel, timing and sound, then a Dinghy 0.5 app that is
+tested on the host and in fm1-emu.
 
-**To spillere er bakt inn fra start.** Spillmotoren er deterministisk og har én protokoll for LINK
-([docs/link.md](docs/link.md)), så alle faser under må holde VS-modus i live.
+**Two players are built in from the start.** The game engine is deterministic and has one protocol for LINK
+([docs/link.md](docs/link.md)), so every phase below must keep VS mode alive.
 
-## Fase 0: idé og mockup
+## Phase 0: idea and mockup
 
-- [x] Konsept ([docs/konsept.md](docs/konsept.md))
-- [x] Mockup av enheten og fire skjermer i 240 × 240 med Dinghys Terminus-fonter ([mockup/](mockup/))
+- [x] Concept ([docs/concept.md](docs/concept.md))
+- [x] Mockup of the device and four screens at 240 × 240 with Dinghy's Terminus fonts ([mockup/](mockup/))
 
-## Fase 1: nettleserreferanse 0.1
+## Phase 1: browser reference 0.1
 
-- [x] `reference/vavehero.html`: én fil, spillbar med datamaskintastaturet, panelet (mus og berøring) og WebMIDI
-- [x] Skjermen tegnet piksel for piksel i 240 × 240 med `FONT_S` og `FONT_L`
-- [x] To låter (FIRST LIGHT, NEON CARRIER) med EASY og MED. Nivåene lages av samme notekart.
-- [x] Notebane i perspektiv med én bane per hvit tangent, akkorder, hold-toner og oktavskift (OCT+/OCT−)
-- [x] D1: bare de hvite tangentene spilles. De svarte vises, men har ingen funksjon (REF 0.1.2,
+- [x] `reference/vavehero.html`: one file, playable with the computer keyboard, the panel (mouse and touch) and WebMIDI
+- [x] The screen drawn pixel by pixel at 240 × 240 with `FONT_S` and `FONT_L`
+- [x] Two songs (FIRST LIGHT, NEON CARRIER) with EASY and MED. The levels are made from the same note chart.
+- [x] Note highway in perspective with one lane per white key, chords, hold notes and octave shifts (OCT+/OCT−)
+- [x] D1: only the white keys are played. The black ones are shown but have no function (REF 0.1.2,
       [docs/DECISIONS.md](docs/DECISIONS.md)).
-- [x] D2: SPREAD, annenhver hvit tangent for store fingre, med GLO
-- [x] Poeng: PERFECT ±35 ms, GREAT ±70 ms, GOOD ±110 ms, combo og multiplikator, WRONG for feil tangent
-- [x] OP-fraser og OP BOOST med FX
-- [x] Tangent-LED-er (lyser og glød) og knappe-LED-er, slik FM-1 ville vist dem
-- [x] FM-lyd: tre stemmer for spilleren (TONE) og et band med pad, bass og trommer. Lyden blir lysere med combo og
-      matt ved feil.
-- [x] Latensinnstilling, med kalibrering fra siste rundes snittavvik
-- [x] LINK L0 og L1: protokoll versjon 1, to vinduer, og en bot som motstander
-- [x] D3: låtene er MIDI-filer, ett instrument per kanal, spillsporet på kanal 1 ([docs/songs.md](docs/songs.md)).
-      Importen transponerer, legger inn oktavskift og OP-fraser. Egne filer lastes inn og huskes, og malene kan lastes
-      ned. Låtens identitet går over LINK.
-- [x] D4: synthwave-lydmotor med pad, bass, arpeggio, lead, FM-piano, gated trommer, syndrum, delay og hall
-- [x] Live-MIDI per kanal: DAW-en spiller låta gjennom lydmotoren mens den lages
-- [x] D6: flere patcher per instrument (3 hver, 4 stemmer på PLAY, 3 trommesett), valgt med nøkkelnoter 0–11, i
-      filer og live. TONE har SONG som standard. Bare noter: OP-fraser er note 11 på kanal 1, ikke CC.
-- [x] D7: skitnere lyd. GRIT (pumping, metning, trommecrunch), en skitten patch per instrument, DIRT-trommesettet,
-      og demolåtene skrevet om.
-- [x] D5: MIDI MODE. LIVE er lydmodul med kanaler, klokke og takt. PREVIEW forsinker én takt, viser kanal 1 på banen
-      og lar deg spille med. Tangentene sendes ut på kanal 1 for opptak.
-- [x] Test: `node tests/reference.cjs` spiller begge låtene på autospill, prøver feil og sene trykk, bot-kamp og to vinduer
+- [x] D2: SPREAD, every other white key for big fingers, with GLO
+- [x] Score: PERFECT ±35 ms, GREAT ±70 ms, GOOD ±110 ms, combo and multiplier, WRONG for a wrong key
+- [x] OP phrases and OP BOOST with FX
+- [x] Key LEDs (lit and glow) and button LEDs, the way the FM-1 would show them
+- [x] FM sound: three voices for the player (TONE) and a band with pad, bass and drums. The sound gets brighter with
+      combo and dull on mistakes.
+- [x] Latency setting, with calibration from the last round's average offset
+- [x] LINK L0 and L1: protocol version 1, two windows, and a bot as opponent
+- [x] D3: the songs are MIDI files, one instrument per channel, the play track on channel 1 ([docs/songs.md](docs/songs.md)).
+      The import transposes, and adds octave shifts and OP phrases. Your own files are loaded and remembered, and the
+      templates can be downloaded. The song's identity goes over LINK.
+- [x] D4: synthwave audio engine with pad, bass, arpeggio, lead, FM piano, gated drums, syndrum, delay and hall reverb
+- [x] Live MIDI per channel: the DAW plays the song through the audio engine while it is being made
+- [x] D6: several patches per instrument (3 each, 4 voices on PLAY, 3 drum kits), selected with keyswitch notes 0–11,
+      in files and live. TONE defaults to SONG. Notes only: OP phrases are note 11 on channel 1, not CC.
+- [x] D7: dirtier sound. GRIT (pumping, saturation, drum crunch), a dirty patch per instrument, the DIRT drum kit,
+      and the demo songs rewritten.
+- [x] D5: MIDI MODE. LIVE is a sound module with channels, clock and bar. PREVIEW delays by one bar, shows channel 1
+      on the highway and lets you play along. The keys are sent out on channel 1 for recording.
+- [x] Test: `node tests/reference.cjs` plays both songs on autoplay, tries wrong and late presses, a bot match and two windows
 
-## Fase 2: referanse 0.2, spillfølelse
+## Phase 2: reference 0.2, game feel
 
-- [ ] Spilltest med ekte hender: banebredde, notefart og tidsvinduer
-- [ ] Sweep-partier med KNOB 1
-- [ ] Spilltest av SPREAD med ekte hender: er F3–F5 riktig, eller G3–G5?
-- [ ] Transponering per låt, så de hvite tangentene følger låtas toneart
-- [ ] Øvemodus: loop av et parti, «vent på riktig tangent», og en hjelpemelodi
-- [ ] Egen kalibreringsskjerm: trykk i takt med klikk
-- [ ] HARD-nivå og 2–3 nye låter
-- [ ] MIDI-import: tempoendringer, og en nøkkelnote for å overstyre de automatiske oktavskiftene
-- [x] Lydsjekk: renders av referansen som fasit for porten, som i RoboSeq (`tools/ref_tour.cjs`, `tests/kf/parity.py`)
+- [ ] Playtest with real hands: lane width, note speed and timing windows
+- [ ] Sweep sections with KNOB 1
+- [ ] Playtest of SPREAD with real hands: is F3–F5 right, or G3–G5?
+- [ ] Transposition per song, so the white keys follow the song's key
+- [ ] Practice mode: looping a section, “wait for the right key”, and a guide melody
+- [ ] A separate calibration screen: press in time with clicks
+- [ ] HARD level and 2–3 new songs
+- [ ] MIDI import: tempo changes, and a keyswitch note to override the automatic octave shifts
+- [x] Sound check: renders of the reference as the ground truth for the port, as in RoboSeq (`tools/ref_tour.cjs`, `tests/kf/parity.py`)
 
-## Fase 3: Dinghy-port
+## Phase 3: Dinghy port
 
-Budsjettet for minne, CPU og grafikk står i [docs/fm1-budsjett.md](docs/fm1-budsjett.md). Kort sagt passer alt, men
-lyden er det trange, så den måles først.
+The budget for memory, CPU and graphics is in [docs/fm1-budget.md](docs/fm1-budget.md). In short, everything fits,
+but the audio is the tight part, so it is measured first.
 
-- [x] **Først: mål lydmotoren i fm1-emu.** Takt 41–44 i ENGINE TOUR (alle delene, skitne patcher, pad-enes lange
-      utklingninger) bruker 31,6 % av brikken alene, og 34,0 % med spillet rundt (36,9 % med plattformen). CI feiler over 45 %. Det som skulle til:
-      24 stemmer og 10 trommelag, et oscillatorbudsjett på 48 (D8), kontrollrate på 32 frames og FDN-romklang.
+- [x] **First: measure the audio engine in fm1-emu.** Bars 41–44 of ENGINE TOUR (all the parts, dirty patches, the pads'
+      long release tails) use 31.6 % of the chip alone, and 34.0 % with the game around it (36.9 % with the platform). CI fails above 45 %. What it took:
+      24 voices and 10 drum layers, an oscillator budget of 48 (D8), a control rate of 32 frames and FDN reverb.
 
-- [x] `vavehero.c` på Dinghy 0.5: `APP_NAME "VAVEHERO"`, egen identitet (`FM-1_95N`), `PLATFORM.md` med avvik fra
-      upstream, CI via zvenson/fm1-build, `make test` på verten
-- [x] Bane, toppstripe og knotterad i ett helskjermslerret, tegnet som referansen. Beregnet til omtrent 9 % av
-      brikken ved 30 fps (callgrind × 0,8). Må måles på et ekte FM-1.
-- [x] Tangent-LED-er med `fm1_led_key` og `fm1_led_key_glow`, og SPREAD (GLO) lagret i innstillingene
-- [x] Presis timing: tangentkanter leses også i `LCD_IDLE` og stemples med lydklokka, slik den høres
-      (forsinkelsen på et ekte FM-1 må kalibreres)
-- [x] Synthwave-motoren i lydavbruddet (fastkomma: sagtann med PolyBLEP, filtre, chorus, gated reverb, hall),
-      målt i fm1-emu og sjekket mot referansens renders (alle patcher innenfor 1,5 dB, låtene innenfor 0,8 dB)
-- [x] `tools/mid2vavehero.mjs`: MIDI-fil til notekart og bandspor for flash, med referansens egen import-kode
-- [x] Patchene (D6) og GRIT (D7) i fastkomma, med nøkkelnoter i firmware. GRIT ligger på ALGORITHM.
-- [x] MIDI MODE LIVE i firmware: USB-MIDI og TRS inn (`midi_get`), klokke og STOP, nøkkelnoter, tangentene ut på
-      kanal 1 med `midi_send`
-- [ ] MIDI MODE PREVIEW i firmware, og LED-ene for kanal 1. Testes med en DAW mot fm1-emu og så på et ekte FM-1.
-- [x] Notekart i firmware, og beste resultat i flash (AUTO lagres ikke)
-- [ ] Spillmotoren er klar for LINK fra første versjon: START, klokke og poeng går gjennom én modul
-- [x] Vertstester (`make test`) og `.fwsc` med attestasjon i CI
-- [ ] fm1-emu i strict mode, og en kalibreringsskjerm for forsinkelsen
-- [ ] Prøvd på et ekte FM-1
+- [x] `vavehero.c` on Dinghy 0.5: `APP_NAME "VAVEHERO"`, its own identity (`FM-1_95N`), `PLATFORM.md` with deviations
+      from upstream, CI via zvenson/fm1-build, `make test` on the host
+- [x] Highway, top strip and knob row in one full-screen canvas, drawn like the reference. Estimated at about 9 % of
+      the chip at 30 fps (callgrind × 0.8). Must be measured on a real FM-1.
+- [x] Key LEDs with `fm1_led_key` and `fm1_led_key_glow`, and SPREAD (GLO) saved in the settings
+- [x] Precise timing: key edges are also read in `LCD_IDLE` and stamped with the audio clock, the way it is heard
+      (the latency on a real FM-1 must be calibrated)
+- [x] The synthwave engine in the audio interrupt (fixed point: sawtooth with PolyBLEP, filters, chorus, gated reverb,
+      hall reverb), measured in fm1-emu and checked against the reference's renders (all patches within 1.5 dB, the
+      songs within 0.8 dB)
+- [x] `tools/mid2vavehero.mjs`: MIDI file to note chart and band tracks for flash, with the reference's own import code
+- [x] The patches (D6) and GRIT (D7) in fixed point, with keyswitch notes in firmware. GRIT is on ALGORITHM.
+- [x] MIDI MODE LIVE in firmware: USB-MIDI and TRS in (`midi_get`), clock and STOP, keyswitch notes, the keys out on
+      channel 1 with `midi_send`
+- [ ] MIDI MODE PREVIEW in firmware, and the LEDs for channel 1. To be tested with a DAW against fm1-emu and then on a
+      real FM-1.
+- [x] Note maps in firmware, and the best result in flash (AUTO is not saved)
+- [ ] The game engine is ready for LINK from the first version: START, clock and score go through one module
+- [x] Host tests (`make test`) and `.fwsc` with attestation in CI
+- [ ] fm1-emu in strict mode, and a calibration screen for the latency
+- [ ] Tried on a real FM-1
 
-## Fase 4: LINK på maskinvare, to FM-1-er koblet med USB-C
+## Phase 4: LINK on hardware, two FM-1s connected with USB-C
 
-- [ ] **Forstudie for USB-C direkte (L3).** Kan AC791N være USB-vert (OTG)? Kan FM-1 gi 5 V på VBUS, eller trengs en
-      OTG-adapter med strøm? Hvor stor blir en USB-MIDI-vertsdriver? Denne kan starte nå, parallelt med fase 2–3,
-      fordi svaret avgjør maskinvaresporet.
-- [ ] L2: relé-side i referansen (WebMIDI) som kobler FM-1 A og FM-1 B gjennom en datamaskin, og firmware som
-      snakker protokollen
-- [ ] L3: vertsmodus i firmware (P1 er vert) og én USB-C-kabel mellom to FM-1-er, hvis forstudien sier ja. Ellers
-      blir L2 standard.
-- [ ] Tempojustering hos P2 etter klokka (avvik over 10 ms)
-- [ ] Moduser: VS på maskinvare, deretter annenhver frase og band (samarbeid)
-- [ ] Test med to ekte FM-1-er: start, synk over en hel låt, frakobling midt i en kamp
+- [ ] **Feasibility study for direct USB-C (L3).** Can the AC791N be a USB host (OTG)? Can the FM-1 supply 5 V on
+      VBUS, or is a powered OTG adapter needed? How big will a USB-MIDI host driver be? This can start now, in
+      parallel with phases 2–3, because the answer decides the hardware track.
+- [ ] L2: relay page in the reference (WebMIDI) that connects FM-1 A and FM-1 B through a computer, and firmware that
+      speaks the protocol
+- [ ] L3: host mode in firmware (P1 is the host) and one USB-C cable between two FM-1s, if the feasibility study says
+      yes. Otherwise L2 becomes the default.
+- [ ] Tempo adjustment on P2 to follow the clock (deviation over 10 ms)
+- [ ] Modes: VS on hardware, then alternating phrases and band (co-op)
+- [ ] Test with two real FM-1s: start, sync over a whole song, disconnect in the middle of a match
 
-## Fase 5: utgivelse
+## Phase 5: release
 
-- [ ] Kort for Firmware Hub (`fmhub.json`), logo og bruksanvisning med leksjoner
-- [ ] Installasjon og retur til M-VAVEs firmware beskrevet, som i de andre prosjektene
+- [ ] Card for Firmware Hub (`fmhub.json`), logo and user manual with lessons
+- [ ] Installation and return to M-VAVE's firmware documented, as in the other projects

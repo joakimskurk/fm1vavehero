@@ -1,208 +1,215 @@
-# Beslutninger
+# Decisions
 
-En beslutning står her med dato og grunn, slik at koden og referansen kan sjekkes mot den. Den overstyrer konseptet
-der de er uenige.
+A decision is recorded here with its date and reason, so that the code and the reference can be checked against it.
+It overrides the concept where they disagree.
 
-## D1 (2026-11-07): bare de hvite tangentene spilles
+## D1 (2026-11-07): only the white keys are played
 
-**Beslutning.** Notekartene har bare toner på hvite tangenter, og banene på skjermen er én per hvit tangent. De
-svarte tangentene vises fortsatt på skjermen der de sitter, i den øvre raden av tangentstripa, men de har ingen
-funksjon. Under en låt gir de ingen tone, ingen poeng, ingen straff og ingen lyd.
+**Decision.** The note charts only have notes on white keys, and the lanes on the screen are one per white key. The
+black keys are still shown on the screen where they sit, in the upper row of the key strip, but they have no
+function. During a song they give no note, no score, no penalty and no sound.
 
-*Justert samme dag (REF 0.1.2).* En kort stund viste stripa bare de hvite tangentene. Den svarte raden er tilbake
-fordi den gjør det lettere å se hvor man er på klaviaturet. Beslutningen gjaldt funksjonen, ikke visningen.
+*Adjusted the same day (REF 0.1.2).* For a short while the strip showed only the white keys. The black row is back
+because it makes it easier to see where you are on the keyboard. The decision was about the function, not the display.
 
-**Hvorfor.**
+**Why.**
 
-- Skjermen er bygget for det. Åtte baner, én per hvit tangent, er lette å lese på 240 piksler. Svarte toner på
-  skillelinjene var den mest uryddige delen av banen.
-- På FM-1 sitter de svarte tangentene i en egen øvre rad, ikke mellom de hvite som på et piano. Å treffe dem i fart
-  er noe annet enn å spille piano.
-- Med én funksjon per tangent, å spille, er det ingenting å huske. Stripa viser likevel de svarte, slik at
-  skjermen ser ut som klaviaturet.
+- The screen is built for it. Eight lanes, one per white key, are easy to read on 240 pixels. Black notes on the
+  dividing lines were the messiest part of the highway.
+- On the FM-1 the black keys sit in a separate upper row, not between the white ones as on a piano. Hitting them at
+  speed is not the same as playing piano.
+- With one function per key, playing, there is nothing to remember. The strip still shows the black keys, so that
+  the screen looks like the keyboard.
 
-**Hva det koster.** Toner utenfor skalaen forsvinner. Det tas igjen med transponering per låt, slik at de hvite
-tangentene følger låtas toneart og modus. Tre toner i NEON CARRIER ble skrevet om: D#4 ble D4, G#4 ble A4 og F#5 ble D5.
+**What it costs.** Notes outside the scale disappear. This is made up for with transposition per song, so that the
+white keys follow the song's key and mode. Three notes in NEON CARRIER were rewritten: D#4 became D4, G#4 became A4
+and F#5 became D5.
 
-**Sjekkes av.** `buildChart` stopper med en feil hvis et notekart har en svart tangent. `tests/reference.cjs` sjekker
-at ingen notekart har svarte tangenter, og at en svart tangent midt i en låt ikke endrer combo eller dom.
+**Checked by.** `buildChart` stops with an error if a note chart has a black key. `tests/reference.cjs` checks that
+no note chart has black keys, and that a black key in the middle of a song does not change the combo or the judgement.
 
-## D2 (2026-11-07): SPREAD, annenhver hvit tangent
+## D2 (2026-11-07): SPREAD, every other white key
 
-**Beslutning.** En innstilling, SPREAD, legger de åtte banene på annenhver hvit tangent: F3 A3 C4 E4 G4 B4 D5 F5,
-med én ubrukt hvit tangent mellom hver. Banene og musikken er de samme. Bare hvilken fysisk tangent som spiller hver
-bane endres. Tangentene mellom har ingen funksjon, som de svarte (D1). SPREAD slås av og på med GLO (`Q` i
-referansen), lagres, og kan ikke endres midt i en låt.
+**Decision.** A setting, SPREAD, puts the eight lanes on every other white key: F3 A3 C4 E4 G4 B4 D5 F5, with one
+unused white key between each. The lanes and the music are the same. Only which physical key plays each lane
+changes. The keys in between have no function, like the black ones (D1). SPREAD is turned on and off with GLO (`Q`
+in the reference), is saved, and cannot be changed in the middle of a song.
 
-**Hvorfor.** Silikontangentene på FM-1 er små. Med store fingre er det lett å treffe nabotangenten. Med én tangent
-mellomrom blir avstanden mellom banene omtrent dobbelt så stor. Det fyller nesten hele klaviaturet: 15 av 16 hvite
-tangenter.
+**Why.** The silicone keys on the FM-1 are small. With large fingers it is easy to hit the neighbouring key. With one
+key of space between them, the distance between the lanes becomes about twice as large. It fills almost the whole
+keyboard: 15 of 16 white keys.
 
-**Slik ser det ut.** Tangentstripa på skjermen viser de brukte tangentene under banene og en mørk, ubrukt tangent
-mellom hver. LED-ene og bokstavhintene i panelet følger de brukte tangentene. SPREAD gjelder bare den som spiller,
-så i en kamp kan den ene spilleren ha SPREAD på og den andre ikke.
+**What it looks like.** The key strip on the screen shows the used keys under the lanes and a dark, unused key
+between each. The LEDs and the letter hints in the panel follow the used keys. SPREAD applies only to the person
+playing, so in a match one player can have SPREAD on and the other not.
 
-**Sjekkes av.** `tests/reference.cjs` spiller NEON CARRIER med SPREAD på autospill (100 %). Den sjekker også at
-LED-ene bare lyser på SPREAD-tangentene, at en tangent mellom to brukte ikke gjør noe, og at F3 spiller første bane.
+**Checked by.** `tests/reference.cjs` plays NEON CARRIER with SPREAD on autoplay (100 %). It also checks that the
+LEDs light only on the SPREAD keys, that a key between two used ones does nothing, and that F3 plays the first lane.
 
-## D3 (2026-11-07): låtene er MIDI-filer, ett instrument per kanal
+## D3 (2026-11-07): the songs are MIDI files, one instrument per channel
 
-**Beslutning.** En låt er en standard MIDI-fil (format 0 eller 1). Kanal 1 er spillsporet. Kanal 2 BASS, 3 PAD,
-4 ARP, 5 LEAD, 6 KEYS og 10 DRUMS (General MIDI) er bandet. Kanal 16 er satt av til LINK. Note 11 (B-1) på kanal 1,
-holdt over frasen, markerer OP-fraser (endret fra CC 85 samme dag, se D6). Importen transponerer spillsporet til hvite tangenter (D1), legger inn oktavskift og lager EASY. De
-innebygde låtene er laget på samme måte (`tools/songs.py` skriver `songs/*.mid`) og går gjennom samme import. Hele
-reglen står i [songs.md](songs.md).
+**Decision.** A song is a standard MIDI file (format 0 or 1). Channel 1 is the play track. Channels 2 BASS, 3 PAD,
+4 ARP, 5 LEAD, 6 KEYS and 10 DRUMS (General MIDI) are the band. Channel 16 is reserved for LINK. Note 11 (B-1) on
+channel 1, held over the phrase, marks OP phrases (changed from CC 85 the same day, see D6). The import transposes the
+play track to white keys (D1), adds octave shifts and creates EASY. The built-in songs are made the same way
+(`tools/songs.py` writes `songs/*.mid`) and go through the same import. The full rule is in [songs.md](songs.md).
 
-**Hvorfor.** Låter skal kunne lages helt i en DAW, med verktøy som allerede finnes. Én kanal per instrument er
-vanlig MIDI-praksis, og den samme kanalfordelingen virker både for filer og for live-MIDI. Når DAW-en spiller inn i
-referansen, blir den en lydmodul der du hører låta som i spillet.
+**Why.** It should be possible to make songs entirely in a DAW, with tools that already exist. One channel per
+instrument is common MIDI practice, and the same channel layout works both for files and for live MIDI. When the DAW
+plays into the reference, the reference becomes a sound module where you hear the song as in the game.
 
-**Sjekkes av.** `tests/reference.cjs`: de innebygde filene gir de samme notekartene og oktavskiftene som før. En
-testlåt i E-moll (format 0, running status) transponeres, får oktavskift, og spilles 100 % på autospill. Rapporten
-nevner den kromatiske tonen, den fjerde akkordtonen, kanal 7 og kanal 16. Live-MIDI går til riktig del per kanal.
+**Checked by.** `tests/reference.cjs`: the built-in files give the same note charts and octave shifts as before. A
+test song in E minor (format 0, running status) is transposed, gets octave shifts, and is played 100 % on autoplay.
+The report mentions the chromatic note, the fourth chord note, channel 7 and channel 16. Live MIDI goes to the right
+part per channel.
 
-## D4 (2026-11-07): lydmotoren er synthwave
+## D4 (2026-11-07): the audio engine is synthwave
 
-**Beslutning.** Lydmotoren er laget for synthwave og retrowave: sagtann-pads med chorus, pulserende bass,
-arpeggio med tempo-delay (punktert åttedel), lead med vibrato, FM-piano, gated reverb på skarptromme og klapp,
-syndrum-tammer og mørk hall. Spillerens stemme kan være SYN LEAD (standard), BELL EP, BRASS eller GLASS.
+**Decision.** The audio engine is made for synthwave and retrowave: sawtooth pads with chorus, pulsing bass,
+arpeggio with tempo delay (dotted eighth), lead with vibrato, FM piano, gated reverb on snare and clap, syndrum toms
+and a dark hall. The player's voice can be SYN LEAD (default), BELL EP, BRASS or GLASS.
 
-**Nivåer.** Målt i refrenget til NEON CARRIER, hver del alene: spillerens stemme −20 til −22 dB RMS, trommer −21,
-bass −24,5, pad og arpeggio −30. Hele miksen har en toppverdi på 0,75. Spillerens stemme skal ligge øverst eller
-likt med trommene. Den sjekken gjentas når lyden endres.
+**Levels.** Measured in the chorus of NEON CARRIER, each part alone: the player's voice −20 to −22 dB RMS, drums −21,
+bass −24.5, pad and arpeggio −30. The whole mix has a peak value of 0.75. The player's voice should sit on top or
+level with the drums. That check is repeated when the sound changes.
 
-**Hva det koster.** Mange oscillatorer per tone (fire per pad-tone). På FM-1 må motoren lages i fastkomma og måles i
-fm1-emu. Hvis den er for tung, blir pad-stemmene og hallen enklere først.
+**What it costs.** Many oscillators per note (four per pad note). On the FM-1 the engine must be built in fixed point
+and measured in fm1-emu. If it is too heavy, the pad voices and the hall are simplified first.
 
-## D5 (2026-11-07): MIDI MODE, DAW-en rett i FM-1 mens låta lages
+## D5 (2026-11-07): MIDI MODE, the DAW straight into the FM-1 while the song is made
 
-**Beslutning.** FM-1 har en egen modus for å lage låter: MIDI MODE, nederst i låtlista. DAW-en kobles til FM-1 med
-USB-C, og hvert spor sendes på sin kanal som i D3. Modusen har to varianter, og PLAY bytter mellom dem:
+**Decision.** The FM-1 has its own mode for making songs: MIDI MODE, at the bottom of the song list. The DAW is
+connected to the FM-1 over USB-C, and each track is sent on its own channel as in D3. The mode has two variants, and
+PLAY switches between them:
 
-- **LIVE:** FM-1 er en lydmodul. Hver kanal spilles straks av sitt instrument. Skjermen viser aktivitet per kanal,
-  tempoet fra MIDI-klokka og takt og slag. Toner på kanal 1 lyser opp tangent-LED-ene, og toner på svarte tangenter
-  varsles i rødt (D1).
-- **PREVIEW:** alt forsinkes én takt, like langt som banen ser framover. Kanal 1 faller ned banen slik den blir i
-  spillet, med oktavskift. Bandet spilles i takt med banen, og du kan spille med og bli dømt. Svarte toner vises som
-  røde merker og telles ikke.
+- **LIVE:** the FM-1 is a sound module. Each channel is played at once by its instrument. The screen shows activity
+  per channel, the tempo from the MIDI clock, and bar and beat. Notes on channel 1 light up the key LEDs, and notes
+  on black keys are flagged in red (D1).
+- **PREVIEW:** everything is delayed by one bar, as far as the highway looks ahead. Channel 1 falls down the highway
+  as it will in the game, with octave shifts. The band plays in time with the highway, and you can play along and be
+  judged. Black notes are shown as red marks and are not counted.
 
-Tangentene på FM-1 sendes ut på kanal 1 i begge variantene, så DAW-en kan ta opp spillsporet. Uten MIDI-klokke
-brukes tempoet fra KNOB 3 (BPM). MIDI MODE og LINK utelukker hverandre, fordi begge bruker MIDI-klokka og
-START/STOP.
+The FM-1's keys are sent out on channel 1 in both variants, so the DAW can record the play track. Without a MIDI
+clock, the tempo from KNOB 3 (BPM) is used. MIDI MODE and LINK are mutually exclusive, because both use the MIDI
+clock and START/STOP.
 
-**Hvorfor.** Det er raskest å lage en spillbar låt når man hører den på FM-1 og ser spillsporet på banen mens man
-skriver. PREVIEW svarer på spørsmålet «kan dette spilles?» uten å eksportere fila.
+**Why.** The fastest way to make a playable song is to hear it on the FM-1 and see the play track on the highway
+while writing it. PREVIEW answers the question "can this be played?" without exporting the file.
 
-**Hva det koster.** Dinghy slipper ikke gjennom Song Position Pointer. Starter DAW-en midt i låta, teller FM-1 takt
-fra der den startet, ikke fra låtas takt. PREVIEW henger én takt etter DAW-en, så DAW-ens egen lyd må være av, eller
-bare spille MIDI.
+**What it costs.** Dinghy does not pass Song Position Pointer through. If the DAW starts in the middle of the song,
+the FM-1 counts bars from where it started, not from the song's bar. PREVIEW lags one bar behind the DAW, so the
+DAW's own sound must be off, or it must play MIDI only.
 
-**Sjekkes av.** `tests/reference.cjs`, med testene beskrevet i [reference/README.md](../reference/README.md).
+**Checked by.** `tests/reference.cjs`, with the tests described in [reference/README.md](../reference/README.md).
 
-## D6 (2026-11-07): flere patcher per instrument, valgt med nøkkelnoter
+## D6 (2026-11-07): several patches per instrument, chosen with keyswitch notes
 
-**Beslutning.** Hvert instrument har flere patcher: PLAY 4, BASS, PAD, ARP, LEAD, KEYS 3 hver, og trommene 3 sett.
-Note 0–11 (C-1 til B-1) på instrumentets kanal velger patch, med note 0 som patch 1. Den høres aldri, og gjelder til
-neste nøkkelnote. På kanal 1 velger den spillerens stemme når TONE står på SONG, som
-er standard. Det virker likt i MIDI-filer, i live-MIDI og i MIDI MODE. Tabellen står i [songs.md](songs.md).
+**Decision.** Each instrument has several patches: PLAY 4, BASS, PAD, ARP, LEAD, KEYS 3 each, and the drums 3 kits.
+Notes 0–11 (C-1 to B-1) on the instrument's channel choose the patch, with note 0 as patch 1. The note is never
+heard, and applies until the next keyswitch note. On channel 1 it chooses the player's voice when TONE is set to
+SONG, which is the default. It works the same in MIDI files, in live MIDI and in MIDI MODE. The table is in
+[songs.md](songs.md).
 
-**Hvorfor.** Én lyd per instrument blir fort ensformig gjennom en hel låt. Nøkkelnoter er slik sample-bibliotek
-bytter artikulasjon, så de er kjente fra DAW-en. Note 0–11 brukes ikke til musikk, så de kolliderer ikke med noe.
-**Bare noter (justert samme dag).** Program Change og CC brukes ikke, verken til patcher eller til OP-fraser
-(som nå er note 11 på kanal 1). Alt i en låt kan da tegnes i pianorullen, og det er det minst krevende å lage.
+**Why.** One sound per instrument quickly gets monotonous over a whole song. Keyswitch notes are how sample
+libraries switch articulation, so they are familiar from the DAW. Notes 0–11 are not used for music, so they do not
+collide with anything.
+**Notes only (adjusted the same day).** Program Change and CC are not used, neither for patches nor for OP phrases
+(which are now note 11 on channel 1). Everything in a song can then be drawn in the piano roll, and that is the least
+demanding way to make a song.
 
-**Nivåer.** Hver patch er målt alene (fire toner, eller et trommemønster). Innenfor samme instrument ligger patchene
-innenfor ±2 dB av hverandre, så et bytte ikke blir et volumhopp. Refrenget i NEON CARRIER, med FM BASS og
-BELL-arpeggio, har samme balanse som i D4.
+**Levels.** Each patch is measured alone (four notes, or a drum pattern). Within the same instrument the patches are
+within ±2 dB of each other, so a switch does not become a jump in volume. The chorus of NEON CARRIER, with FM BASS
+and the BELL arpeggio, has the same balance as in D4.
 
-**Sjekkes av.** `tests/reference.cjs`, med testene beskrevet i [reference/README.md](../reference/README.md).
+**Checked by.** `tests/reference.cjs`, with the tests described in [reference/README.md](../reference/README.md).
 
-## D7 (2026-11-07): skitnere lyd, med GRIT
+## D7 (2026-11-07): dirtier sound, with GRIT
 
-**Beslutning.** Lydmotoren skal kunne låte skitten og fransk (Kavinsky, Justice), ikke bare blank:
+**Decision.** The audio engine should be able to sound dirty and French (Kavinsky, Justice), not just polished:
 
-- **GRIT** (0–100, standard 70) styrer tre ting på hele miksen: pumping, der bandet dukker på hvert kick
-  (sidekjede), metning og liming av hele miksen, og crunch på trommebussen. På 0 er lyden ren som før.
-- **En skitten patch per instrument,** med forvrengning etter filteret, og noen med en knust kopi (bitcrush):
-  FUZZ (spillerstemme), DIRT BASS, GRIT PAD, CRUSH (arpeggio), FUZZ LEAD og GRIT EP. Trommesettet heter DIRT. De
-  ligger på neste ledige nøkkelnote, som er note 4 på kanal 1 og note 3 på de andre.
-- **Tørrere miks:** hallen er senket fra 0,55 til 0,4.
-- Spillerens stemme pumper ikke, så den alltid ligger fritt over bandet.
+- **GRIT** (0–100, default 70) controls three things on the whole mix: pumping, where the band ducks on every kick
+  (sidechain), saturation and glue on the whole mix, and crunch on the drum bus. At 0 the sound is clean as before.
+- **One dirty patch per instrument,** with distortion after the filter, and some with a crushed copy (bitcrush):
+  FUZZ (player voice), DIRT BASS, GRIT PAD, CRUSH (arpeggio), FUZZ LEAD and GRIT EP. The drum kit is called DIRT. They
+  sit on the next free keyswitch note, which is note 4 on channel 1 and note 3 on the others.
+- **Drier mix:** the hall is lowered from 0.55 to 0.4.
+- The player's voice does not pump, so it always sits clear above the band.
 
-**Nivåer.** Hver skitne patch ligger innenfor ±2 dB av sine søsken. Unntaket er DIRT-settet, som ligger innenfor
-spennet til de andre trommesettene. I det skitne siste refrenget i CHROME HORIZON ligger spilleren på −18,5 dB og
-trommene på −18,7 dB, bassen 3,3 dB under, og keys, arpeggio og pad lenger bak. Med GRIT 70 blir miksen omtrent 2 dB
-tettere, med lavere toppnivå, og ingen låt klipper på 0, 70 eller 100.
+**Levels.** Each dirty patch is within ±2 dB of its siblings. The exception is the DIRT kit, which is within the
+range of the other drum kits. In the dirty last chorus of CHROME HORIZON the player sits at −18.5 dB and the drums at
+−18.7 dB, the bass 3.3 dB below, and keys, arpeggio and pad further back. With GRIT 70 the mix gets about 2 dB
+denser, with a lower peak level, and no song clips at 0, 70 or 100.
 
-**For FM-1.** Forvrengning, bitcrush og pumping er billige i fastkomma, mye billigere enn stor romklang. Det skitne
-er det enkleste å flytte over.
+**For the FM-1.** Distortion, bitcrush and pumping are cheap in fixed point, much cheaper than a large reverb. The
+dirt is the easiest part to port.
 
-**Sjekkes av.** `tests/reference.cjs`, med testene beskrevet i [reference/README.md](../reference/README.md).
+**Checked by.** `tests/reference.cjs`, with the tests described in [reference/README.md](../reference/README.md).
 
-## D8 (2026-11-07): firmwarens lyd, der den avviker fra referansen
+## D8 (2026-11-07): the firmware's sound, where it differs from the reference
 
-**Beslutning.** Lydmotoren i firmwaren (`firmware/src/kf_engine.h`) skal låte som referansen, og den sjekkes mot
-referansens egne renders. Den avviker fra referansen bare på disse punktene, fordi FM-1 ikke har råd til resten:
+**Decision.** The audio engine in the firmware (`firmware/src/kf_engine.h`) should sound like the reference, and it
+is checked against the reference's own renders. It differs from the reference only on these points, because the FM-1
+cannot afford the rest:
 
-- **Oscillatorbudsjett på 48.** Når stemmene trenger flere oscillatorer enn det, toner de stilleste utklingningene
-  ut på 25 ms. En utklinging som står alene, for eksempel på slutten av en låt, får klinge helt ut. Utklingninger
-  slutter ellers 40 dB under toppen sin, mens referansen lar dem gå i seks tidskonstanter.
-- **Romklangen er en FDN** med fire linjer bak fire diffusorer, og ikke en konvolusjon på 2,8 s. Energien er
-  kalibrert mot referansen. Den gatede romklangen er en FDN bak en port som skarptromma og klappen åpner.
-- **FM-stemmer med hele forhold** (ORGAN, FM EP, TINE, FM BASS, BELL EP, GRIT EP, GLASS PAD) starter modulatorene på
-  en fast fase som gir referansens gjennomsnittsnivå. I referansen følger fasen tonens startøyeblikk, og nivået varierer
-  inntil 4 dB fra tone til tone.
-- **Kompressoren** følger Chromiums kurve (målt med `tools/ref_tour.cjs --comp`), men uten 6 ms forsinkelse foran.
+- **Oscillator budget of 48.** When the voices need more oscillators than that, the quietest release tails fade out
+  over 25 ms. A release tail that stands alone, for example at the end of a song, is allowed to ring out fully.
+  Otherwise release tails end 40 dB below their peak, while the reference lets them run for six time constants.
+- **The reverb is an FDN** with four lines behind four diffusers, not a 2.8 s convolution. The energy is calibrated
+  against the reference. The gated reverb is an FDN behind a gate that the snare and the clap open.
+- **FM voices with integer ratios** (ORGAN, FM EP, TINE, FM BASS, BELL EP, GRIT EP, GLASS PAD) start the modulators
+  at a fixed phase that gives the reference's average level. In the reference the phase follows the note's start
+  time, and the level varies by up to 4 dB from note to note.
+- **The compressor** follows Chromium's curve (measured with `tools/ref_tour.cjs --comp`), but without the 6 ms
+  lookahead delay.
 
-**Hvorfor.** Det tyngste stedet i låtene (takt 41–44 i ENGINE TOUR) kostet 76 oscillatorer per frame uten budsjett,
-fordi pad-ene har lange utklingninger. Med budsjettet bruker lyden 31,6 % av brikken, og 34,0 % med spillet rundt
-(målt i fm1-emu). En
-konvolusjon på 2,8 s er langt over det brikken kan.
+**Why.** The heaviest spot in the songs (bars 41–44 in ENGINE TOUR) cost 76 oscillators per frame without a budget,
+because the pads have long release tails. With the budget the sound uses 31.6 % of the chip, and 34.0 % with the
+game around it (measured in fm1-emu). A 2.8 s convolution is far beyond what the chip can do.
 
-**Sjekkes av.** `tests/run_vavehero.sh`: alle 25 patcher og 4 trommesett innenfor 1,5 dB og 25 % lysstyrke av
-referansen, de fleste innenfor 0,3 dB, og hver fjerde takt av de fire låtenes første 30 sekunder innenfor 0,8 dB.
-`tools/emu_cpu.sh` i CI feiler hvis det tyngste stedet bruker mer enn 45 % av brikken.
+**Checked by.** `tests/run_vavehero.sh`: all 25 patches and 4 drum kits within 1.5 dB and 25 % brightness of the
+reference, most within 0.3 dB, and every fourth bar of the first 30 seconds of the four songs within 0.8 dB.
+`tools/emu_cpu.sh` in CI fails if the heaviest spot uses more than 45 % of the chip.
 
-## D9 (2026-11-07): spillet heter VaveHero
+## D9 (2026-11-07): the game is called VaveHero
 
-**Beslutning.** Spillet heter VaveHero, etter M-VAVE og «hero» fra sjangeren. Arbeidstittelen KEYFALL er borte fra
-filnavn, skjermer, firmware og dokumenter. På skjermen står det VAVEHERO, med VAVE i hvitt og HERO i cyan, fordi
-den store fonten bare har store bokstaver. Firmwaren heter `vavehero.fwsc`, appen `firmware/src/vavehero.c`,
-referansen `reference/vavehero.html`, og pakkens identitet er fortsatt `FM-1_95N`.
+**Decision.** The game is called VaveHero, after M-VAVE and "hero" from the genre. The working title KEYFALL is gone
+from file names, screens, firmware and documents. The screen shows VAVEHERO, with VAVE in white and HERO in cyan,
+because the large font only has capital letters. The firmware is called `vavehero.fwsc`, the app
+`firmware/src/vavehero.c`, the reference `reference/vavehero.html`, and the package identity is still `FM-1_95N`.
 
-**Hva det koster.** Innstillinger lagret i flash av en tidligere bygging starter på nytt, fordi lagringen har fått
-eget merke (`STORE_MAGIC` "VHRO"). Det samme gjelder det referansen har lagret i nettleseren, også egne låter, fordi
-nøklene nå heter `vavehero.*`. Interne navn i koden (`kf_`, `kg_`, `ks_` og `window.KF`) er beholdt, slik at koden ikke
-endres bare for navnets skyld.
+**What it costs.** Settings saved in flash by an earlier build are reset, because the storage now has its own marker
+(`STORE_MAGIC` "VHRO"). The same goes for what the reference has saved in the browser, including your own songs,
+because the storage keys are now named `vavehero.*`. Internal names in the code (`kf_`, `kg_`, `ks_` and
+`window.KF`) are kept, so that the code is not changed just for the sake of the name.
 
-**Å sjekke før utgivelse.** «Hero» i Guitar Hero er Activisions varemerke, som konseptet allerede nevnte. VaveHero er
-et eget navn, men det bør vurderes før spillet legges ut på Firmware Hub.
+**To check before a release.** "Hero" in Guitar Hero is Activision's trademark, as the concept already mentioned.
+VaveHero is a separate name, but it should be reviewed before the game is published on Firmware Hub.
 
-## D10 (2026-11-07): tittelskjermens synthwave i hele spillet
+## D10 (2026-11-07): the title screen's synthwave across the whole game
 
-**Beslutning.** Tittelskjermens uttrykk brukes i hele spillet, ikke omvendt. Det gjelder kromlogoen, solnedgangen,
-fjellene med neonkant, neongulvet og fiolett natt.
+**Decision.** The title screen's look is used throughout the game, not the other way around. That covers the chrome
+logo, the sunset, the mountains with neon edges, the neon floor and violet night.
 
-- **Fargene:** de nøytrale fargene er flyttet fra marineblått til fiolett natt (P i referansen, `K_*` i
-  `kf_gfx.h`). Magenta neon (`#ff4fd8`) er horisontens linje, og rutenettet er `#ff3df0`.
-- **Banen:** banen ligger på tittelskjermens gulv. Rutenettet fortsetter banens linjer utenfor kantene mot samme
-  forsvinningspunkt, og slaglinjene går over hele gulvet, så det beveger seg med takten. Kantene lyser magenta.
-  Den fjerne enden blekner inn i gulvets dis, ikke i svart. Over banen er solnedgangen klemt sammen til 20 rader:
-  gløden, noen stjerner og fjellene. Den lages av `tools/gen_splash.py` (`KF_SKY`) og har neonhorisonten under seg.
-- **Tittelskjermen:** gulvet er spillets egen bane som veien inn i solnedgangen, og den spiller seg selv. Banene,
-  slaglinjene, notene, treffelinja med glimt og tangentene ser ut som i spillet, i en sløyfe på 125 BPM. FX DEMO og
-  versjonen står øverst.
-- **Menyene:** låtlista, resultatet og MIDI MODE ligger i nattehimmelen med stjerner. Overskriften har
-  neonhorisonten under seg, framdriften er solnedgangen fra magenta til gull, og valgt rad har neon som blekner mot
-  høyre.
-- **Krom:** de store ordene (låttittelen ved start, nedtellingen, FULL COMBO, CLEAR, PAUSE) og karakteren på
-  resultatet står i logoens krom (`ktext_chrome`, `textChrome`). OP BOOST er gull, som før.
+- **The colours:** the neutral colours have moved from navy blue to violet night (P in the reference, `K_*` in
+  `kf_gfx.h`). Magenta neon (`#ff4fd8`) is the horizon line, and the grid is `#ff3df0`.
+- **The highway:** the highway lies on the title screen's floor. The grid continues the highway's lines beyond its
+  edges toward the same vanishing point, and the beat lines run across the whole floor, so it moves in time. The
+  edges glow magenta. The far end fades into the floor's haze, not into black. Above the highway the sunset is
+  squeezed into 20 rows: the glow, a few stars and the mountains. It is made by `tools/gen_splash.py` (`KF_SKY`) and
+  has the neon horizon beneath it.
+- **The title screen:** the floor is the game's own highway as the road into the sunset, and it plays itself. The
+  lanes, the beat lines, the notes, the hit line with flashes and the keys look as they do in the game, in a loop at
+  125 BPM. FX DEMO and the version are at the top.
+- **The menus:** the song list, the results screen and MIDI MODE sit in the night sky with stars. The heading has
+  the neon horizon beneath it, the progress bar is the sunset from magenta to gold, and the selected row has neon
+  that fades toward the right.
+- **Chrome:** the big words (the song title at the start, the countdown, FULL COMBO, CLEAR, PAUSE) and the grade on
+  the results screen are in the logo's chrome (`ktext_chrome`, `textChrome`). OP BOOST is gold, as before.
 
-**Logoen** har fått mindre svart. Det sorte båndet midt i kromen var en feil: fargeovergangen ble sort forbi siste
-stopp. Kanten og konturen er nå fiolett i stedet for nesten sort.
+**The logo** has less black now. The black band in the middle of the chrome was a bug: the gradient turned black
+past the last stop. The edge and the outline are now violet instead of almost black.
 
-**Hva det koster.** Tegningen er ikke blitt dyrere. Tekst hopper nå over tomme glyfbyte, og ytterlinje brukes bare der
-bakgrunnen krever det (poengsummen over himmelen og treffordene). Callgrind på samme skript (`-Os`) gir dette:
-spillskjermen koster omtrent 7 % mindre per bilde i DEMO-en (ENGINE TOUR fra takt 41) og omtrent 15 % mindre over hele
-`tests/kf/game.txt`. Tittelskjermen koster omtrent 35 % mindre. Himmelen bruker 9,6 KB flash.
-
+**What it costs.** Drawing has not become more expensive. Text now skips empty glyph bytes, and an outline is used
+only where the background requires it (the score over the sky and the hit words). Callgrind on the same script
+(`-Os`) gives this: the game screen costs about 7 % less per frame in the DEMO (ENGINE TOUR from bar 41) and about
+15 % less over all of `tests/kf/game.txt`. The title screen costs about 35 % less. The sky uses 9.6 KB of flash.

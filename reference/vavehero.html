@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="no">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -48,66 +48,66 @@
 <div class="wrap">
   <main>
     <h1><img id="logo" src="" alt="VaveHero" width="360" height="75"></h1>
-    <p class="sub">Referanse 0.1, spillbar i nettleseren. Dette er fasit for følelse, timing og lyd før Dinghy-porten.</p>
+    <p class="sub">Reference 0.1, playable in the browser. This is the ground truth for feel, timing and sound before the Dinghy port.</p>
     <div class="stage">
-      <div class="bezel"><canvas id="scr" width="240" height="240" aria-label="FM-1-skjermen, 240 × 240"></canvas></div>
-      <canvas id="panel" aria-label="FM-1-panelet: tangenter med LED og knapper. Kan klikkes og berøres."></canvas>
+      <div class="bezel"><canvas id="scr" width="240" height="240" aria-label="The FM-1's screen, 240 × 240"></canvas></div>
+      <canvas id="panel" aria-label="The FM-1's panel: keys with LEDs, and buttons. Click or touch them."></canvas>
     </div>
   </main>
   <aside>
     <div class="card">
-      <h2>Slik spiller du</h2>
+      <h2>How to play</h2>
       <table>
-        <tr><td><kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> … <kbd>K</kbd></td><td>De åtte banene, hvite tangenter: C4–C5, eller annenhver hvit tangent med SPREAD. De svarte vises, men har ingen funksjon.</td></tr>
+        <tr><td><kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> … <kbd>K</kbd></td><td>The eight lanes, white keys: C4–C5, or every other white key with SPREAD. The black keys are shown but do nothing.</td></tr>
         <tr><td><kbd>Z</kbd> <kbd>X</kbd></td><td>OCT− / OCT+</td></tr>
-        <tr><td><kbd>Q</kbd></td><td>GLO: SPREAD av eller på</td></tr>
-        <tr><td><kbd>M</kbd></td><td>MIDI MODE inn og ut (PLAY bytter LIVE og PREVIEW)</td></tr>
-        <tr><td><kbd>Mellomrom</kbd></td><td>FX: OP BOOST når måleren er full; på tittelskjermen DEMO</td></tr>
+        <tr><td><kbd>Q</kbd></td><td>GLO: SPREAD on or off</td></tr>
+        <tr><td><kbd>M</kbd></td><td>MIDI MODE in and out (PLAY switches LIVE and PREVIEW)</td></tr>
+        <tr><td><kbd>Space</kbd></td><td>FX: OP BOOST when the meter is full; on the title screen, the DEMO</td></tr>
         <tr><td><kbd>Enter</kbd></td><td>PLAY: start, pause</td></tr>
-        <tr><td><kbd>Esc</kbd></td><td>HOME: tilbake</td></tr>
-        <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>SELECT: velg låt</td></tr>
-        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>KNOB 1: nivå</td></tr>
-        <tr><td><kbd>1</kbd> <kbd>2</kbd></td><td>KNOB 2: lyd (TONE)</td></tr>
-        <tr><td><kbd>3</kbd> <kbd>4</kbd></td><td>KNOB 3: øvetempo (SPEED)</td></tr>
-        <tr><td><kbd>5</kbd> <kbd>6</kbd></td><td>KNOB 4: miks (MIX)</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>HOME: back</td></tr>
+        <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>SELECT: pick a song</td></tr>
+        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>KNOB 1: level</td></tr>
+        <tr><td><kbd>1</kbd> <kbd>2</kbd></td><td>KNOB 2: sound (TONE)</td></tr>
+        <tr><td><kbd>3</kbd> <kbd>4</kbd></td><td>KNOB 3: practice tempo (SPEED)</td></tr>
+        <tr><td><kbd>5</kbd> <kbd>6</kbd></td><td>KNOB 4: mix (MIX)</td></tr>
       </table>
-      <p class="muted">Du kan også klikke eller ta på tangentene og knappene i panelet. LED-ene viser det de ville vist på FM-1: lyser betyr trykk nå, glød betyr neste tone.</p>
+      <p class="muted">You can also click or touch the keys and buttons on the panel. The LEDs show what they would on an FM-1: lit means press now, a glow means the next note.</p>
     </div>
     <div class="card">
-      <h2>Innstillinger</h2>
-      <label>Latens <input id="offset" type="range" min="-120" max="120" step="1"><span class="v" id="offsetV"></span></label>
-      <div class="row"><button id="applyCal" disabled>Bruk snittet fra siste runde</button><span class="muted" id="calInfo"></span></div>
+      <h2>Settings</h2>
+      <label>Latency <input id="offset" type="range" min="-120" max="120" step="1"><span class="v" id="offsetV"></span></label>
+      <div class="row"><button id="applyCal" disabled>Use the average from the last round</button><span class="muted" id="calInfo"></span></div>
       <label>GRIT <input id="grit" type="range" min="0" max="100" step="5"><span class="v" id="gritV"></span></label>
-      <p class="muted">Hvor skitten lyden er: pumping fra kicken, metning på miksen og crunch på trommene. 0 er rent.</p>
-      <label>Notefart <select id="zpb"><option value="0.75">0,75×</option><option value="1">1×</option><option value="1.25">1,25×</option><option value="1.5">1,5×</option></select></label>
-      <label><input id="spread" type="checkbox"> SPREAD: annenhver hvit tangent, for store fingre</label>
-      <label><input id="auto" type="checkbox"> Autospill (demo og test)</label>
+      <p class="muted">How dirty the sound is: pumping from the kick, saturation on the mix and crunch on the drums. 0 is clean.</p>
+      <label>Note speed <select id="zpb"><option value="0.75">0.75×</option><option value="1">1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option></select></label>
+      <label><input id="spread" type="checkbox"> SPREAD: every other white key, for big fingers</label>
+      <label><input id="auto" type="checkbox"> Autoplay (demo and test)</label>
     </div>
     <div class="card">
-      <h2>MIDI inn</h2>
-      <div class="row"><button id="midiBtn">Koble til MIDI</button><label>Inn <select id="midiIn" disabled><option>Ingen</option></select></label><label>Ut <select id="midiOut" disabled><option>Ingen</option></select></label></div>
-      <p class="muted">Kanal 1 spiller tangentene: et FM-1 med en firmware som sender dem på USB-MIDI, eller et vanlig MIDI-keyboard. Med MIDI skifter spillet oktav selv. Kanal 2–6 og 10 spiller bandets instrumenter, så du kan høre en låt fra DAW-en gjennom lydmotoren mens du lager den.</p>
-      <p class="muted"><b>MIDI MODE</b> (siste rad i låtlista, eller <kbd>M</kbd>): LIVE er lydmodul med en gang. PREVIEW forsinker alt én takt, slik at kanal 1 faller ned banen som i spillet. Tangentene sendes ut på kanal 1 til «Ut», så DAW-en kan ta dem opp. Se <code>docs/songs.md</code>.</p>
+      <h2>MIDI in</h2>
+      <div class="row"><button id="midiBtn">Connect MIDI</button><label>In <select id="midiIn" disabled><option>None</option></select></label><label>Out <select id="midiOut" disabled><option>None</option></select></label></div>
+      <p class="muted">Channel 1 plays the keys: an FM-1 with firmware that sends them over USB-MIDI, or an ordinary MIDI keyboard. With MIDI the game shifts octaves by itself. Channels 2–6 and 10 play the band's instruments, so you can hear a song from your DAW through the audio engine while you make it.</p>
+      <p class="muted"><b>MIDI MODE</b> (the last row of the song list, or <kbd>M</kbd>): LIVE is a sound module right away. PREVIEW delays everything by one bar, so channel 1 falls down the highway as in the game. The keys go out on channel 1 to “Out”, so your DAW can record them. See <code>docs/songs.md</code>.</p>
       <div class="status" id="midiStatus"></div>
     </div>
     <div class="card">
-      <h2>Egne låter (MIDI)</h2>
-      <div class="row"><button id="loadBtn">Last inn .mid</button><input id="file" type="file" accept=".mid,.midi,audio/midi,audio/x-midi" multiple hidden><button id="clearSongs">Fjern egne låter</button></div>
-      <p class="muted">Kanal 1 er spillsporet. 2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS og 10 trommer (General MIDI). Kanal 16 er satt av til LINK. Du kan også slippe filer rett på siden. Se <code>docs/songs.md</code>.</p>
-      <div class="row muted">Maler: <button class="small" data-tpl="0">first-light.mid</button><button class="small" data-tpl="1">neon-carrier.mid</button></div>
+      <h2>Your own songs (MIDI)</h2>
+      <div class="row"><button id="loadBtn">Load .mid</button><input id="file" type="file" accept=".mid,.midi,audio/midi,audio/x-midi" multiple hidden><button id="clearSongs">Remove your own songs</button></div>
+      <p class="muted">Channel 1 is the play track. 2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS and 10 drums (General MIDI). Channel 16 is reserved for LINK. You can also drop files onto the page. See <code>docs/songs.md</code>.</p>
+      <div class="row muted">Templates: <button class="small" data-tpl="0">first-light.mid</button><button class="small" data-tpl="1">neon-carrier.mid</button></div>
       <div class="report" id="report"></div>
     </div>
     <div class="card">
-      <h2>2 spillere (LINK)</h2>
+      <h2>2 players (LINK)</h2>
       <div class="row">
-        <label><input type="radio" name="link" value="off" checked> Av</label>
-        <label><input type="radio" name="link" value="tab"> To vinduer</label>
-        <label><input type="radio" name="link" value="bot"> Mot bot</label>
+        <label><input type="radio" name="link" value="off" checked> Off</label>
+        <label><input type="radio" name="link" value="tab"> Two windows</label>
+        <label><input type="radio" name="link" value="bot"> Against a bot</label>
       </div>
-      <p class="muted">«To vinduer» kobler to faner eller vinduer i samme nettleser, som om de var to FM-1-er. Meldingene er de samme MIDI-meldingene som skal gå over USB-C (se <code>docs/link.md</code>). Med to MIDI-keyboard kan hvert vindu få sitt eget.</p>
+      <p class="muted">“Two windows” links two tabs or windows in the same browser, as if they were two FM-1s. The messages are the same MIDI messages that will go over USB-C (see <code>docs/link.md</code>). With two MIDI keyboards, each window can have its own.</p>
       <div class="status" id="linkStatus"></div>
     </div>
-    <p class="muted">VaveHero reference 0.1.11 · <code>docs/konsept.md</code> · <code>docs/link.md</code> · <code>ROADMAP.md</code></p>
+    <p class="muted">VaveHero reference 0.1.12 · <code>docs/concept.md</code> · <code>docs/link.md</code> · <code>ROADMAP.md</code></p>
   </aside>
 </div>
 <script>/* Terminus (ter-u16n), SIL OFL 1.1: assets/fonts/Terminus-LICENSE.txt. Dinghy 0.4 FONT_S and FONT_L, 4 bits a pixel. */
@@ -121,7 +121,7 @@ window.TERMINUS = {"S": {"h": 16, "pad": 2, "first": 32, "last": 126, "adv": [8,
 /* VaveHero, the browser reference. Until the Dinghy port exists, this file is the authority for how VaveHero feels,
    times and sounds. Everything the FM-1 has is here: the 240 x 240 screen in Dinghy's Terminus fonts, the 27 keys
    with their two LED levels, the buttons and knobs, and the LINK protocol for two players. */
-const VERSION = 'REF 0.1.11';
+const VERSION = 'REF 0.1.12';
 
 /* ================================================================ small things */
 const $ = id => document.getElementById(id);
@@ -428,7 +428,7 @@ const CHMAP = { 0: 'PLAY', 1: 'BASS', 2: 'PAD', 3: 'ARP', 4: 'LEAD', 5: 'KEYS', 
 const OP_NOTE = 11;                                                    /* B-1 on channel 1, held over an OP phrase */
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const noteName = m => NOTE_NAMES[mod12(m)] + (Math.floor(m / 12) - 1);
-const where = t => `takt ${Math.floor(t / 4) + 1}, slag ${Math.floor(((t % 4) + 4) % 4) + 1}`;
+const where = t => `bar ${Math.floor(t / 4) + 1}, beat ${Math.floor(((t % 4) + 4) % 4) + 1}`;
 const nt = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 const toB64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]); return btoa(s); };
@@ -439,9 +439,9 @@ const asciiTitle = s => s.toUpperCase().replace(/Æ/g, 'AE').replace(/Ø/g, 'O')
 function parseMidi(u8) {
   const str = (o, n) => String.fromCharCode(...u8.subarray(o, o + n));
   const u32 = o => ((u8[o] << 24) >>> 0) + (u8[o + 1] << 16) + (u8[o + 2] << 8) + u8[o + 3], u16 = o => (u8[o] << 8) | u8[o + 1];
-  if (u8.length < 14 || str(0, 4) !== 'MThd') throw new Error('Dette er ikke en MIDI-fil (mangler MThd).');
+  if (u8.length < 14 || str(0, 4) !== 'MThd') throw new Error('This is not a MIDI file (no MThd).');
   const ntr = u16(10), div = u16(12);
-  if (div & 0x8000) throw new Error('Fila bruker SMPTE-tid. Eksporter med takt og slag (PPQ).');
+  if (div & 0x8000) throw new Error('The file uses SMPTE time. Export it with bars and beats (PPQ).');
   const out = { format: u16(8), ppq: div, tempos: [], timesigs: [], names: [], notes: [] }, dec = new TextDecoder('utf-8');
   let p = 8 + u32(4);
   for (let tr = 0; tr < ntr && p + 8 <= u8.length; tr++) {
@@ -462,7 +462,7 @@ function parseMidi(u8) {
         continue;
       }
       if (st === 0xF0 || st === 0xF7) { q += vl(); run = 0; continue; }
-      if (!(st & 0x80)) throw new Error('Ødelagt MIDI-spor (data uten status).');
+      if (!(st & 0x80)) throw new Error('A broken MIDI track (data without a status).');
       run = st;
       const cmd = st & 0xF0, ch = st & 15, d1 = u8[q++], d2 = (cmd === 0xC0 || cmd === 0xD0) ? 0 : u8[q++];
       const key = ch * 128 + d1;
@@ -479,16 +479,16 @@ function importSong(mid, fileName) {
   const info = [], warn = [], B = tk => tk / mid.ppq;
   const tempos = mid.tempos.slice().sort((a, b) => a.tick - b.tick);
   const bpm = tempos.length ? Math.round(6e9 / tempos[0].us) / 100 : 120;
-  if (!tempos.length) warn.push('Fila har ikke noe tempo, så det blir 120 BPM.');
-  else if (new Set(tempos.map(t => t.us)).size > 1) warn.push('Fila har tempoendringer. VaveHero bruker det første tempoet.');
+  if (!tempos.length) warn.push('The file has no tempo, so it plays at 120 BPM.');
+  else if (new Set(tempos.map(t => t.us)).size > 1) warn.push('The file changes tempo. VaveHero uses the first tempo.');
   const ts = mid.timesigs[0];
-  if (ts && (ts.num !== 4 || ts.den !== 4)) warn.push(`Taktarten er ${ts.num}/${ts.den}. VaveHero teller i 4/4.`);
+  if (ts && (ts.num !== 4 || ts.den !== 4)) warn.push(`The time signature is ${ts.num}/${ts.den}. VaveHero counts in 4/4.`);
   const named = mid.names.find(n => n.tr === 0 && n.text.trim() && !/^(PLAY|BASS|PAD|ARP|LEAD|KEYS|DRUMS)$/i.test(n.text.trim()));
   const title = asciiTitle(named ? named.text : fileName.replace(/\.midi?$/i, '').replace(/[-_]+/g, ' '));
 
   let play = mid.notes.filter(n => n.ch === 0 && n.pitch >= KS_TOP).map(n => ({ t: B(n.tick), pitch: n.pitch, len: B(n.len), vel: n.vel }))
     .sort((a, b) => a.t - b.t || a.pitch - b.pitch);
-  if (!play.length) throw new Error('Det er ingen noter på kanal 1, som er spillsporet.');
+  if (!play.length) throw new Error('There are no notes on channel 1, the play track.');
   let best = null;                                                    /* D1: the transpose that lands on white keys */
   for (const T of [0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, 6]) {
     const black = play.filter(n => BLACK_S.has(mod12(n.pitch - T))).length;
@@ -496,16 +496,16 @@ function importSong(mid, fileName) {
     if (!black) break;
   }
   const T = best.T, dropped = [];
-  if (T) info.push(`Spillsporet er flyttet ${Math.abs(T)} halvtoner ${T > 0 ? 'ned' : 'opp'} til de hvite tangentene. Det høres i originaltonearten.`);
+  if (T) info.push(`The play track is moved ${Math.abs(T)} semitones ${T > 0 ? 'down' : 'up'} onto the white keys. It sounds in the original key.`);
   play = play.filter(n => { if (BLACK_S.has(mod12(n.pitch - T))) { dropped.push(n); return false; } n.pitch -= T; return true; });
-  if (dropped.length) warn.push(`${nt(dropped.length, 'tone havner', 'toner havner')} på svarte tangenter og er tatt ut (D1): ` +
-    dropped.slice(0, 4).map(n => `${noteName(n.pitch)} i ${where(n.t)}`).join(', ') + (dropped.length > 4 ? ' …' : '') + '.');
+  if (dropped.length) warn.push(`${nt(dropped.length, 'note lands', 'notes land')} on black keys and ${dropped.length === 1 ? 'is' : 'are'} left out (D1): ` +
+    dropped.slice(0, 4).map(n => `${noteName(n.pitch)} at ${where(n.t)}`).join(', ') + (dropped.length > 4 ? ' …' : '') + '.');
 
   const groups = [];                                                  /* chords: notes that start together */
   for (const n of play) { const g = groups[groups.length - 1]; if (g && Math.abs(g.t - n.t) < 1 / 64) { n.t = g.t; g.notes.push(n); } else groups.push({ t: n.t, notes: [n] }); }
   let cut = 0;
   for (const g of groups) if (g.notes.length > 3) { g.notes.sort((a, b) => b.pitch - a.pitch); cut += g.notes.length - 3; g.notes = g.notes.slice(0, 3); }
-  if (cut) warn.push(`${nt(cut, 'tone', 'toner')} er tatt ut av akkorder med mer enn tre toner. De tre øverste er beholdt.`);
+  if (cut) warn.push(`${nt(cut, 'note is', 'notes are')} left out of chords with more than three notes. The top three are kept.`);
 
   const fits = (g, o) => g.notes.every(n => n.pitch >= 60 + 12 * o && n.pitch <= 72 + 12 * o);
   const choose = (g, cur) => { for (let d = 0; d <= 5; d++) for (const c of d ? [cur + d, cur - d] : [cur]) if (c >= -2 && c <= 3 && fits(g, c)) return c; return null; };
@@ -524,24 +524,24 @@ function importSong(mid, fileName) {
     }
     cur = o; prev = g;
   }
-  if (wide) warn.push(`${nt(wide, 'tone', 'toner')} er tatt ut fordi akkorden spenner over mer enn en oktav.`);
-  if (octs.length) info.push(`${octs.length} oktavskift (OCT) er lagt inn automatisk.`);
-  if (tight) warn.push(`${nt(tight, 'oktavskift kommer', 'oktavskift kommer')} tettere enn et halvt slag etter forrige tone, og blir vanskelige.`);
+  if (wide) warn.push(`${nt(wide, 'note is', 'notes are')} left out because the chord spans more than an octave.`);
+  if (octs.length) info.push(`${nt(octs.length, 'octave shift (OCT) is', 'octave shifts (OCT) are')} added automatically.`);
+  if (tight) warn.push(`${nt(tight, 'octave shift comes', 'octave shifts come')} closer than half a beat after the note before, and ${tight === 1 ? 'is' : 'are'} hard to play.`);
   const melody = groups.flatMap(g => g.notes).filter(n => n.len > 0).map(n => ({ t: n.t, pitch: n.pitch, len: n.len }))
     .sort((a, b) => a.t - b.t || a.pitch - b.pitch);
-  if (!melody.length) throw new Error('Ingen toner på kanal 1 passer på de hvite tangentene.');
+  if (!melody.length) throw new Error('No notes on channel 1 fit on the white keys.');
 
   const patchLog = [], badKs = [];                                    /* D6: keyswitches, notes 0-11; on channel 1, 11 is the OP note */
   for (const n of mid.notes) {
     const part = CHMAP[n.ch]; if (!part || n.pitch >= KS_TOP || (n.ch === 0 && n.pitch === OP_NOTE)) continue;
     if (n.pitch < PATCHSET[part].length) patchLog.push({ beat: B(n.tick), part, ks: n.pitch });
-    else badKs.push(`kanal ${n.ch + 1}, note ${n.pitch} (${noteName(n.pitch)})`);
+    else badKs.push(`channel ${n.ch + 1}, note ${n.pitch} (${noteName(n.pitch)})`);
   }
   patchLog.sort((a, b) => a.beat - b.beat);
-  if (badKs.length) warn.push(`${nt(badKs.length, 'patchvalg', 'patchvalg')} uten patch: ${badKs.slice(0, 4).join('; ')}${badKs.length > 4 ? ' …' : ''}.`);
+  if (badKs.length) warn.push(`${nt(badKs.length, 'patch choice', 'patch choices')} without a patch: ${badKs.slice(0, 4).join('; ')}${badKs.length > 4 ? ' …' : ''}.`);
   if (patchLog.length) {
-    const by = {}; for (const e of patchLog) (by[e.part] = by[e.part] || []).push(`${patchOf(e.part, e.ks)} fra takt ${Math.floor(e.beat / 4) + 1}`);
-    info.push('Patcher: ' + Object.entries(by).map(([k, v]) => `${k} ${v.slice(0, 3).join(', ')}${v.length > 3 ? ` (og ${v.length - 3} til)` : ''}`).join('. ') + '.');
+    const by = {}; for (const e of patchLog) (by[e.part] = by[e.part] || []).push(`${patchOf(e.part, e.ks)} from bar ${Math.floor(e.beat / 4) + 1}`);
+    info.push('Patches: ' + Object.entries(by).map(([k, v]) => `${k} ${v.slice(0, 3).join(', ')}${v.length > 3 ? ` (and ${v.length - 3} more)` : ''}`).join('. ') + '.');
   }
   const events = [], parts = {}, ignored = new Set();                 /* the band */
   for (const n of mid.notes) {
@@ -552,10 +552,10 @@ function importSong(mid, fileName) {
   }
   for (const e of patchLog) if (e.part !== 'PLAY') events.push({ beat: e.beat, part: e.part, ks: e.ks });
   events.sort((a, b) => a.beat - b.beat || (b.ks != null) - (a.ks != null));   /* a keyswitch before the notes on its beat */
-  if (ignored.has(16)) { warn.push('Kanal 16 er satt av til LINK og blir ikke spilt.'); ignored.delete(16); }
-  if (ignored.size) warn.push(`Kanal ${[...ignored].sort((a, b) => a - b).join(', ')} har ikke noe instrument og blir ikke spilt.`);
+  if (ignored.has(16)) { warn.push('Channel 16 is reserved for LINK and is not played.'); ignored.delete(16); }
+  if (ignored.size) warn.push(`${ignored.size > 1 ? 'Channels' : 'Channel'} ${[...ignored].sort((a, b) => a - b).join(', ')} ${ignored.size > 1 ? 'have no instruments and are' : 'has no instrument and is'} not played.`);
   const silent = [...new Set(events.filter(e => e.part === 'DRUMS' && e.ks == null && !DRUMKIT[e.pitch]).map(e => e.pitch))];
-  if (silent.length) warn.push(`Trommenoter uten lyd i settet: ${silent.sort((a, b) => a - b).join(', ')}.`);
+  if (silent.length) warn.push(`${silent.length > 1 ? 'Drum notes' : 'A drum note'} with no sound in the kit: ${silent.sort((a, b) => a - b).join(', ')}.`);
 
   let lastEnd = 0;
   for (const n of melody) lastEnd = Math.max(lastEnd, n.t + n.len);
@@ -564,12 +564,12 @@ function importSong(mid, fileName) {
 
   /* OP phrases: note 11 (B-1) on channel 1, held as long as the phrase; without any, every fourth pair of bars */
   let phrases = mid.notes.filter(n => n.ch === 0 && n.pitch === OP_NOTE).map(n => ({ a: B(n.tick), b: B(n.tick + n.len) })).sort((x, y) => x.a - y.a);
-  if (phrases.length) info.push(`${nt(phrases.length, 'OP-frase', 'OP-fraser')} fra OP-noten (B-1 på kanal 1).`);
+  if (phrases.length) info.push(`${nt(phrases.length, 'OP phrase', 'OP phrases')} from the OP note (B-1 on channel 1).`);
   else {
     for (let bar = Math.floor(melody[0].t / 4); bar * 4 < end; bar += 4) {
       const a = bar * 4, b = a + 8; if (melody.filter(n => n.t >= a && n.t < b).length >= 3) phrases.push({ a, b });
     }
-    info.push(`Fila har ingen OP-note (B-1 på kanal 1), så ${nt(phrases.length, 'OP-frase', 'OP-fraser')} er lagt inn automatisk.`);
+    info.push(`The file has no OP note (B-1 on channel 1), so ${nt(phrases.length, 'OP phrase is', 'OP phrases are')} added automatically.`);
   }
 
   let h = 2166136261;                                                 /* the song's identity for LINK: 14 bits */
@@ -1692,7 +1692,7 @@ pan.addEventListener('pointerup', pUp); pan.addEventListener('pointercancel', pU
 const ui = {
   cal() {
     const L = G.last, b = $('applyCal');
-    if (L && L.counts.P + L.counts.G + L.counts.O >= 8) { b.disabled = false; $('calInfo').textContent = `snitt ${Math.round(L.meanDt)} ms`; }
+    if (L && L.counts.P + L.counts.G + L.counts.O >= 8) { b.disabled = false; $('calInfo').textContent = `average ${Math.round(L.meanDt)} ms`; }
     else { b.disabled = true; $('calInfo').textContent = ''; }
   },
   offset() { $('offset').value = G.offset; $('offsetV').textContent = (G.offset > 0 ? '+' : '') + G.offset + ' ms'; },
@@ -1712,34 +1712,34 @@ ui.offset();
 let midiAcc = null;
 $('midiBtn').addEventListener('click', async () => {
   ensureAudio();
-  if (!navigator.requestMIDIAccess) { $('midiStatus').textContent = 'Nettleseren har ikke WebMIDI (prøv Chrome eller Edge).'; return; }
+  if (!navigator.requestMIDIAccess) { $('midiStatus').textContent = 'This browser has no WebMIDI (try Chrome or Edge).'; return; }
   try { midiAcc = await navigator.requestMIDIAccess({ sysex: false }); midiAcc.onstatechange = fillMidi; fillMidi(); }
-  catch (err) { $('midiStatus').textContent = 'Fikk ikke tilgang til MIDI.'; }
+  catch (err) { $('midiStatus').textContent = 'No access to MIDI.'; }
 });
 function fillMidi() {
   const sel = $('midiIn'), prev = sel.value; sel.innerHTML = '';
   const ins = [...midiAcc.inputs.values()];
-  sel.add(new Option('Ingen', '')); ins.forEach(i => sel.add(new Option(i.name, i.id)));
+  sel.add(new Option('None', '')); ins.forEach(i => sel.add(new Option(i.name, i.id)));
   sel.disabled = false; sel.value = ins.some(i => i.id === prev) ? prev : (ins[0] ? ins[0].id : '');
   const os = $('midiOut'), oprev = os.value, outs = [...midiAcc.outputs.values()]; os.innerHTML = '';
-  os.add(new Option('Ingen', '')); outs.forEach(o => os.add(new Option(o.name, o.id))); os.disabled = false; os.value = outs.some(o => o.id === oprev) ? oprev : '';
+  os.add(new Option('None', '')); outs.forEach(o => os.add(new Option(o.name, o.id))); os.disabled = false; os.value = outs.some(o => o.id === oprev) ? oprev : '';
   bindMidi();
 }
 function bindMidi() {
   if (!midiAcc) return;
   for (const i of midiAcc.inputs.values()) i.onmidimessage = null;
   const inp = midiAcc.inputs.get($('midiIn').value);
-  if (!inp) { $('midiStatus').textContent = midiAcc.inputs.size ? 'Velg en inngang.' : 'Ingen MIDI-innganger funnet.'; return; }
-  $('midiStatus').textContent = 'Lytter på ' + inp.name;
+  if (!inp) { $('midiStatus').textContent = midiAcc.inputs.size ? 'Pick an input.' : 'No MIDI inputs found.'; return; }
+  $('midiStatus').textContent = 'Listening to ' + inp.name;
   inp.onmidimessage = e => midiIn(e.data, e.timeStamp);
 }
 $('midiIn').addEventListener('change', bindMidi);
 setInterval(() => {
   const r = Link.rival, el = $('linkStatus');
   if (Link.mode === 'off') el.textContent = '';
-  else if (Link.mode === 'bot') el.textContent = 'Du er P1 mot en bot. Velg låt og trykk PLAY.';
-  else if (!Link.linked()) el.textContent = 'Venter på det andre vinduet … (åpne denne fila i et nytt vindu og velg «To vinduer» der også)';
-  else el.textContent = `Koblet. Du er ${Link.role()}` + (Link.role() === 'P1' ? ' og velger låt.' : ', P1 velger låt.') + (r.clocks ? `  Klokke: ${r.clocks} pulser mottatt.` : '');
+  else if (Link.mode === 'bot') el.textContent = 'You are P1 against a bot. Pick a song and press PLAY.';
+  else if (!Link.linked()) el.textContent = 'Waiting for the other window … (open this file in a new window and choose “Two windows” there too)';
+  else el.textContent = `Linked. You are ${Link.role()}` + (Link.role() === 'P1' ? ' and pick the song.' : '; P1 picks the song.') + (r.clocks ? `  Clock: ${r.clocks} pulses received.` : '');
 }, 500);
 
 /* ================================================================ your own songs: load, keep, report */
@@ -1748,10 +1748,10 @@ function showReport(res, err, name) {
   const el = $('report');
   if (err) { el.innerHTML = `<div class="bad"><b>${esc(name)}</b>: ${esc(err.message)}</div>`; return; }
   const s = res.song, n = [0, 1].map(l => buildChart(s, l).notes.length);
-  const parts = Object.entries(s.parts).map(([k, v]) => `${k} ${v}`).join(' · ') || 'ingen';
+  const parts = Object.entries(s.parts).map(([k, v]) => `${k} ${v}`).join(' · ') || 'none';
   const items = res.report.info.map(t => `<li>${esc(t)}</li>`).concat(res.report.warn.map(t => `<li class="warn">${esc(t)}</li>`));
-  el.innerHTML = `<div><b>${esc(s.title)}</b> · ${s.bpm} BPM · ${s.bars} takter · ${rangeOf(s)}</div>` +
-    `<div>Spillspor: ${s.melody.length} toner (EASY ${n[0]}, MED ${n[1]}). Bandet: ${esc(parts)} noter.</div>` + (items.length ? `<ul>${items.join('')}</ul>` : '');
+  el.innerHTML = `<div><b>${esc(s.title)}</b> · ${s.bpm} BPM · ${s.bars} bars · ${rangeOf(s)}</div>` +
+    `<div>Play track: ${s.melody.length} notes (EASY ${n[0]}, MED ${n[1]}). The band: ${esc(parts)} notes.</div>` + (items.length ? `<ul>${items.join('')}</ul>` : '');
 }
 function importBytes(u8, name) {
   try {
@@ -1776,7 +1776,7 @@ document.addEventListener('drop', async e => {
 $('clearSongs').addEventListener('click', () => {
   store.set('vavehero.usersongs', []);
   for (let i = SONGS.length - 1; i >= 0; i--) if (!SONGS[i].builtIn) SONGS.splice(i, 1);
-  G.sel = clamp(G.sel, 0, SONGS.length - 1); $('report').textContent = 'Egne låter er fjernet.';
+  G.sel = clamp(G.sel, 0, SONGS.length - 1); $('report').textContent = 'Your own songs are removed.';
 });
 document.querySelectorAll('[data-tpl]').forEach(b => b.addEventListener('click', () => {
   const f = window.VAVEHERO_SONGS[+b.dataset.tpl], url = URL.createObjectURL(new Blob([fromB64(f.data)], { type: 'audio/midi' }));
