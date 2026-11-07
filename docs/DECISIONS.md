@@ -48,8 +48,8 @@ LED-ene bare lyser på SPREAD-tangentene, at en tangent mellom to brukte ikke gj
 ## D3 (2026-11-07): låtene er MIDI-filer, ett instrument per kanal
 
 **Beslutning.** En låt er en standard MIDI-fil (format 0 eller 1). Kanal 1 er spillsporet. Kanal 2 BASS, 3 PAD,
-4 ARP, 5 LEAD, 6 KEYS og 10 DRUMS (General MIDI) er bandet. Kanal 16 er satt av til LINK. CC 85 på kanal 1 markerer
-OP-fraser. Importen transponerer spillsporet til hvite tangenter (D1), legger inn oktavskift og lager EASY. De
+4 ARP, 5 LEAD, 6 KEYS og 10 DRUMS (General MIDI) er bandet. Kanal 16 er satt av til LINK. Note 11 (B-1) på kanal 1,
+holdt over frasen, markerer OP-fraser (endret fra CC 85 samme dag, se D6). Importen transponerer spillsporet til hvite tangenter (D1), legger inn oktavskift og lager EASY. De
 innebygde låtene er laget på samme måte (`tools/songs.py` skriver `songs/*.mid`) og går gjennom samme import. Hele
 reglen står i [songs.md](songs.md).
 
@@ -103,12 +103,13 @@ bare spille MIDI.
 
 **Beslutning.** Hvert instrument har flere patcher: PLAY 4, BASS, PAD, ARP, LEAD, KEYS 3 hver, og trommene 3 sett.
 Note 0–11 (C-1 til B-1) på instrumentets kanal velger patch, med note 0 som patch 1. Den høres aldri, og gjelder til
-neste nøkkelnote. Program Change gjør det samme. På kanal 1 velger den spillerens stemme når TONE står på SONG, som
+neste nøkkelnote. På kanal 1 velger den spillerens stemme når TONE står på SONG, som
 er standard. Det virker likt i MIDI-filer, i live-MIDI og i MIDI MODE. Tabellen står i [songs.md](songs.md).
 
 **Hvorfor.** Én lyd per instrument blir fort ensformig gjennom en hel låt. Nøkkelnoter er slik sample-bibliotek
 bytter artikulasjon, så de er kjente fra DAW-en. Note 0–11 brukes ikke til musikk, så de kolliderer ikke med noe.
-Program Change er med fordi mange DAW-er har den lett tilgjengelig.
+**Bare noter (justert samme dag).** Program Change og CC brukes ikke, verken til patcher eller til OP-fraser
+(som nå er note 11 på kanal 1). Alt i en låt kan da tegnes i pianorullen, og det er det minst krevende å lage.
 
 **Nivåer.** Hver patch er målt alene (fire toner, eller et trommemønster). Innenfor samme instrument ligger patchene
 innenfor ±2 dB av hverandre, så et bytte ikke blir et volumhopp. Refrenget i NEON CARRIER, med FM BASS og

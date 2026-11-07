@@ -40,10 +40,11 @@ første tone den skal gjelde for.
 | 10 DRUMS | GATED (80-talls gated reverb) | TIGHT (tørt) | BOOM (lang kick, lange tammer) |  |
 
 - Mange DAW-er kaller note 0 for **C-1**. Noen, blant annet Cubase, kaller den **C-2**. Det er samme note.
-- **Program Change** virker også: program 1 er patch 1.
 - På kanal 1 velger nøkkelnoten spillerens stemme gjennom låta, når TONE (KNOB 2) står på **SONG**, som er standard.
   Spilleren kan alltid velge en fast stemme med KNOB 2 i stedet.
+- På kanal 1 er note 11 (B-1) satt av til OP-fraser (se under), så stemmene ligger på note 0–3.
 - En nøkkelnote uten patch, for eksempel note 7 på BASS, gjør ingenting og vises i importrapporten.
+- Alt er noter. Program Change og CC brukes ikke, så alt kan tegnes rett i pianorullen.
 - Det virker likt live: send nøkkelnoter fra DAW-en, så bytter lyden med en gang (i PREVIEW i takt med resten), og
   LIVE-skjermen viser patchen på hver kanal.
 
@@ -72,8 +73,9 @@ det høye verset.
   oktavskift (OCT+ eller OCT−) mellom to toner. Gi gjerne melodien minst et halvt slag pause før store sprang.
 - **Akkorder:** høyst tre toner samtidig, innenfor én oktav. Toner ut over det tas ut.
 - **Holdtoner:** en tone på 1,5 slag eller mer blir en holdtone med hale. Kortere toner er vanlige trykk.
-- **OP-fraser:** sett CC 85 til 127 der en OP-frase begynner og til 0 der den slutter. Feilfrie fraser fyller
-  OP-måleren. Uten CC 85 lager importen fraser selv (to takter av hver fjerde).
+- **OP-fraser:** legg note 11 (B-1) på kanal 1 og hold den så lenge frasen varer. I pianorullen er det en strek
+  under frasen. Feilfrie fraser fyller OP-måleren. Uten OP-noter lager importen fraser selv (to takter av hver
+  fjerde).
 - **EASY** lages av samme spor: tonene på slaget (eller hvert andre slag over 105 BPM), og bare den øverste tonen i
   en akkord.
 

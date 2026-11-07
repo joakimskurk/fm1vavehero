@@ -6,8 +6,9 @@ as a file you load yourself.
     python3 tools/songs.py            # writes songs/*.mid and the songs block in reference/keyfall.html
 
 Channels (1-based, as a DAW shows them): 1 PLAY (the play track), 2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS,
-10 DRUMS (General MIDI notes). Channel 16 belongs to LINK. CC 85 on channel 1 marks an OP phrase (127 on, 0 off).
-Notes 0-11 (C-1..B-1) on a channel are keyswitches: they pick the channel's patch, note 0 the first (D6).
+10 DRUMS (General MIDI notes). Channel 16 belongs to LINK. Everything is a note, no CC and no program change:
+notes 0-11 (C-1..B-1) on a channel are keyswitches that pick its patch, note 0 the first (D6), and note 11 (B-1)
+on channel 1, held, marks an OP phrase.
 """
 import base64
 import json
@@ -22,6 +23,7 @@ NAMES = {'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#'
 CHORD = {'C': [0, 4, 7], 'G': [7, 11, 14], 'Am': [9, 12, 16], 'F': [5, 9, 12], 'Em': [4, 7, 11], 'Dm': [2, 5, 9]}
 ROOT = {'C': 0, 'G': 7, 'Am': 9, 'F': 5, 'Em': 4, 'Dm': 2}
 KICK, SNARE, CLAP, HAT, OHAT, CRASH, TOM_LO, TOM_MID, TOM_HI = 36, 38, 39, 42, 46, 49, 45, 48, 50
+OP_NOTE = 11                                                            # B-1 on channel 1, held over an OP phrase
 
 
 def pitch(name):
@@ -244,8 +246,7 @@ def write_song(s, parts):
     conductor = [(0, 0, b'\xff\x51\x03' + us.to_bytes(3, 'big')), (0, 0, b'\xff\x58\x04\x04\x02\x18\x08')]
     tracks = [mtrk(s['title'], conductor)]
     play = note_events(CH['PLAY'], melody(s['play']))
-    for a, b in s['phrases']:                                           # OP phrases: CC 85 on channel 1
-        play += [(a * 4 * PPQ, 1, bytes([0xB0, 85, 127])), ((b + 1) * 4 * PPQ, 1, bytes([0xB0, 85, 0]))]
+    play += note_events(CH['PLAY'], [(a * 4, OP_NOTE, (b - a + 1) * 4, 100) for a, b in s['phrases']])   # OP phrases: B-1, held
     ks = parts.get('KS', {})
     tracks.append(mtrk('PLAY', play + keyswitch_events(CH['PLAY'], ks.get('PLAY', []))))
     for name in ('BASS', 'PAD', 'ARP', 'LEAD', 'KEYS', 'DRUMS'):
