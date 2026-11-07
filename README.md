@@ -68,8 +68,8 @@ Dinghy). Den spiller som referansen: samme regler, samme notekart, samme skjerme
 
 Tangent-LED-ene viser hva som kommer: lyser når tonen er ved linja, gløder når den kommer innen to slag.
 
-**Målt i fm1-emu:** det tyngste stedet i låtene, takt 41–44 i ENGINE TOUR, bruker 31,6 % av brikken til lyd, og
-34,4 % med plattformens avbrudd. Spillskjermen er beregnet til omtrent 9 % ved 30 bilder i sekundet. Alle 25
+**Målt i fm1-emu:** det tyngste stedet i låtene, takt 41–44 i ENGINE TOUR, spilt av DEMO-en med spillet i gang,
+bruker 34,0 % av brikken til lyd, og 36,9 % med plattformens avbrudd. Spillskjermen er beregnet til omtrent 9 % ved 30 bilder i sekundet. Alle 25
 patcher og 4 trommesett ligger innenfor 1,5 dB av referansen, og hele låtene innenfor 0,8 dB. Mer i
 [docs/fm1-budsjett.md](docs/fm1-budsjett.md).
 

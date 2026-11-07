@@ -59,7 +59,7 @@ Budsjettet for minne, CPU og grafikk står i [docs/fm1-budsjett.md](docs/fm1-bud
 lyden er det trange, så den måles først.
 
 - [x] **Først: mål lydmotoren i fm1-emu.** Takt 41–44 i ENGINE TOUR (alle delene, skitne patcher, pad-enes lange
-      utklingninger) bruker 31,6 % av brikken, og 34,4 % med plattformen. CI feiler over 45 %. Det som skulle til:
+      utklingninger) bruker 31,6 % av brikken alene, og 34,0 % med spillet rundt (36,9 % med plattformen). CI feiler over 45 %. Det som skulle til:
       24 stemmer og 10 trommelag, et oscillatorbudsjett på 48 (D8), kontrollrate på 32 frames og FDN-romklang.
 
 - [x] `keyfall.c` på Dinghy 0.5: `APP_NAME "KEYFALL"`, egen identitet (`FM-1_95N`), `PLATFORM.md` med avvik fra

@@ -88,8 +88,9 @@ utklinging som står alene, for eksempel på slutten av en låt, får klinge hel
 
 | Hva | Målt i fm1-emu |
 |---|---|
-| ENGINE TOUR takt 41–44 (DEMO-en), lydmotoren | **31,6 %**, 1717 instruksjoner per frame |
-| Det samme, alle avbrudd | 34,4 % |
+| ENGINE TOUR takt 41–44, lydmotoren alene (bandet og melodien) | **31,6 %**, 1717 instruksjoner per frame |
+| Det samme som DEMO i spillet (spillerens stemme med comboens lysstyrke) | **34,0 %**, 1853 instruksjoner per frame |
+| Det samme, alle avbrudd | 36,9 % |
 
 x86-anslaget (callgrind × 0,8) sa 31,5 %, så anslaget kan brukes mellom CI-kjøringene.
 

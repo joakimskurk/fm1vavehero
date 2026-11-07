@@ -155,7 +155,8 @@ referansens egne renders. Den avviker fra referansen bare på disse punktene, fo
 - **Kompressoren** følger Chromiums kurve (målt med `tools/ref_tour.cjs --comp`), men uten 6 ms forsinkelse foran.
 
 **Hvorfor.** Det tyngste stedet i låtene (takt 41–44 i ENGINE TOUR) kostet 76 oscillatorer per frame uten budsjett,
-fordi pad-ene har lange utklingninger. Med budsjettet bruker lyden 31,6 % av brikken (målt i fm1-emu). En
+fordi pad-ene har lange utklingninger. Med budsjettet bruker lyden 31,6 % av brikken, og 34,0 % med spillet rundt
+(målt i fm1-emu). En
 konvolusjon på 2,8 s er langt over det brikken kan.
 
 **Sjekkes av.** `tests/run_keyfall.sh`: alle 25 patcher og 4 trommesett innenfor 1,5 dB og 25 % lysstyrke av
