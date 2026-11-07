@@ -6,7 +6,7 @@ RoboSeq og SkurkyMello.
 
 | Fil | Versjon | SHA-256 |
 |---|---|---|
-| `keyfall.html` | REF 0.1.3 | `b8a414d6f99448ae4f053bcfd38879a6a1315e9c72742a249aba7380d050fa8a` |
+| `keyfall.html` | REF 0.1.4 | `e4fda1e1274902589e964aa093b35a652288e1c784ea8b4a478e23c33f2349a2` |
 
 En ny HTML er en ny referanse og får en egen commit med ny SHA-256 her.
 
@@ -36,6 +36,11 @@ running status) blir lastet inn via filvelgeren, transponert, får oktavskift og
 som er tatt ut eller ignorert. Live-MIDI går til riktig del per kanal, og malen lastes ned identisk med
 `songs/neon-carrier.mid`. Lyden (D4): begge låtene rendres offline i 20 sekunder uten klipping, og WAV-filene havner
 i `build/test/`.
+
+MIDI MODE (D5): den åpnes fra siste rad i låtlista, og en MIDI-klokke på 120 BPM gir 120 BPM og riktig
+pulstelling. I LIVE lyser kanal 1, 2 og 10, og E4 fra DAW-en tenner E4-LED-en. Tangenten C4 sendes ut på kanal 1. I
+PREVIEW havner kanal 1 én takt foran, med oktavskift og holdtone. C#4 vises som varsel, og autospill treffer begge
+tonene og skiftet. HOME går ut, og MIDI MODE holdes stengt mens LINK er på.
 
 ## Låtene
 

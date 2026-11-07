@@ -60,6 +60,7 @@
         <tr><td><kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> … <kbd>K</kbd></td><td>De åtte banene, hvite tangenter: C4–C5, eller annenhver hvit tangent med SPREAD. De svarte vises, men har ingen funksjon.</td></tr>
         <tr><td><kbd>Z</kbd> <kbd>X</kbd></td><td>OCT− / OCT+</td></tr>
         <tr><td><kbd>Q</kbd></td><td>GLO: SPREAD av eller på</td></tr>
+        <tr><td><kbd>M</kbd></td><td>MIDI MODE inn og ut (PLAY bytter LIVE og PREVIEW)</td></tr>
         <tr><td><kbd>Mellomrom</kbd></td><td>FX: OP BOOST når måleren er full</td></tr>
         <tr><td><kbd>Enter</kbd></td><td>PLAY: start, pause</td></tr>
         <tr><td><kbd>Esc</kbd></td><td>HOME: tilbake</td></tr>
@@ -81,8 +82,9 @@
     </div>
     <div class="card">
       <h2>MIDI inn</h2>
-      <div class="row"><button id="midiBtn">Koble til MIDI</button><select id="midiIn" disabled><option>Ingen</option></select></div>
+      <div class="row"><button id="midiBtn">Koble til MIDI</button><label>Inn <select id="midiIn" disabled><option>Ingen</option></select></label><label>Ut <select id="midiOut" disabled><option>Ingen</option></select></label></div>
       <p class="muted">Kanal 1 spiller tangentene: et FM-1 med en firmware som sender dem på USB-MIDI, eller et vanlig MIDI-keyboard. Med MIDI skifter spillet oktav selv. Kanal 2–6 og 10 spiller bandets instrumenter, så du kan høre en låt fra DAW-en gjennom lydmotoren mens du lager den.</p>
+      <p class="muted"><b>MIDI MODE</b> (siste rad i låtlista, eller <kbd>M</kbd>): LIVE er lydmodul med en gang. PREVIEW forsinker alt én takt, slik at kanal 1 faller ned banen som i spillet. Tangentene sendes ut på kanal 1 til «Ut», så DAW-en kan ta dem opp. Se <code>docs/songs.md</code>.</p>
       <div class="status" id="midiStatus"></div>
     </div>
     <div class="card">
@@ -113,7 +115,7 @@ window.TERMINUS = {"S": {"h": 16, "pad": 2, "first": 32, "last": 126, "adv": [8,
 /* KEYFALL, the browser reference. Until the Dinghy port exists, this file is the authority for how Keyfall feels,
    times and sounds. Everything the FM-1 has is here: the 240 x 240 screen in Dinghy's Terminus fonts, the 27 keys
    with their two LED levels, the buttons and knobs, and the LINK protocol for two players. */
-const VERSION = 'REF 0.1.3';
+const VERSION = 'REF 0.1.4';
 
 /* ================================================================ small things */
 const $ = id => document.getElementById(id);
@@ -291,7 +293,7 @@ function keyStrip(ctx, st, led = []) {
     else if (state === 'next') { pcap(ctx, x, y, w, h, col); pcap(ctx, x + 1, y + 1, w - 2, h - 2, mix(black ? '#1a1930' : '#2b2a46', col, .22)); }
     else { pcap(ctx, x, y, w, h, black ? '#37366a' : '#3d3c64'); pcap(ctx, x + 1, y + 1, w - 2, h - 2, black ? '#191830' : '#2b2a46'); }
   };
-  BLACK_B.forEach(b => cap(U(b), 193, 18, 12, null, null, true));    /* D1: shown where they sit, never in the game */
+  BLACK_B.forEach(b => cap(U(b), 193, 18, 12, P.coral, st['b' + b] === 'warn' ? 'lit' : null, true));   /* D1: shown, never in the game; MIDI MODE warns */
   for (let i = 0; i < 8; i++) cap(U(i + .5), 207, 25, 14, LANE[i], st['w' + i], false);
 }
 function spreadStrip(ctx, st, led) {                                  /* D2: a used key under each lane, an idle key between */
@@ -688,7 +690,7 @@ const G = { scr: 'splash', sel: 1, level: clamp(store.get('keyfall.level', 1), 0
 let PLAY = null;
 const pressed = new Map();                                           /* input id -> { k, pitch, s, voice } */
 
-const beatAt = perf => PLAY.paused ? PLAY.pausedBeat : (ctxTimeAt(perf) - PLAY.start) * PLAY.bpm / 60;
+const beatAt = perf => PLAY.paused ? PLAY.pausedBeat : PLAY.live ? mmBeatCtx(ctxTimeAt(perf)) : (ctxTimeAt(perf) - PLAY.start) * PLAY.bpm / 60;
 const mult = p => Math.min(4, 1 + Math.floor(p.combo / 10));
 const boosting = p => p.boostTo != null;
 const opsShown = p => boosting(p) ? clamp(Math.ceil(6 * (p.boostTo - p.beat) / BOOST_BEATS), 0, 6) : p.ops;
@@ -766,7 +768,7 @@ function activateBoost() {
 }
 function octPress(dir, ts) {
   G.oct = clamp(G.oct + dir, -1, 2);
-  const p = PLAY; if (!p || G.scr !== 'play' || p.paused) return;
+  const p = PLAY; if (!p || !(G.scr === 'play' || (G.scr === 'midi' && p.live)) || p.paused) return;
   const beat = beatAt(ts - G.offset), bms = 60000 / p.bpm;
   for (const e of p.octs) {
     if (e.state !== 'pending' || e.dir !== dir || Math.abs((beat - e.t) * bms) > WIN.SHIFT) continue;
@@ -832,7 +834,10 @@ function autoPlay(p, beat, now) {
 /* ================================================================ input: keys, buttons, knobs */
 function playVoice(id, k, lane, pitch, o) {
   const old = pressed.get(id); if (old && old.voice) old.voice.off(A.ctx.currentTime);
-  pressed.set(id, { k, lane, pitch, voice: A.note(TONES[G.tone], A.ctx.currentTime, pitch, 104, o) });
+  if (old && old.echo != null) mmOut([0x80, old.echo, 0]);
+  const echo = MM.on && !id.startsWith('m') && !id.startsWith('auto') ? pitch : null;   /* MIDI MODE: the keys go out on channel 1 */
+  if (echo != null) mmOut([0x90, echo, 100]);
+  pressed.set(id, { k, lane, pitch, echo, voice: A.note(TONES[G.tone], A.ctx.currentTime, pitch, 104, o) });
 }
 /* a key of the FM-1 (0 = F3 .. 26 = G5) from the panel, the computer keyboard, autoplay or MIDI. In a song only the
    eight keys of the layout do anything (D1, D2); every other key, black or white, has no function there. */
@@ -840,7 +845,7 @@ function pressKey(id, k, ts, src) {
   ensureAudio(); if (!A.ctx) return;
   const p = PLAY;
   if (p && p.paused) return;
-  if (!(p && G.scr === 'play')) { playVoice(id, k, layout().indexOf(k), 53 + k + 12 * G.oct, { bright: 1 }); return; }   /* free play */
+  if (!(p && (G.scr === 'play' || (G.scr === 'midi' && p.live)))) { playVoice(id, k, layout().indexOf(k), 53 + k + 12 * G.oct, { bright: 1 }); return; }   /* free play */
   const lane = layout().indexOf(k); if (lane < 0) return;
   const oct = src === 'midi' ? octAt(p.song, Math.max(0, p.beat)) : G.oct, s = WHITE_SEMI[lane], pitch = 60 + s + 12 * oct;
   const r = judgePress(p, id, pitch, s, ts);
@@ -849,6 +854,7 @@ function pressKey(id, k, ts, src) {
 function releaseNote(id, ts) {
   const e = pressed.get(id); if (!e) return;
   pressed.delete(id); if (e.voice && A.ctx) e.voice.off(A.ctx.currentTime);
+  if (e.echo != null) mmOut([0x80, e.echo, 0]);
   const p = PLAY; if (!p) return;
   const n = p.holds.get(id); if (!n) return;
   p.holds.delete(id);
@@ -862,6 +868,7 @@ function noteOnMidi(note, ts) {                                        /* MIDI n
 /* live MIDI, one part a channel: channel 1 is the player, the others play the band's instruments (a sound module) */
 const sounding = new Map();
 function midiIn(data, ts) {
+  if (MM.on) return mmIn(data, ts);
   const [st, d1, d2] = data, cmd = st & 0xF0, ch = st & 15, on = cmd === 0x90 && d2 > 0, off = cmd === 0x80 || (cmd === 0x90 && d2 === 0);
   if (ch === 0) { if (on) noteOnMidi(d1, ts); else if (off) releaseNote('m' + d1, ts); return 'PLAY'; }
   const part = CHMAP[ch]; if (!part || !(on || off)) return part || null;
@@ -878,6 +885,13 @@ function setSpread(v) {
 }
 function button(id, ts = performance.now()) {
   ensureAudio();
+  if (G.scr === 'midi') {                                              /* MIDI MODE: PLAY switches LIVE and PREVIEW, HOME leaves */
+    if (id === 'HOME') exitMidi();
+    else if (id === 'PLAY') { mmMode(MM.mode === 'LIVE' ? 'PREVIEW' : 'LIVE'); toast(MM.mode); }
+    else if (id === 'GLO') setSpread(!G.spread);
+    else if (id === 'OCT-' || id === 'OCT+') octPress(id === 'OCT+' ? 1 : -1, ts);
+    return;
+  }
   if (id === 'PLAY') {
     if (G.scr === 'splash') G.scr = 'songs';
     else if (G.scr === 'songs' || G.scr === 'results') tryStart();
@@ -892,13 +906,18 @@ function button(id, ts = performance.now()) {
   else if (id === 'OCT+') octPress(1, ts);
 }
 function tryStart() {
+  if (G.sel === SONGS.length) { enterMidi(); return; }                 /* the last row: MIDI MODE */
   if (p2Follow()) { toast('P1 STARTS'); return; }
   if (!SONGS[G.sel]) return;
   startSong(G.sel, G.level, G.speed, Link.linked());
 }
 function enc(id, d) {
   ensureAudio();
-  if (id === 'SELECT' && G.scr === 'songs' && !p2Follow()) G.sel = clamp(G.sel + d, 0, SONGS.length - 1);
+  const mmRow = G.scr === 'songs' && G.sel === SONGS.length;
+  if (G.scr === 'midi' && id === 'K1') { mmMode(MM.mode === 'LIVE' ? 'PREVIEW' : 'LIVE'); toast(MM.mode); }
+  else if ((G.scr === 'midi' || mmRow) && id === 'K3') { if (mmClock()) toast('CLOCK ' + Math.round(MM.bpm) + ' BPM'); else { MM.setBpm = clamp(MM.setBpm + d, 40, 240); toast(MM.setBpm + ' BPM'); } }
+  else if (mmRow && id === 'K1') { MM.mode = MM.mode === 'LIVE' ? 'PREVIEW' : 'LIVE'; toast('MODE ' + MM.mode); }
+  else if (id === 'SELECT' && G.scr === 'songs' && !p2Follow()) G.sel = clamp(G.sel + d, 0, SONGS.length);
   else if (id === 'K1' && G.scr === 'songs' && !p2Follow()) { G.level = clamp(G.level + d, 0, 1); store.set('keyfall.level', G.level); toast('LEVEL ' + LEVELS[G.level]); }
   else if (id === 'K2') { G.tone = (G.tone + d + TONES.length) % TONES.length; toast(TONES[G.tone]); }
   else if (id === 'K3') {
@@ -907,7 +926,7 @@ function enc(id, d) {
   } else if (id === 'K4') { G.mix = clamp(G.mix + 10 * d, 0, 100); applyMix(); toast('MIX ' + G.mix + '/' + (100 - G.mix)); }
 }
 const KEYMAP = { KeyA: 0, KeyS: 1, KeyD: 2, KeyF: 3, KeyG: 4, KeyH: 5, KeyJ: 6, KeyK: 7 };   /* the eight lanes, on the keys of the layout */
-const KEYACT = { KeyQ: () => button('GLO'), KeyZ: () => button('OCT-'), KeyX: () => button('OCT+'), Space: () => button('FX'), Enter: () => button('PLAY'),
+const KEYACT = { KeyM: () => { if (G.scr === 'midi') exitMidi(); else if (G.scr === 'songs' || G.scr === 'splash') { G.sel = SONGS.length; enterMidi(); } }, KeyQ: () => button('GLO'), KeyZ: () => button('OCT-'), KeyX: () => button('OCT+'), Space: () => button('FX'), Enter: () => button('PLAY'),
   NumpadEnter: () => button('PLAY'), Escape: () => button('HOME'), Backspace: () => button('HOME'),
   ArrowUp: () => enc('SELECT', -1), ArrowDown: () => enc('SELECT', 1), ArrowLeft: () => enc('K1', -1), ArrowRight: () => enc('K1', 1),
   Digit1: () => enc('K2', -1), Digit2: () => enc('K2', 1), Digit3: () => enc('K3', -1), Digit4: () => enc('K3', 1), Digit5: () => enc('K4', -1), Digit6: () => enc('K4', 1) };
@@ -947,6 +966,7 @@ const Link = {
   role() { const r = this.rival; return !r || r.id == null || this.id < r.id ? 'P1' : 'P2'; },
   linked() { const r = this.rival; return !!r && (this.mode === 'bot' || performance.now() - r.seen < 3500); },
   recv([st, d1, d2]) {
+    if (MM.on) return;                                                        /* MIDI MODE: the clock and START are the DAW's */
     const r = this.rival || (this.rival = this.newRival(null));
     r.seen = performance.now();
     if (st === 0xF8) { r.clocks++; return; }
@@ -979,7 +999,7 @@ const Link = {
     }
   },
   hello() {
-    if (this.mode !== 'tab') return;
+    if (this.mode !== 'tab' || MM.on) return;
     this.cc(100, 1); this.cc(101, this.id);
     if (G.scr === 'songs' && this.linked() && this.role() === 'P1' && SONGS[G.sel]) { const h = SONGS[G.sel].hash; this.cc(102, G.sel); this.cc(105, h >> 7); this.cc(106, h & 127); this.cc(103, G.level); this.cc(104, G.speed); }
   },
@@ -1017,6 +1037,153 @@ const Bot = {
   },
 };
 
+/* ================================================================ MIDI MODE (D5): a DAW plays into the FM-1 while you make a song
+   LIVE: a sound module, at once, one part a channel. PREVIEW: everything a bar late, so the play track (channel 1) falls
+   down the highway as it will in the game and you can play along. The FM-1's own keys go out on channel 1 for the DAW
+   to record. MIDI clock gives the tempo and the bar; START and STOP are the DAW's, so LINK is off here. */
+const MM = { on: false, mode: 'LIVE', setBpm: 120, clock: [], bpm: null, lastPulse: -1e9, running: false, count: 0,
+             act: {}, pending: new Map(), open: new Map(), sent: [], t0: 0, b0: 0, anchorBpm: 120, win: 0, lastT: -1e9, nid: 0 };
+const MM_DELAY = 4;                                                    /* beats: one bar, the highway's look-ahead */
+const MM_ROWS = [[0, 'PLAY', P.cyan], [1, 'BASS', '#ff7a59'], [2, 'PAD', '#8b7dff'], [3, 'ARP', '#3fc1ff'], [4, 'LEAD', '#ff5fc8'], [5, 'KEYS', '#ffb43d'], [9, 'DRUMS', '#2ee6c8']];
+const mmClock = () => MM.bpm != null && performance.now() - MM.lastPulse < 1000;
+const mmBpm = () => mmClock() ? MM.bpm : MM.setBpm;
+const mmBeatCtx = tc => MM.b0 + (tc - MM.t0) * MM.anchorBpm / 60;
+const mmPos = (lag = 0) => { const c = Math.max(0, MM.count - lag); return `${Math.floor(c / 96) + 1}.${Math.floor((c % 96) / 24) + 1}`; };
+function enterMidi() {
+  if (Link.mode !== 'off') { toast('LINK IS ON'); return; }
+  ensureAudio(); if (!A.ctx) return;
+  MM.on = true; MM.act = {}; G.scr = 'midi'; G.oct = 0;
+  mmMode(MM.mode);
+}
+function exitMidi() { mmFlush(); MM.on = false; PLAY = null; G.oct = 0; G.scr = 'songs'; }
+function mmFlush() {
+  const now = A.ctx ? A.ctx.currentTime : 0;
+  for (const h of MM.pending.values()) h.off(now);
+  MM.pending.clear(); MM.open.clear();
+  for (const id of [...pressed.keys()]) if (id.startsWith('mm')) releaseNote(id, performance.now());
+}
+function mmMode(m) {
+  mmFlush(); MM.mode = m;
+  const bpm = mmBpm(); A.setTempo(bpm);
+  if (m !== 'PREVIEW') { PLAY = null; return; }
+  MM.t0 = ctxTimeAt(performance.now()); MM.b0 = 0; MM.anchorBpm = bpm; MM.win = 0; MM.lastT = -1e9; G.oct = 0;
+  PLAY = { live: true, song: { num: '', title: 'MIDI PREVIEW', oct0: 0, octs: [], end: Infinity, transpose: 0, bpm }, level: 1, speed: 100, bpm,
+    vs: false, events: [], evi: 0, start: 0, score: 0, combo: 0, maxCombo: 0, ops: 0, boostFrom: null, boostTo: null,
+    counts: { P: 0, G: 0, O: 0, M: 0, S: 0 }, dts: [], judge: null, fx: [], plus: null, beat: 0, done: false, paused: false,
+    pausedBeat: 0, clockSent: -1, midiUsed: true, sentScore: -1, sentCombo: -1, lastSend: 0, holds: new Map(), notes: [], phrases: [], octs: [], ghosts: [] };
+  PLAY.song.octs = PLAY.octs;                                          /* the octave windows, as the notes come */
+}
+function mmRetempo(bpm) {
+  if (A.ctx && Math.abs(bpm - MM.anchorBpm) < .5) return;
+  if (A.ctx) A.setTempo(bpm);
+  const p = PLAY;
+  if (p && p.live) { const tc = ctxTimeAt(performance.now()); MM.b0 = mmBeatCtx(tc); MM.t0 = tc; p.bpm = p.song.bpm = bpm; }
+  MM.anchorBpm = bpm;
+}
+function mmPulse(ts) {
+  if (MM.running) MM.count++;
+  MM.clock.push(ts); if (MM.clock.length > 25) MM.clock.shift();
+  MM.lastPulse = ts;
+  if (MM.clock.length >= 13) {
+    const c = MM.clock, per = (c[c.length - 1] - c[0]) / (c.length - 1);
+    MM.bpm = Math.round(60000 / (per * 24) * 10) / 10; mmRetempo(MM.bpm);
+  }
+}
+/* channel 1 in PREVIEW: a chart note a bar ahead; a black key is shown, not played (D1); the window follows */
+function mmChart(pitch, on, ts) {
+  const p = PLAY, t = mmBeatCtx(ctxTimeAt(ts)) + MM_DELAY;
+  if (!on) { const n = MM.open.get(pitch); if (n) { n.len = Math.max(.05, t - n.t); n.hold = n.len >= 1.5 && n.state === 'pending'; MM.open.delete(pitch); } return; }
+  if (BLACK_S.has(mod12(pitch))) { p.ghosts.push({ t, pitch, w: MM.win }); return; }
+  let w = MM.win;
+  if (pitch < 60 + 12 * w || pitch > 72 + 12 * w) {
+    const nw = clamp(pitch > 72 + 12 * w ? Math.ceil((pitch - 72) / 12) : Math.floor((pitch - 60) / 12), -2, 3);
+    if (nw !== w) {
+      const gap = t - MM.lastT, at = gap > 2 ? t - 1 : MM.lastT + gap / 2;
+      for (let k = 0; k < Math.abs(nw - w); k++) p.octs.push({ t: at + k * .25, dir: Math.sign(nw - w), state: 'pending' });
+      MM.win = w = nw;
+    }
+  }
+  if (pitch < 60 + 12 * w || pitch > 72 + 12 * w) return;
+  const s = pitch - 60 - 12 * w;
+  const n = { i: MM.nid++, t, pitch, len: .25, oct: w, s, p: S2P[s], lane: WHITE_SEMI.indexOf(s), hold: false, state: 'pending', ph: -1 };
+  p.notes.push(n); MM.open.set(pitch, n); MM.lastT = t;
+}
+function mmIn(data, ts) {
+  const [st, d1, d2] = data;
+  if (st === 0xF8) { mmPulse(ts); return 'CLOCK'; }
+  if (st === 0xFA) { MM.running = true; MM.count = 0; return 'START'; }
+  if (st === 0xFB) { MM.running = true; return 'CONTINUE'; }
+  if (st === 0xFC) { MM.running = false; mmFlush(); return 'STOP'; }
+  const cmd = st & 0xF0, ch = st & 15, on = cmd === 0x90 && d2 > 0, off = cmd === 0x80 || (cmd === 0x90 && d2 === 0);
+  const part = CHMAP[ch]; if (!part || !(on || off)) return part || null;
+  if (on) MM.act[ch] = { t: performance.now(), vel: d2, note: d1 };
+  ensureAudio(); if (!A.ctx) return part;
+  const preview = MM.mode === 'PREVIEW' && PLAY && PLAY.live;
+  const at = preview ? Math.max(A.ctx.currentTime, ctxTimeAt(ts) + MM_DELAY * 60 / PLAY.bpm) : A.ctx.currentTime;
+  if (part === 'PLAY') {
+    if (preview) mmChart(d1, on, ts);
+    else if (on) playVoice('mm' + d1, d1 - 53, -1, d1, { bright: 1 }); else releaseNote('mm' + d1, ts);
+    return part;
+  }
+  if (part === 'DRUMS') { if (on) A.drum(d1, at, d2); return part; }
+  const key = ch + ':' + d1, old = MM.pending.get(key);
+  if (old) { old.off(at); MM.pending.delete(key); }
+  if (on) MM.pending.set(key, A.note(part, at, d1, d2));
+  return part;
+}
+function mmOut(msg) {                                                  /* the FM-1's keys, out on channel 1 */
+  MM.sent.push(msg); if (MM.sent.length > 32) MM.sent.shift();
+  const o = midiAcc && midiAcc.outputs.get($('midiOut').value);
+  if (o) { try { o.send(msg); } catch (e) { /* a port that went away */ } }
+}
+function mmTick(now) {
+  const b = mmBpm(); if (Math.abs(b - MM.anchorBpm) >= .5) mmRetempo(b);
+  const p = PLAY;
+  if (p && p.live && p.notes.length > 200) p.notes = p.notes.filter(n => n.t > p.beat - 8 || n.state === 'held');
+  if (p && p.live && p.ghosts.length > 50) p.ghosts = p.ghosts.filter(g => g.t > p.beat - 2);
+}
+function ghostDraw(ctx, p, z) {                                        /* a channel 1 note on a black key: shown, not played */
+  const s = sc(z), y = Y(z), f = fadeAt(y), w = Math.round(.5 * LW * s), h = Math.max(3, Math.round(8 * s));
+  const x0 = Math.round(X(U(p), s) - w / 2), y0 = Math.round(y - h / 2);
+  pcap(ctx, x0, y0, w, h, mix(P.bg, P.coral, f)); pcap(ctx, x0 + 1, y0 + 1, w - 2, h - 2, mix(P.bg, '#3a1010', f));
+  if (h >= 6) rect(ctx, Math.round(X(U(p), s)) - 1, y0 + 2, 2, h - 4, mix(P.bg, P.coral, f));
+}
+function chanMeter(ctx, now) {                                         /* the seven parts, lit as their notes come */
+  const S = 12, G_ = 2, x0 = 120 - (7 * S + 6 * G_) / 2;
+  MM_ROWS.forEach(([ch, , col], i) => {
+    const x = x0 + i * (S + G_), y = 22, a = MM.act[ch], lit = a && now - a.t < 150;
+    if (lit) { rect(ctx, x, y, S, 14, col); rect(ctx, x + 1, y + 1, S - 2, 1, mix(col, '#ffffff', .6)); }
+    else { rect(ctx, x, y, S, 14, '#3b3a66'); rect(ctx, x + 1, y + 1, S - 2, 12, '#14132a'); }
+    text(ctx, 'S', x + 2, y - 1, ch === 9 ? 'D' : String(ch + 1), lit ? P.ink : P.mute);
+  });
+}
+function mmHeader(ctx, title) {
+  const clk = mmClock();
+  header(ctx, null, title, Math.round(mmBpm()) + ' BPM', null, clk ? P.green : P.amber);
+}
+function drawMidi(ctx, now) {                                          /* LIVE: the sound module and its channels */
+  rect(ctx, 0, 0, 240, 240, P.bg);
+  mmHeader(ctx, 'MIDI MODE');
+  pcap(ctx, 4, 21, 40, 16, P.cyan); textC(ctx, 'S', 24, 21, 'LIVE', P.ink);
+  if (MM.running) { text(ctx, 'S', 52, 21, '>', P.green); text(ctx, 'S', 64, 21, 'BAR ' + mmPos(), P.text); }
+  else text(ctx, 'S', 52, 21, mmClock() ? 'STOPPED' : 'NO CLOCK', P.dim);
+  MM_ROWS.forEach(([ch, name, col], r) => {
+    const y = 42 + r * 21, a = MM.act[ch], age = a ? now - a.t : 1e9, lit = age < 150, fade = clamp(1 - age / 700, 0, 1);
+    if (lit) rect(ctx, 4, y, 22, 17, col); else { rect(ctx, 4, y, 22, 17, '#3b3a66'); rect(ctx, 5, y + 1, 20, 15, '#14132a'); }
+    textC(ctx, 'S', 15, y, String(ch + 1), lit ? P.ink : P.dim);
+    text(ctx, 'S', 32, y, name, a ? P.text : P.mute);
+    rect(ctx, 84, y + 6, 100, 5, '#1d1c38');
+    if (a && fade > 0) rect(ctx, 84, y + 6, Math.max(2, Math.round(100 * a.vel / 127 * fade)), 5, col);
+    const label = !a ? '-' : ch === 9 ? (DRUMKIT[a.note] || String(a.note)).toUpperCase().slice(0, 5) : noteName(a.note);
+    textR(ctx, 'S', 236, y, label, a ? (ch === 0 && BLACK_S.has(mod12(a.note)) ? P.coral : P.dim) : P.mute);
+  });
+  const keys = {};                                                     /* channel 1 on the strip: white keys lit, black ones warn (D1) */
+  for (const [id, e] of pressed) if (e.lane >= 0) keys['w' + e.lane] = 'lit';
+  for (const [id, e] of pressed) if (id.startsWith('mm')) { const s = mod12(e.pitch); if (BLACK_S.has(s)) keys['b' + S2P[s]] = 'warn'; else keys['w' + WHITE_SEMI.indexOf(s)] = 'lit'; }
+  keyStrip(ctx, keys, []);
+  knobBar(ctx, ['MODE', 'TONE', 'BPM', 'MIX'], [false, false, mmClock(), false]);
+}
+
 /* ================================================================ the screens */
 const scr = $('scr'), sx = scr.getContext('2d'); sx.imageSmoothingEnabled = false;
 function drawSplash(ctx, now) {
@@ -1037,11 +1204,12 @@ function drawSplash(ctx, now) {
 function drawSongs(ctx, now) {
   rect(ctx, 0, 0, 240, 240, P.bg);
   const linked = Link.linked();
-  header(ctx, null, 'SONGS', linked ? 'LINK ' + Link.role() : G.spread ? 'SPREAD' : pad(G.sel + 1, 2) + '/' + pad(SONGS.length, 2), null, linked ? P.cyan : G.spread ? P.amber : P.dim);
-  const top = clamp(G.sel - 2, 0, Math.max(0, SONGS.length - 6));
-  for (let r = 0; r < 6 && top + r < SONGS.length; r++) {
+  header(ctx, null, 'SONGS', linked ? 'LINK ' + Link.role() : G.spread ? 'SPREAD' : pad(G.sel + 1, 2) + '/' + pad(SONGS.length + 1, 2), null, linked ? P.cyan : G.spread ? P.amber : P.dim);
+  const total = SONGS.length + 1, top = clamp(G.sel - 2, 0, Math.max(0, total - 6));
+  for (let r = 0; r < 6 && top + r < total; r++) {
     const i = top + r, s = SONGS[i], y = 22 + r * 20, sel = i === G.sel;
     if (sel) { rect(ctx, 2, y - 1, 236, 19, P.surf2); rect(ctx, 2, y - 1, 3, 19, P.cyan); }
+    if (!s) { text(ctx, 'S', 9, y, 'MI', P.cyan); text(ctx, 'S', 33, y, 'MIDI MODE', sel ? P.cyan : P.text); textR(ctx, 'S', 236, y, 'DAW', P.dim); continue; }
     text(ctx, 'S', 9, y, s.num, sel ? P.cyan : s.builtIn ? P.mute : P.violet);
     text(ctx, 'S', 33, y, s.title, P.text);
     const best = store.get(bestKey(s, G.level), null);
@@ -1054,12 +1222,20 @@ function drawSongs(ctx, now) {
     }
     textR(ctx, 'S', 236, y, Math.round(best) + '%', sel ? P.text : P.dim);
   }
-  if (SONGS.length > 6) { const h = Math.max(6, Math.round(118 * 6 / SONGS.length)), y = 22 + Math.round((118 - h) * top / (SONGS.length - 6)); rect(ctx, 238, 22, 1, 118, P.line); rect(ctx, 237, y, 3, h, P.dim); }
+  if (total > 6) { const h = Math.max(6, Math.round(118 * 6 / total)), y = 22 + Math.round((118 - h) * top / (total - 6)); rect(ctx, 238, 22, 1, 118, P.line); rect(ctx, 237, y, 3, h, P.dim); }
   if (p2Follow()) {
     const missing = Link.rival.hash != null && !SONGS.some(s => s.hash === Link.rival.hash);
     rect(ctx, 2, 122, 236, 19, mix(P.bg, P.coral, .25)); textC(ctx, 'S', 120, 123, missing ? 'SONG NOT HERE' : 'P1 PICKS THE SONG', P.text);
   }
-  const song = SONGS[G.sel]; if (!song) { knobBar(ctx, ['LEVEL', 'TONE', 'SPEED', 'MIX']); return; }
+  const song = SONGS[G.sel];
+  if (!song) {                                                          /* MIDI MODE */
+    rect(ctx, 2, 144, 236, 74, P.surf);
+    text(ctx, 'S', 9, 148, 'DAW > USB > FM-1', P.text); if (mmClock()) textR(ctx, 'S', 231, 148, Math.round(MM.bpm) + ' BPM', P.green);
+    text(ctx, 'S', 9, 168, 'CH 1 PLAY', P.cyan); textR(ctx, 'S', 231, 168, '2-6 10 BAND', P.violet);
+    const ms = ['LIVE', 'PREVIEW'], mw = ms.map(t => tw('S', t) + 10); let mx = Math.round(120 - (mw[0] + mw[1] + 6) / 2);
+    ms.forEach((t, i) => { const on = MM.mode === t; if (on) pcap(ctx, mx, 192, mw[i], 18, P.cyan); else { pcap(ctx, mx, 192, mw[i], 18, P.line); pcap(ctx, mx + 1, 193, mw[i] - 2, 16, P.surf); } text(ctx, 'S', mx + 5, 193, t, on ? P.ink : P.dim); mx += mw[i] + 6; });
+    knobBar(ctx, ['MODE', 'TONE', 'BPM', 'MIX'], [false, false, mmClock(), false]); return;
+  }
   const secs = Math.round(song.end * 60 / (song.bpm * G.speed / 100));
   rect(ctx, 2, 144, 236, 74, P.surf);
   text(ctx, 'S', 9, 148, 'BPM ' + Math.round(song.bpm * G.speed / 100), P.text);
@@ -1098,6 +1274,7 @@ function drawPlay(ctx, now) {
   }
   for (const [t, g] of groups) if (g.length > 1) chordBar(ctx, g.map(n => n.p), zOf(t));
   for (const [t, g] of groups) for (const n of g) gemDraw(ctx, n.p, Math.max(0, zOf(t)), laneCol(n.p), { boost, op: n.ph >= 0 && !p.phrases[n.ph].failed });
+  if (p.live) for (const g of p.ghosts) { const z = zOf(g.t), s = g.pitch - 60 - 12 * g.w; if (z >= -.15 && z <= ZTOP && s > 0 && s < 12) ghostDraw(ctx, S2P[s], Math.max(0, z)); }
   for (const e of p.octs) { const z = zOf(e.t); if (e.state === 'pending' && z >= -.1 && z <= ZTOP) octBand(ctx, Math.max(0, z), e.dir, p.level === 0 || p.midiUsed); }
   rect(ctx, NL, HIT - 2, NR - NL, 1, mix(P.bg, boost ? P.gold : P.cyan, .4));
   rect(ctx, NL, HIT - 1, NR - NL, 2, boost ? P.gold : P.cyan);
@@ -1106,16 +1283,23 @@ function drawPlay(ctx, now) {
   const keys = {}, leds = ledStates(now).L;
   for (const e of pressed.values()) if (e.lane >= 0) keys['w' + e.lane] = 'lit';
   for (const n of p.notes) { if (n.t > beat + 1) break; if (n.state === 'pending' && n.t >= beat - .1 && !keys['w' + n.lane]) keys['w' + n.lane] = 'next'; }
+  if (p.live) for (const g of p.ghosts) { const d = g.t - beat, s = g.pitch - 60 - 12 * g.w; if (d > -.15 && d < .3 && s > 0 && s < 12) keys['b' + S2P[s]] = 'warn'; }
   keyStrip(ctx, keys, layout().map(k => leds[k]));
   if (p.judge && now - p.judge.t0 < 450) {
     const y = 150 - Math.round((now - p.judge.t0) / 450 * 4);
     textOut(ctx, 'S', Math.round(CX - tw('S', p.judge.text) / 2), y, p.judge.text, JCOL[p.judge.text], P.bg);
   }
   const linked = p.vs && Link.linked(), r = Link.rival;
-  header(ctx, p.song.num, p.song.title, linked ? null : LEVELS[p.level], clamp(beat / p.song.end, 0, 1));
-  if (linked) textR(ctx, 'S', 236, 1, (Link.role() === 'P1' ? 'P2 ' : 'P1 ') + pad(r.score, 6), P.coral);
-  text(ctx, 'S', 4, 21, pad(p.score, 6), P.text);
-  opMeter(ctx, opsShown(p), boost);
+  if (p.live) {                                                         /* MIDI PREVIEW: tempo, the bar at the line, the channels */
+    mmHeader(ctx, 'MIDI PREVIEW');
+    if (MM.running) text(ctx, 'S', 4, 21, mmPos(96), P.green); else text(ctx, 'S', 4, 21, 'STOP', P.dim);
+    chanMeter(ctx, now);
+  } else {
+    header(ctx, p.song.num, p.song.title, linked ? null : LEVELS[p.level], clamp(beat / p.song.end, 0, 1));
+    if (linked) textR(ctx, 'S', 236, 1, (Link.role() === 'P1' ? 'P2 ' : 'P1 ') + pad(r.score, 6), P.coral);
+    text(ctx, 'S', 4, 21, pad(p.score, 6), P.text);
+    opMeter(ctx, opsShown(p), boost);
+  }
   multPill(ctx, 'X' + mult(p) * (boost ? 2 : 1), boost ? P.gold : P.amber);
   text(ctx, 'S', 4, 40, 'COMBO', P.dim);
   text(ctx, 'L', 4, 54, String(p.combo), boost ? P.gold : P.text);
@@ -1131,8 +1315,9 @@ function drawPlay(ctx, now) {
     rect(ctx, 56, 44, 128, 30, mix(P.bg, '#000000', .3)); rect(ctx, 56, 43, 128, 1, P.gold); rect(ctx, 56, 74, 128, 1, P.gold);
     textOut(ctx, 'L', Math.round(CX - tw('L', 'OP BOOST') / 2), 42, 'OP BOOST', P.gold, P.bg);
   }
-  knobBar(ctx, ['SWEEP', 'TONE', 'SPEED', 'MIX'], [true]);
-  if (beat < 4) banner(ctx, p.song.title.length > 14 ? p.song.num : p.song.title, LEVELS[p.level] + (p.speed !== 100 ? ' ' + p.speed + '%' : '') + (linked ? ' VS ' + (Link.mode === 'bot' ? 'BOT' : Link.role() === 'P1' ? 'P2' : 'P1') : ''), P.cyan);
+  knobBar(ctx, p.live ? ['MODE', 'TONE', 'BPM', 'MIX'] : ['SWEEP', 'TONE', 'SPEED', 'MIX'], p.live ? [false, false, mmClock(), false] : [true]);
+  if (p.live) { if (!p.notes.length && !p.ghosts.length) textC(ctx, 'S', CX, 100, 'WAITING FOR CH 1', P.dim); }
+  else if (beat < 4) banner(ctx, p.song.title.length > 14 ? p.song.num : p.song.title, LEVELS[p.level] + (p.speed !== 100 ? ' ' + p.speed + '%' : '') + (linked ? ' VS ' + (Link.mode === 'bot' ? 'BOT' : Link.role() === 'P1' ? 'P2' : 'P1') : ''), P.cyan);
   else if (beat < 8) banner(ctx, String(8 - Math.floor(beat)), null, P.amber, 99);
   if (p.paused) banner(ctx, 'PAUSE', 'PLAY GOES ON, HOME QUITS', P.amber);
   if (p.done) banner(ctx, G.last && G.last.full ? 'FULL COMBO' : 'CLEAR', null, G.last && G.last.full ? P.gold : P.green, 99);
@@ -1279,6 +1464,8 @@ function fillMidi() {
   const ins = [...midiAcc.inputs.values()];
   sel.add(new Option('Ingen', '')); ins.forEach(i => sel.add(new Option(i.name, i.id)));
   sel.disabled = false; sel.value = ins.some(i => i.id === prev) ? prev : (ins[0] ? ins[0].id : '');
+  const os = $('midiOut'), oprev = os.value, outs = [...midiAcc.outputs.values()]; os.innerHTML = '';
+  os.add(new Option('Ingen', '')); outs.forEach(o => os.add(new Option(o.name, o.id))); os.disabled = false; os.value = outs.some(o => o.id === oprev) ? oprev : '';
   bindMidi();
 }
 function bindMidi() {
@@ -1346,17 +1533,19 @@ G.sel = clamp(G.sel, 0, Math.max(0, SONGS.length - 1));
 
 /* ================================================================ go */
 function frame(now) {
-  if (PLAY && G.scr === 'play') update(now);
+  if (PLAY && (G.scr === 'play' || (G.scr === 'midi' && PLAY.live))) update(now);
+  if (MM.on) mmTick(now);
   if (G.scr === 'splash') drawSplash(sx, now);
   else if (G.scr === 'songs') drawSongs(sx, now);
   else if (G.scr === 'play' && PLAY) drawPlay(sx, now);
   else if (G.scr === 'results') drawResults(sx, now);
+  else if (G.scr === 'midi') { if (MM.mode === 'PREVIEW' && PLAY) drawPlay(sx, now); else drawMidi(sx, now); }
   drawToast(sx, now);
   drawPanel(now);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-window.KF = { G, Link, Bot, SONGS, button, enc, startSong, buildChart, pressKey, releaseNote, LAYOUTS, midiIn, parseMidi, importSong, addSong, renderSong, importBytes, makeEngine, playEvent, leds: () => ledStates(performance.now()).L, get play() { return PLAY; }, setAuto(v) { G.auto = !!v; $('auto').checked = G.auto; } };
+window.KF = { G, Link, Bot, SONGS, button, enc, startSong, buildChart, pressKey, releaseNote, LAYOUTS, midiIn, parseMidi, importSong, addSong, renderSong, importBytes, makeEngine, playEvent, leds: () => ledStates(performance.now()).L, MM, enterMidi, exitMidi, get play() { return PLAY; }, setAuto(v) { G.auto = !!v; $('auto').checked = G.auto; } };
 </script>
 </body>
 </html>
