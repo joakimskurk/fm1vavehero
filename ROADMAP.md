@@ -51,31 +51,36 @@ på verten og i fm1-emu.
 - [ ] Egen kalibreringsskjerm: trykk i takt med klikk
 - [ ] HARD-nivå og 2–3 nye låter
 - [ ] MIDI-import: tempoendringer, og en nøkkelnote for å overstyre de automatiske oktavskiftene
-- [ ] Lydsjekk: renders av referansen som fasit for porten, som i RoboSeq
+- [x] Lydsjekk: renders av referansen som fasit for porten, som i RoboSeq (`tools/ref_tour.cjs`, `tests/kf/parity.py`)
 
 ## Fase 3: Dinghy-port
 
 Budsjettet for minne, CPU og grafikk står i [docs/fm1-budsjett.md](docs/fm1-budsjett.md). Kort sagt passer alt, men
 lyden er det trange, så den måles først.
 
-- [ ] **Først: mål lydmotoren i fm1-emu.** Verste tilfelle er finalen i ENGINE TOUR (alle delene, skitne patcher).
-      Målet er 30 % av brikken, og under 45 % i verste avbrudd. Stemmetak (24 + 6 trommelag), 3 sagtann i PAD,
-      2-operator KEYS, kontrollrate og Schroeder/FDN-romklang.
+- [x] **Først: mål lydmotoren i fm1-emu.** Takt 41–44 i ENGINE TOUR (alle delene, skitne patcher, pad-enes lange
+      utklingninger) bruker 31,6 % av brikken, og 34,4 % med plattformen. CI feiler over 45 %. Det som skulle til:
+      24 stemmer og 10 trommelag, et oscillatorbudsjett på 48 (D8), kontrollrate på 32 frames og FDN-romklang.
 
 - [x] `keyfall.c` på Dinghy 0.5: `APP_NAME "KEYFALL"`, egen identitet (`FM-1_95N`), `PLATFORM.md` med avvik fra
       upstream, CI via zvenson/fm1-build, `make test` på verten
-- [ ] Bane, toppstripe og knotterad i lerreter. Mål: minst 30 fps for banen.
-- [ ] Tangent-LED-er med `fm1_led_key` og `fm1_led_key_glow`, og SPREAD (GLO) lagret i innstillingene
-- [ ] Presis timing: tangentkanter leses i `LCD_IDLE` og stemples med `fm1_ticks()`
-- [ ] Synthwave-motoren i lydavbruddet (fastkomma: sagtann med PolyBLEP, filtre, chorus, gated reverb, hall),
-      målt i fm1-emu og sjekket mot referansens renders
-- [ ] `tools/mid2keyfall`: MIDI-fil til kompakt notekart og bandspor for flash, med samme import som referansen
-- [ ] Patchene (D6) og GRIT (D7) i fastkomma, med nøkkelnoter i firmware. Forvrengning, bitcrush og pumping er billige.
-- [ ] MIDI MODE i firmware: USB-MIDI og TRS inn (`midi_get`), klokke og START/STOP, LIVE og PREVIEW, tangentene ut
-      med `midi_send`, og LED-ene for kanal 1. Testes med en DAW mot fm1-emu og så på et ekte FM-1.
-- [ ] Notekart i firmware, og beste resultat i flash
+- [x] Bane, toppstripe og knotterad i ett helskjermslerret, tegnet som referansen. Beregnet til omtrent 9 % av
+      brikken ved 30 fps (callgrind × 0,8). Må måles på et ekte FM-1.
+- [x] Tangent-LED-er med `fm1_led_key` og `fm1_led_key_glow`, og SPREAD (GLO) lagret i innstillingene
+- [x] Presis timing: tangentkanter leses også i `LCD_IDLE` og stemples med lydklokka, slik den høres
+      (forsinkelsen på et ekte FM-1 må kalibreres)
+- [x] Synthwave-motoren i lydavbruddet (fastkomma: sagtann med PolyBLEP, filtre, chorus, gated reverb, hall),
+      målt i fm1-emu og sjekket mot referansens renders (alle patcher innenfor 1,5 dB, låtene innenfor 0,8 dB)
+- [x] `tools/mid2keyfall.mjs`: MIDI-fil til notekart og bandspor for flash, med referansens egen import-kode
+- [x] Patchene (D6) og GRIT (D7) i fastkomma, med nøkkelnoter i firmware. GRIT ligger på ALGORITHM.
+- [x] MIDI MODE LIVE i firmware: USB-MIDI og TRS inn (`midi_get`), klokke og STOP, nøkkelnoter, tangentene ut på
+      kanal 1 med `midi_send`
+- [ ] MIDI MODE PREVIEW i firmware, og LED-ene for kanal 1. Testes med en DAW mot fm1-emu og så på et ekte FM-1.
+- [x] Notekart i firmware, og beste resultat i flash (AUTO lagres ikke)
 - [ ] Spillmotoren er klar for LINK fra første versjon: START, klokke og poeng går gjennom én modul
-- [ ] Vertstester, fm1-emu i strict mode, og `.fwsc` med commit og SHA-256
+- [x] Vertstester (`make test`) og `.fwsc` med attestasjon i CI
+- [ ] fm1-emu i strict mode, og en kalibreringsskjerm for forsinkelsen
+- [ ] Prøvd på et ekte FM-1
 
 ## Fase 4: LINK på maskinvare, to FM-1-er koblet med USB-C
 

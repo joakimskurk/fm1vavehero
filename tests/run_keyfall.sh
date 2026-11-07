@@ -45,7 +45,9 @@ run "the rules compile without a warning (-Wextra -Werror)" \
 run "the rules: every song on autoplay 100 %, late, wrong, black and outside keys, a broken hold" build/kf_game_test
 run "the app on the host: the default script" sh tests/run_host.sh
 run "the game on the host: splash, DEMO, songs, a song, MIDI MODE" sh tests/run_host.sh tests/kf/game.txt
-run "the screens are there" sh -c 'for t in 600 2500 7400 8400 15000 15800; do test -s build/host/keyfall-$t.png || exit 1; done' 
+run "the screens are there" sh -c 'for t in 600 2500 7400 8400 15000 15800; do test -s build/host/keyfall-$t.png || exit 1; done'
+run "a song on AUTO to its results, again, back to the songs" sh tests/run_host.sh tests/kf/results.txt
+run "the results' screen is there" test -s build/host/keyfall-42000.png
 run "the sound file is there and not empty" test -s "$OUT/keyfall.wav"
 
 [ $fail = 0 ] && echo "run_keyfall: all passed" || { echo "run_keyfall: FAILED"; exit 1; }

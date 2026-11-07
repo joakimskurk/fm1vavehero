@@ -138,3 +138,27 @@ tettere, med lavere toppnivå, og ingen låt klipper på 0, 70 eller 100.
 er det enkleste å flytte over.
 
 **Sjekkes av.** `tests/reference.cjs`, med testene beskrevet i [reference/README.md](../reference/README.md).
+
+## D8 (2026-11-07): firmwarens lyd, der den avviker fra referansen
+
+**Beslutning.** Lydmotoren i firmwaren (`firmware/src/kf_engine.h`) skal låte som referansen, og den sjekkes mot
+referansens egne renders. Den avviker fra referansen bare på disse punktene, fordi FM-1 ikke har råd til resten:
+
+- **Oscillatorbudsjett på 48.** Når stemmene trenger flere oscillatorer enn det, toner de stilleste utklingningene
+  ut på 25 ms. En utklinging som står alene, for eksempel på slutten av en låt, får klinge helt ut. Utklingninger
+  slutter ellers 40 dB under toppen sin, mens referansen lar dem gå i seks tidskonstanter.
+- **Romklangen er en FDN** med fire linjer bak fire diffusorer, og ikke en konvolusjon på 2,8 s. Energien er
+  kalibrert mot referansen. Den gatede romklangen er en FDN bak en port som skarptromma og klappen åpner.
+- **FM-stemmer med hele forhold** (ORGAN, FM EP, TINE, FM BASS, BELL EP, GRIT EP, GLASS PAD) starter modulatorene på
+  en fast fase som gir referansens gjennomsnittsnivå. I referansen følger fasen tonens startøyeblikk, og nivået varierer
+  inntil 4 dB fra tone til tone.
+- **Kompressoren** følger Chromiums kurve (målt med `tools/ref_tour.cjs --comp`), men uten 6 ms forsinkelse foran.
+
+**Hvorfor.** Det tyngste stedet i låtene (takt 41–44 i ENGINE TOUR) kostet 76 oscillatorer per frame uten budsjett,
+fordi pad-ene har lange utklingninger. Med budsjettet bruker lyden 31,6 % av brikken (målt i fm1-emu). En
+konvolusjon på 2,8 s er langt over det brikken kan.
+
+**Sjekkes av.** `tests/run_keyfall.sh`: alle 25 patcher og 4 trommesett innenfor 1,5 dB og 25 % lysstyrke av
+referansen, de fleste innenfor 0,3 dB, og hver fjerde takt av de fire låtenes første 30 sekunder innenfor 0,8 dB.
+`tools/emu_cpu.sh` i CI feiler hvis det tyngste stedet bruker mer enn 45 % av brikken.
+

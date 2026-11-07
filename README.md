@@ -5,8 +5,9 @@ hvite tangentene, og LED-ene i tangentene viser hva som kommer. To spillere med 
 hverandre. En Dinghy 0.5-app, i samme familie som [RoboSeq](https://github.com/joakimskurk/fm1roboseq),
 [Star Distroyer](https://github.com/joakimskurk/fm1stardistroyer) og [SkurkyMello](https://github.com/joakimskurk/fm1mello).
 
-> **Status: nettleserreferanse 0.1, spillbar. Firmware 0.1 er påbegynt:** Dinghy 0.5 ligger i `firmware/`, og
-> KEYFALL bygges i trinn, med lydmotoren først. Planen står i [ROADMAP.md](ROADMAP.md).
+> **Status: nettleserreferanse 0.1 og firmware 0.1 under arbeid, begge spillbare.** Firmwaren har spillet, alle fire
+> låtene, lydmotoren og MIDI MODE LIVE. Den er testet på verten og målt i fm1-emu, men ikke prøvd på et ekte FM-1 ennå.
+> Planen står i [ROADMAP.md](ROADMAP.md).
 
 <p align="center"><img src="docs/screens/reference-page.png" width="820" alt="Referansen i nettleseren: skjermen og FM-1-panelet med tangent-LED-er"></p>
 
@@ -46,16 +47,40 @@ egen forstudie i fase 4. Via en datamaskin virker det uansett.
 
 ## Firmware
 
-Firmwaren er en Dinghy 0.5-app i `firmware/src/keyfall.c` ([PLATFORM.md](PLATFORM.md) sier hva som er endret fra
-Dinghy). Den kjører uendret på en datamaskin, med skjermen som PNG og lyden som WAV:
+Firmwaren er en Dinghy 0.5-app (`firmware/src/keyfall.c`, [PLATFORM.md](PLATFORM.md) sier hva som er endret fra
+Dinghy). Den spiller som referansen: samme regler, samme notekart, samme skjermer og samme lyd.
+
+<p align="center">
+  <img src="docs/screens/fw-splash.png" width="200" alt="Firmwaren: tittelskjermen">
+  <img src="docs/screens/fw-songs.png" width="200" alt="Firmwaren: låtlista">
+  <img src="docs/screens/fw-play.png" width="200" alt="Firmwaren: banen i ENGINE TOUR">
+  <img src="docs/screens/fw-results.png" width="200" alt="Firmwaren: resultatet">
+  <img src="docs/screens/fw-midi.png" width="200" alt="Firmwaren: MIDI MODE LIVE">
+</p>
+
+| | |
+|---|---|
+| Tittelskjermen | PLAY går til låtene. FX starter DEMO-en, ENGINE TOUR på autospill. |
+| Låtene | SELECT velger låt. KNOB 1 velger nivå, KNOB 2 stemme (TONE), KNOB 3 fart og KNOB 4 MIX. ALGORITHM styrer GRIT. GLO slår SPREAD av og på, og SEQ slår AUTO av og på (låta spiller seg selv, og resultatet lagres ikke). PLAY starter. |
+| Under en låt | De åtte tangentene i oppsettet spiller banene. OCT− og OCT+ følger oktavskiftene, FX gir OP BOOST, PLAY er pause og HOME avslutter. |
+| Resultatet | Beste resultat per låt og nivå lagres i flash. PLAY spiller igjen, HOME går til låtene. |
+| MIDI MODE | LIVE: FM-1 er lydmodul for låta, én del per kanal, med nøkkelnoter. Tangentene sendes ut på kanal 1. PREVIEW kommer senere. |
+
+Tangent-LED-ene viser hva som kommer: lyser når tonen er ved linja, gløder når den kommer innen to slag.
+
+**Målt i fm1-emu:** det tyngste stedet i låtene, takt 41–44 i ENGINE TOUR, bruker 31,6 % av brikken til lyd, og
+34,4 % med plattformens avbrudd. Spillskjermen er beregnet til omtrent 9 % ved 30 bilder i sekundet. Alle 25
+patcher og 4 trommesett ligger innenfor 1,5 dB av referansen, og hele låtene innenfor 0,8 dB. Mer i
+[docs/fm1-budsjett.md](docs/fm1-budsjett.md).
 
 ```sh
-make test          # KEYFALLs vertstester og Dinghys vertsmodus, uten FM-1
+make test          # KEYFALLs vertstester: lyden mot referansen, reglene, skjermene; uten FM-1
 make fw            # build/keyfall.fwsc: krever JieLis verktøykjede og AC79-SDK-en (docs/DINGHY_README.md)
 ```
 
-GitHub Actions bygger `.fwsc`-pakken ved hver push (`.github/workflows/build.yml`, via zvenson/fm1-build). Pakken
-heter `FM-1_95N`, der N er mindreversjonen, og 0 er en utviklerbygging.
+GitHub Actions bygger `.fwsc`-pakken ved hver push, kjører testene og måler DEMO-en i fm1-emu
+(`.github/workflows/build.yml`, via zvenson/fm1-build). Pakken heter `FM-1_95N`, der N er mindreversjonen, og 0 er
+en utviklerbygging.
 
 ## Innhold
 
@@ -65,7 +90,7 @@ heter `FM-1_95N`, der N er mindreversjonen, og 0 er en utviklerbygging.
 | [docs/songs.md](docs/songs.md) | Lag dine egne låter: kanalene, reglene og eksporten |
 | [docs/link.md](docs/link.md) | LINK: lagene fra nettleser til USB-C, og protokollen |
 | [docs/fm1-budsjett.md](docs/fm1-budsjett.md) | Får alt plass på FM-1? Minne, CPU, grafikk, låter og poeng |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D7 |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D8 |
 | [songs/](songs/) | De fire innebygde låtene som MIDI-filer, også maler. ENGINE TOUR viser alle 29 lydene, CHROME HORIZON er en hel låt i D-moll (`python3 tools/songs.py` lager dem). |
 | [ROADMAP.md](ROADMAP.md) | Fasene, med avkrysning |
 | [reference/](reference/) | Nettleserreferansen, fasit før porten |

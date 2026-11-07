@@ -7,8 +7,8 @@
  *   splash     PLAY: the songs. FX: the DEMO (ENGINE TOUR from bar 41 on autoplay: the engine's worst case,
  *              which fm1-emu times in CI); HOME or PLAY ends it
  *   songs      SELECT the song (the last row: MIDI MODE), KNOB 1 the level (EASY, MED), KNOB 2 the voice (TONE:
- *              SONG or one of five), KNOB 3 the speed (50-100 %), KNOB 4 MIX; PLAY starts, GLO turns SPREAD on and
- *              off (D2), HOME back to the splash
+ *              SONG or one of five), KNOB 3 the speed (50-100 %), KNOB 4 MIX, ALGORITHM GRIT (D7); PLAY starts, GLO
+ *              turns SPREAD on and off (D2), SEQ AUTO (the song plays itself, its result is not kept), HOME back
  *   play       the eight keys of the layout play the lanes (C4..C5, or SPREAD's every other white key); OCT- OCT+
  *              follow the octave shifts; FX: OP BOOST when the six OPs are lit; PLAY pauses, HOME quits
  *   results    PLAY again, HOME the songs; the best result of each song and level is kept in flash
@@ -102,7 +102,7 @@ static void kg_sound_off(uint32_t key, uint32_t pitch)
 
 /* ---- the screens and their state */
 enum { SCR_SPLASH, SCR_SONGS, SCR_PLAY, SCR_RESULTS, SCR_MIDI };
-static uint32_t scr, paused, paused_at, dirty_set, t_set, redraw = 1, demo;
+static uint32_t scr, paused, paused_at, dirty_set, t_set, redraw = 1, demo, autoplay;
 static char toast_s[24];
 static uint32_t toast_ms;
 static void toast(const char *s) { kput(toast_s, s); toast_ms = fm1_ms | 1u; redraw = 1; }
@@ -197,7 +197,7 @@ static void song_start(uint32_t idx, uint32_t level, uint32_t is_demo)
     voices_off();
     demo = is_demo;
     kg_start(idx, level, is_demo ? 100u : set.speed, is_demo ? 0u : set.spread, kf_now + 6615u);   /* beat 0 in 150 ms */
-    kg.auto_on = (uint8_t)is_demo;
+    kg.auto_on = (uint8_t)(is_demo || autoplay);
     if (is_demo) kg_seek(kf_bench_beat);
     keys_prev = fm1_in.notes & 0x7FFFFFFu;       /* (a key held from before does not count) */
     paused = 0;
@@ -319,7 +319,7 @@ static void draw(void)
             lit[i] = (uint8_t)(key_note[key] != 0u);
             led[i] = (uint8_t)(lit[i] ? 2u : 0u);
         }
-        ks_play(fm1_ms, lit, led, num, demo ? "DEMO" : 0);
+        ks_play(fm1_ms, lit, led, num, demo ? "DEMO" : kg.auto_on ? "AUTO" : 0);
         if (paused) ks_banner("PAUSE", "PLAY GOES ON, HOME QUITS", K_AMBER, 92);
     } else if (scr == SCR_RESULTS) ks_results(num);
     else draw_midi_mode();
@@ -378,6 +378,9 @@ static void app_main(void)
             }
             if (b & (1u << BTN_HOME)) { scr = SCR_SPLASH; redraw = 1; }
             if (b & (1u << BTN_GLO)) { set.spread ^= 1u; toast(set.spread ? "SPREAD ON" : "SPREAD OFF"); ch = 1; }
+            if (b & (1u << BTN_SEQ)) { autoplay ^= 1u; toast(autoplay ? "AUTO ON" : "AUTO OFF"); }
+            v = enc_step(ENC_ALGORITHM, (int32_t)set.grit, 10, 0, 100, &ch);
+            if (v != (int32_t)set.grit) { set.grit = (uint8_t)v; kf_set_grit(set.grit); toast_num("GRIT ", (uint32_t)v, ""); }
             v = enc_step(ENC_SELECT, (int32_t)set.sel, 1, 0, (int32_t)KF_NSONG, &ch);
             if (v != (int32_t)set.sel) { set.sel = (uint8_t)v; redraw = 1; }
             v = enc_step(ENC_KNOB1, (int32_t)set.level, 1, 0, 1, &ch);
@@ -399,7 +402,7 @@ static void app_main(void)
                 if (kg_update(heard_now())) {
                     if (demo) song_start(KF_BENCH_SONG, 1, 1);   /* the DEMO goes round */
                     else {
-                        kg.new_best = best_put(kg.idx, kg.level, kg.acc10);
+                        kg.new_best = kg.auto_on ? 0 : best_put(kg.idx, kg.level, kg.acc10);   /* (AUTO: not kept) */
                         ch = 1;
                         song_stop();
                         scr = SCR_RESULTS;

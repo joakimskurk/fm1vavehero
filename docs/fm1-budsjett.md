@@ -83,9 +83,15 @@ Lydmotoren finnes nå i fastkomma (`firmware/src/kf_engine.h`) og er målt i fm1
 
 Sangene er tyngre enn budsjettet over antok, fordi pad-ene har lange utklingninger (SUPERSAW har τ = 1 s). I
 ENGINE TOURs tyngste takter (41–52) var 24 stemmer i bruk, med omtrent 76 oscillatorer per frame. Derfor har
-motoren et **oscillatorbudsjett** på 48: er det sprengt, toner de stilleste utklingningene ut på 25 ms. En
-utklinging som står alene, for eksempel på slutten av en låt, får klinge helt ut. Med budsjettet er ENGINE TOURs
-finale beregnet til **omtrent 31 %** av brikken (x86 × 0,8), og DEMO-en måler nå akkurat den i fm1-emu.
+motoren et **oscillatorbudsjett** på 48 (D8): er det sprengt, toner de stilleste utklingningene ut på 25 ms. En
+utklinging som står alene, for eksempel på slutten av en låt, får klinge helt ut.
+
+| Hva | Målt i fm1-emu |
+|---|---|
+| ENGINE TOUR takt 41–44 (DEMO-en), lydmotoren | **31,6 %**, 1717 instruksjoner per frame |
+| Det samme, alle avbrudd | 34,4 % |
+
+x86-anslaget (callgrind × 0,8) sa 31,5 %, så anslaget kan brukes mellom CI-kjøringene.
 
 Lyden er sjekket mot referansen: alle 25 patcher og 4 trommesett ligger innenfor 1,5 dB og 25 % lysstyrke, de
 fleste innenfor 0,3 dB. Hver fjerde takt av de første 30 sekundene av alle fire låtene ligger innenfor 0,8 dB
@@ -100,6 +106,9 @@ fleste innenfor 0,3 dB. Hver fjerde takt av de første 30 sekundene av alle fire
 - Bare banen (rad 40–222) må tegnes hvert bilde. Toppstripa og knotteraden tegnes bare når de endrer seg. Det er
   omtrent 85 KB per bilde, så 30 bilder i sekundet bruker omtrent en tredjedel av SPI-tiden, men lite CPU.
 - Mål: 30 bilder i sekundet, 60 om det går.
+- **Beregnet (firmware 0.1):** spillskjermen i ENGINE TOURs tyngste takter koster omtrent 0,69 millioner
+  instruksjoner per bilde på brikken (callgrind × 0,8), det vil si omtrent 9 % av brikken ved 30 bilder i sekundet.
+  Fargene på banen blandes én gang ved oppstart, og tekst blandes i RGB565. Hele skjermen er ett lerret på 113 KB.
 
 ## Låter og poeng
 
