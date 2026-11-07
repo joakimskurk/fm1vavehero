@@ -51,8 +51,9 @@
     <div class="card">
       <h2>Slik spiller du</h2>
       <table>
-        <tr><td><kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> … <kbd>K</kbd></td><td>De hvite tangentene C4–C5: A S D F G H J K. Bare de hvite spilles.</td></tr>
+        <tr><td><kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> … <kbd>K</kbd></td><td>De åtte banene, hvite tangenter: C4–C5, eller annenhver hvit tangent med SPREAD. De svarte vises, men har ingen funksjon.</td></tr>
         <tr><td><kbd>Z</kbd> <kbd>X</kbd></td><td>OCT− / OCT+</td></tr>
+        <tr><td><kbd>Q</kbd></td><td>GLO: SPREAD av eller på</td></tr>
         <tr><td><kbd>Mellomrom</kbd></td><td>FX: OP BOOST når måleren er full</td></tr>
         <tr><td><kbd>Enter</kbd></td><td>PLAY: start, pause</td></tr>
         <tr><td><kbd>Esc</kbd></td><td>HOME: tilbake</td></tr>
@@ -69,6 +70,7 @@
       <label>Latens <input id="offset" type="range" min="-120" max="120" step="1"><span class="v" id="offsetV"></span></label>
       <div class="row"><button id="applyCal" disabled>Bruk snittet fra siste runde</button><span class="muted" id="calInfo"></span></div>
       <label>Notefart <select id="zpb"><option value="0.75">0,75×</option><option value="1">1×</option><option value="1.25">1,25×</option><option value="1.5">1,5×</option></select></label>
+      <label><input id="spread" type="checkbox"> SPREAD: annenhver hvit tangent, for store fingre</label>
       <label><input id="auto" type="checkbox"> Autospill (demo og test)</label>
     </div>
     <div class="card">
@@ -97,7 +99,7 @@ window.TERMINUS = {"S": {"h": 16, "pad": 2, "first": 32, "last": 126, "adv": [8,
 /* KEYFALL, the browser reference. Until the Dinghy port exists, this file is the authority for how Keyfall feels,
    times and sounds. Everything the FM-1 has is here: the 240 x 240 screen in Dinghy's Terminus fonts, the 27 keys
    with their two LED levels, the buttons and knobs, and the LINK protocol for two players. */
-const VERSION = 'REF 0.1.1';
+const VERSION = 'REF 0.1.2';
 
 /* ================================================================ small things */
 const $ = id => document.getElementById(id);
@@ -172,12 +174,12 @@ const sc = z => D / (D + z), Y = z => HY + (HIT - HY) * sc(z), sAt = y => (y - H
 const X = (u, s) => CX + (u - CX) * s, U = p => NL + p * LW;
 const fadeAt = y => clamp((y - TOPY) / 26, 0, 1);
 const BLACK_S = new Set([1, 3, 6, 8, 10]);
+const BLACK_B = [1, 2, 4, 5, 6];                                    /* lane lines with a black key */
 const S2P = [.5, 1, 1.5, 2, 2.5, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7.5];   /* semitone in the window -> lane position */
-const stripKey = s => BLACK_S.has(s) ? 'b' + S2P[s] : 'w' + (S2P[s] - .5);
 
 const HWBG = {};
 function highwayBg(boost) {
-  const k = boost ? 'b' : 'n'; if (HWBG[k]) return HWBG[k];
+  const k = (boost ? 'b' : 'n') + (G.spread ? 's' : ''); if (HWBG[k]) return HWBG[k];
   const c = document.createElement('canvas'); c.width = c.height = 240; const ctx = c.getContext('2d');
   for (let y = TOPY; y < HIT; y++) {
     const s = sAt(y + .5), f = fadeAt(y), near = (y - TOPY) / (HIT - TOPY);
@@ -190,7 +192,7 @@ function highwayBg(boost) {
     for (let b = 0; b <= 8; b++) {
       const edge = b === 0 || b === 8;
       let x = Math.round(X(U(b), s)); if (b === 8) x -= 1;
-      const col = edge ? (boost ? P.gold : '#4d4b96') : '#24234a';
+      const col = edge ? (boost ? P.gold : '#4d4b96') : G.spread ? '#2a2950' : BLACK_B.includes(b) ? '#2b2a58' : '#1c1b38';
       rect(ctx, x, y, 1, 1, mix(P.bg, col, f));
     }
   }
@@ -261,15 +263,33 @@ function burstDraw(ctx, cx, cy, col, age, big) {
   if (age < .5) { rect(ctx, cx - 3, cy - 1, 7, 2, '#ffffff'); rect(ctx, cx - 1, cy - 4, 2, 7, '#ffffff'); }
   ctx.globalAlpha = 1;
 }
-const LANE_K = [7, 9, 11, 12, 14, 16, 18, 19];                       /* lane -> the FM-1's key (C4 D4 E4 F4 G4 A4 B4 C5) */
-function keyStrip(ctx, st, led = []) {                                 /* the FM-1's white keys: tall capsules with their LED slit */
-  for (let i = 0; i < 8; i++) {
-    const col = LANE[i], state = st['w' + i], lv = led[i] || 0, w = 16, h = 26, x = Math.round(U(i + .5) - w / 2), y = 194;
+const WHITE_SEMI = [0, 2, 4, 5, 7, 9, 11, 12];                       /* lane -> semitones above the window's C */
+const LAYOUTS = {                                                     /* lane -> the FM-1 key that plays it */
+  normal: [7, 9, 11, 12, 14, 16, 18, 19],                             /* C4 D4 E4 F4 G4 A4 B4 C5 */
+  spread: [0, 4, 7, 11, 14, 18, 21, 24],                              /* D2: every other white key, F3 A3 C4 E4 G4 B4 D5 F5 */
+};
+const layout = () => G.spread ? LAYOUTS.spread : LAYOUTS.normal;
+function keyStrip(ctx, st, led = []) {
+  if (G.spread) return spreadStrip(ctx, st, led);
+  const cap = (cx, y, w, h, col, state, black) => {                  /* the FM-1's two rows of capsule keys */
+    const x = cx - w / 2;
+    if (state === 'lit') { pcap(ctx, x - 1, y - 1, w + 2, h + 2, mix(P.bg, col, .55)); pcap(ctx, x, y, w, h, col); rect(ctx, x + h / 2, y + 2, w - h, 1, mix(col, '#ffffff', .65)); }
+    else if (state === 'next') { pcap(ctx, x, y, w, h, col); pcap(ctx, x + 1, y + 1, w - 2, h - 2, mix(black ? '#1a1930' : '#2b2a46', col, .22)); }
+    else { pcap(ctx, x, y, w, h, black ? '#37366a' : '#3d3c64'); pcap(ctx, x + 1, y + 1, w - 2, h - 2, black ? '#191830' : '#2b2a46'); }
+  };
+  BLACK_B.forEach(b => cap(U(b), 193, 18, 12, null, null, true));    /* D1: shown where they sit, never in the game */
+  for (let i = 0; i < 8; i++) cap(U(i + .5), 207, 25, 14, LANE[i], st['w' + i], false);
+}
+function spreadStrip(ctx, st, led) {                                  /* D2: a used key under each lane, an idle key between */
+  for (let j = 1; j <= 15; j++) {
+    const cx = NL + j * LW / 2, w = 11, x = Math.round(cx - w / 2);
+    if (j % 2 === 0) { pcap(ctx, x + 1, 198, w - 2, 18, '#26254a'); pcap(ctx, x + 2, 199, w - 4, 16, '#131226'); continue; }
+    const i = (j - 1) / 2, col = LANE[i], state = st['w' + i], lv = led[i] || 0, y = 194, h = 26;
     if (state === 'lit') { pcap(ctx, x - 1, y - 1, w + 2, h + 2, mix(P.bg, col, .55)); pcap(ctx, x, y, w, h, col); }
     else if (state === 'next') { pcap(ctx, x, y, w, h, col); pcap(ctx, x + 1, y + 1, w - 2, h - 2, mix('#2b2a46', col, .22)); }
     else { pcap(ctx, x, y, w, h, '#3d3c64'); pcap(ctx, x + 1, y + 1, w - 2, h - 2, '#2b2a46'); }
     const base = state === 'lit' ? mix(col, '#000000', .35) : '#1b1a30';
-    pcap(ctx, x + 6, y + 5, 4, 12, lv === 2 ? '#ffffff' : lv === 1 ? mix(base, '#ffffff', .4) : base);
+    pcap(ctx, x + 4, y + 5, 3, 12, lv === 2 ? '#ffffff' : lv === 1 ? mix(base, '#ffffff', .4) : base);
   }
 }
 function header(ctx, num, title, right, prog, rightCol = P.amber) {
@@ -382,7 +402,7 @@ function buildChart(song, level) {
   }
   const phrases = song.phrases.map(([a, b]) => ({ a, b, total: 0, hit: 0, failed: false }));
   notes.forEach((n, i) => {
-    n.i = i; n.oct = octAt(song, n.t); n.s = n.pitch - 60 - 12 * n.oct; n.p = S2P[n.s];
+    n.i = i; n.oct = octAt(song, n.t); n.s = n.pitch - 60 - 12 * n.oct; n.p = S2P[n.s]; n.lane = WHITE_SEMI.indexOf(n.s);
     if (n.p === undefined) throw new Error('note outside the window: ' + JSON.stringify(n));
     if (BLACK_S.has(mod12(n.s))) throw new Error('a black key in the chart (D1: white keys only): ' + JSON.stringify(n));
     n.hold = n.len >= 1.5; n.state = 'pending';
@@ -517,7 +537,7 @@ function ctxTimeAt(perf) {
 const WIN = { PERFECT: 35, GREAT: 70, GOOD: 110, SHIFT: 220 };      /* ms either side */
 const BASE = { PERFECT: 100, GREAT: 70, GOOD: 40, SHIFT: 50 }, HOLD_BONUS = 50, BOOST_BEATS = 16;
 const G = { scr: 'splash', sel: 1, level: clamp(store.get('keyfall.level', 1), 0, 1), speed: 100, tone: 0, mix: 60, oct: 0,
-            offset: store.get('keyfall.offset', 0), zpb: store.get('keyfall.zpb', 1), auto: false, toast: null, last: null };
+            offset: store.get('keyfall.offset', 0), zpb: store.get('keyfall.zpb', 1), spread: !!store.get('keyfall.spread', false), auto: false, toast: null, last: null };
 let PLAY = null;
 const pressed = new Map();                                           /* input id -> { k, pitch, s, voice } */
 
@@ -656,25 +676,28 @@ function autoPlay(p, beat, now) {
   for (const e of p.octs) if (e.state === 'pending' && beat >= e.t) octPress(e.dir, perfAt(e.t));
   for (const n of p.notes) {
     if (n.t > beat) break;
-    if (n.state === 'pending' && !n.autoDown) { n.autoDown = true; n.autoUp = n.t + (n.hold ? n.len : Math.min(n.len, .5)) * .95; pressNote('auto' + n.i, 7 + n.s, n.pitch, n.s, perfAt(n.t)); }
+    if (n.state === 'pending' && !n.autoDown) { n.autoDown = true; n.autoUp = n.t + (n.hold ? n.len : Math.min(n.len, .5)) * .95; pressKey('auto' + n.i, layout()[n.lane], perfAt(n.t), 'auto'); }
   }
   for (const n of p.notes) if (n.autoDown && !n.autoOff && beat >= n.autoUp) { n.autoOff = true; releaseNote('auto' + n.i, perfAt(n.autoUp)); }
   if (p.ops >= 6 && !boosting(p)) activateBoost();
 }
 
 /* ================================================================ input: keys, buttons, knobs */
-function pressNote(id, k, pitch, s, ts) {
+function playVoice(id, k, lane, pitch, o) {
+  const old = pressed.get(id); if (old && old.voice) old.voice.off(A.ctx.currentTime);
+  pressed.set(id, { k, lane, pitch, voice: fmNote(A.ctx.currentTime, mtof(pitch), PATCHES[TONES[G.tone]], A.player, o) });
+}
+/* a key of the FM-1 (0 = F3 .. 26 = G5) from the panel, the computer keyboard, autoplay or MIDI. In a song only the
+   eight keys of the layout do anything (D1, D2); every other key, black or white, has no function there. */
+function pressKey(id, k, ts, src) {
   ensureAudio(); if (!A.ctx) return;
   const p = PLAY;
   if (p && p.paused) return;
-  if (p && G.scr === 'play' && BLACK_S.has(mod12(s))) return;   /* D1: the black keys are not in the game: no note, no penalty, no sound */
-  let o = { bright: 1 };
-  if (p && G.scr === 'play') {
-    const r = judgePress(p, id, pitch, s, ts);
-    o = r === 'wrong' ? { bright: .35, detune: (Math.random() < .5 ? -1 : 1) * 28 } : { bright: voiceBright(p) };
-  }
-  const old = pressed.get(id); if (old && old.voice) old.voice.off(A.ctx.currentTime);
-  pressed.set(id, { k, pitch, s, voice: fmNote(A.ctx.currentTime, mtof(pitch), PATCHES[TONES[G.tone]], A.player, o) });
+  if (!(p && G.scr === 'play')) { playVoice(id, k, layout().indexOf(k), 53 + k + 12 * G.oct, { bright: 1 }); return; }   /* free play */
+  const lane = layout().indexOf(k); if (lane < 0) return;
+  const oct = src === 'midi' ? octAt(p.song, Math.max(0, p.beat)) : G.oct, s = WHITE_SEMI[lane], pitch = 60 + s + 12 * oct;
+  const r = judgePress(p, id, pitch, s, ts);
+  playVoice(id, k, lane, pitch, r === 'wrong' ? { bright: .35, detune: (Math.random() < .5 ? -1 : 1) * 28 } : { bright: voiceBright(p) });
 }
 function releaseNote(id, ts) {
   const e = pressed.get(id); if (!e) return;
@@ -684,11 +707,14 @@ function releaseNote(id, ts) {
   p.holds.delete(id);
   if (n.state === 'held') holdEnd(p, n, clamp((beatAt(ts - G.offset) - n.t) / n.len, 0, 1));
 }
-function keyDownK(id, k, ts) { pressNote(id, k, 60 + (k - 7) + 12 * G.oct, k - 7, ts); }
-function noteOnMidi(note, ts) {
-  const base = PLAY ? 60 + 12 * octAt(PLAY.song, Math.max(0, PLAY.beat)) : 60;
-  if (PLAY) PLAY.midiUsed = true;
-  pressNote('m' + note, 7 + note - base, note, note - base, ts);
+function noteOnMidi(note, ts) {                                        /* MIDI notes as FM-1 keys: F3 = 53, the FM-1's OCT followed */
+  const p = PLAY;
+  if (p && G.scr === 'play') { p.midiUsed = true; pressKey('m' + note, note - 53 - 12 * octAt(p.song, Math.max(0, p.beat)), ts, 'midi'); return; }
+  ensureAudio(); if (A.ctx) playVoice('m' + note, note - 53, -1, note, { bright: 1 });
+}
+function setSpread(v) {
+  if (G.scr === 'play') { toast('NOT DURING A SONG'); $('spread').checked = G.spread; return; }
+  G.spread = !!v; store.set('keyfall.spread', G.spread); $('spread').checked = G.spread; toast(G.spread ? 'SPREAD ON' : 'SPREAD OFF');
 }
 function button(id, ts = performance.now()) {
   ensureAudio();
@@ -701,6 +727,7 @@ function button(id, ts = performance.now()) {
     else if (G.scr === 'results') G.scr = 'songs';
     else if (G.scr === 'songs') G.scr = 'splash';
   } else if (id === 'FX') { if (G.scr === 'play') activateBoost(); }
+  else if (id === 'GLO') setSpread(!G.spread);
   else if (id === 'OCT-') octPress(-1, ts);
   else if (id === 'OCT+') octPress(1, ts);
 }
@@ -719,8 +746,8 @@ function enc(id, d) {
     else if (!p2Follow()) { G.speed = clamp(G.speed + 10 * d, 50, 100); toast('SPEED ' + G.speed + '%'); }
   } else if (id === 'K4') { G.mix = clamp(G.mix + 10 * d, 0, 100); applyMix(); toast('MIX ' + G.mix + '/' + (100 - G.mix)); }
 }
-const KEYMAP = { KeyA: 7, KeyS: 9, KeyD: 11, KeyF: 12, KeyG: 14, KeyH: 16, KeyJ: 18, KeyK: 19 };   /* the white keys C4..C5 */
-const KEYACT = { KeyZ: () => button('OCT-'), KeyX: () => button('OCT+'), Space: () => button('FX'), Enter: () => button('PLAY'),
+const KEYMAP = { KeyA: 0, KeyS: 1, KeyD: 2, KeyF: 3, KeyG: 4, KeyH: 5, KeyJ: 6, KeyK: 7 };   /* the eight lanes, on the keys of the layout */
+const KEYACT = { KeyQ: () => button('GLO'), KeyZ: () => button('OCT-'), KeyX: () => button('OCT+'), Space: () => button('FX'), Enter: () => button('PLAY'),
   NumpadEnter: () => button('PLAY'), Escape: () => button('HOME'), Backspace: () => button('HOME'),
   ArrowUp: () => enc('SELECT', -1), ArrowDown: () => enc('SELECT', 1), ArrowLeft: () => enc('K1', -1), ArrowRight: () => enc('K1', 1),
   Digit1: () => enc('K2', -1), Digit2: () => enc('K2', 1), Digit3: () => enc('K3', -1), Digit4: () => enc('K3', 1), Digit5: () => enc('K4', -1), Digit6: () => enc('K4', 1) };
@@ -730,7 +757,7 @@ document.addEventListener('keydown', e => {
   const k = KEYMAP[e.code], act = KEYACT[e.code];
   if (k == null && !act) return;
   e.preventDefault(); if (e.repeat) return;
-  if (k != null) keyDownK('k' + e.code, k, e.timeStamp);
+  if (k != null) pressKey('k' + e.code, layout()[k], e.timeStamp, 'kbd');
   else if (e.code === 'KeyZ' || e.code === 'KeyX') button(e.code === 'KeyZ' ? 'OCT-' : 'OCT+', e.timeStamp);
   else act();
 });
@@ -843,7 +870,7 @@ function drawSplash(ctx, now) {
 function drawSongs(ctx, now) {
   rect(ctx, 0, 0, 240, 240, P.bg);
   const linked = Link.linked();
-  header(ctx, null, 'SONGS', linked ? 'LINK ' + Link.role() : pad(G.sel + 1, 2) + '/' + pad(LIST.length, 2), null, linked ? P.cyan : P.dim);
+  header(ctx, null, 'SONGS', linked ? 'LINK ' + Link.role() : G.spread ? 'SPREAD' : pad(G.sel + 1, 2) + '/' + pad(LIST.length, 2), null, linked ? P.cyan : G.spread ? P.amber : P.dim);
   LIST.forEach((s, i) => {
     const y = 22 + i * 20, sel = i === G.sel;
     if (sel) { rect(ctx, 2, y - 1, 236, 19, P.surf2); rect(ctx, 2, y - 1, 3, 19, P.cyan); }
@@ -881,7 +908,7 @@ function drawPlay(ctx, now) {
   rect(ctx, 0, 0, 240, 240, P.bg);
   ctx.drawImage(highwayBg(boost), 0, 0);
   beatLines(ctx, beat, boost, zpb);
-  for (const e of pressed.values()) if (e.s >= 0 && e.s <= 12) beam(ctx, S2P[e.s], laneCol(S2P[e.s]));
+  for (const e of pressed.values()) if (e.lane >= 0) beam(ctx, e.lane + .5, LANE[e.lane]);
   for (const n of p.notes) {
     if (!n.hold || n.state === 'done') continue;
     const z0 = zOf(n.t), z1 = Math.min(ZTOP, zOf(n.t + n.len));
@@ -904,9 +931,9 @@ function drawPlay(ctx, now) {
   p.fx = p.fx.filter(f => now - f.t0 < 260);
   for (const f of p.fx) burstDraw(ctx, U(f.p), HIT - 1, f.col, (now - f.t0) / 260, f.big);
   const keys = {}, leds = ledStates(now).L;
-  for (const e of pressed.values()) if (e.s >= 0 && e.s <= 12) keys[stripKey(e.s)] = 'lit';
-  for (const n of p.notes) { if (n.t > beat + 1) break; if (n.state === 'pending' && n.t >= beat - .1) { const k = stripKey(n.s); if (!keys[k]) keys[k] = 'next'; } }
-  keyStrip(ctx, keys, LANE_K.map(k => leds[k]));
+  for (const e of pressed.values()) if (e.lane >= 0) keys['w' + e.lane] = 'lit';
+  for (const n of p.notes) { if (n.t > beat + 1) break; if (n.state === 'pending' && n.t >= beat - .1 && !keys['w' + n.lane]) keys['w' + n.lane] = 'next'; }
+  keyStrip(ctx, keys, layout().map(k => leds[k]));
   if (p.judge && now - p.judge.t0 < 450) {
     const y = 150 - Math.round((now - p.judge.t0) / 450 * 4);
     textOut(ctx, 'S', Math.round(CX - tw('S', p.judge.text) / 2), y, p.judge.text, JCOL[p.judge.text], P.bg);
@@ -975,10 +1002,10 @@ const pan = $('panel'), px = pan.getContext('2d'), PW = 760, PH = 236;
 const WHITE_X = [71, 119, 167, 215, 264, 312, 360, 408, 456, 504, 553, 601, 649, 697, 745, 794];
 const BLACK_X = [95, 143, 191, 288, 336, 432, 480, 529, 625, 673, 769];
 const keyBlack = k => (0x54A >> ((k + 5) % 12)) & 1;
-const KS = 720 / 765, HINT = { 7: 'A', 9: 'S', 11: 'D', 12: 'F', 14: 'G', 16: 'H', 18: 'J', 19: 'K' };
+const KS = 720 / 765;
 const KEYGEO = []; { let w = 0, b = 0; for (let k = 0; k < 27; k++) { const bl = keyBlack(k), x0 = bl ? BLACK_X[b++] : WHITE_X[w++];
   KEYGEO.push({ k, black: !!bl, x: 20 + (x0 - 71) * KS, y: 56 + (bl ? 0 : 82 * KS), w: 42 * KS, h: 76 * KS }); } }
-const PBTN = [{ id: 'OCT-', x: 20, hint: 'Z' }, { id: 'OCT+', x: 96, hint: 'X' }, { id: 'FX', x: 512, hint: 'SPACE' }, { id: 'PLAY', x: 594, hint: 'ENTER' }, { id: 'HOME', x: 676, hint: 'ESC' }]
+const PBTN = [{ id: 'OCT-', x: 20, hint: 'Z' }, { id: 'OCT+', x: 96, hint: 'X' }, { id: 'GLO', x: 430, hint: 'Q' }, { id: 'FX', x: 512, hint: 'SPACE' }, { id: 'PLAY', x: 594, hint: 'ENTER' }, { id: 'HOME', x: 676, hint: 'ESC' }]
   .map(b => Object.assign(b, { y: 10, w: 68, h: 32 }));
 function sizePanel() { const dpr = Math.max(1, window.devicePixelRatio || 1); pan.width = PW * dpr; pan.height = PH * dpr; px.setTransform(dpr, 0, 0, dpr, 0, 0); }
 sizePanel(); window.addEventListener('resize', sizePanel);
@@ -989,14 +1016,15 @@ function ledStates(now) {
     const beat = p.beat, gB = WIN.GOOD / (60000 / p.bpm);
     for (const n of p.notes) {
       if (n.t > beat + 2) break;
-      const k = 7 + n.s;
+      const k = layout()[n.lane];
       if (n.state === 'held') L[k] = 2;
       else if (n.state === 'pending') { const d = n.t - beat; if (d >= -gB && d <= .5) L[k] = 2; else if (d > .5) L[k] = Math.max(L[k], 1); }
     }
     for (const e of p.octs) if (e.state === 'pending') { const d = e.t - beat; if (d <= 2 && d >= -.5) B[e.dir > 0 ? 'OCT+' : 'OCT-'] = d <= .5 ? 2 : 1; }
     B.PLAY = mod12(Math.floor(beat * 4)) % 4 === 0 ? 2 : 0;
     B.FX = boosting(p) ? 2 : p.ops >= 6 ? (Math.floor(now / 125) % 2 ? 2 : 0) : 0;
-  } else if (G.scr === 'songs') for (const k of LANE_K) L[k] = 1;             /* landmarks: the window's white keys */
+  } else if (G.scr === 'songs') for (const k of layout()) L[k] = 1;           /* landmarks: the keys of the layout */
+  B.GLO = G.spread ? 1 : 0;
   for (const e of pressed.values()) if (!p && e.k >= 0 && e.k < 27) L[e.k] = 2;
   return { L, B };
 }
@@ -1019,8 +1047,10 @@ function drawPanel(now) {
     px.font = '700 12px Inter, system-ui, sans-serif';
   }
   px.fillStyle = '#8a8a92'; px.font = '600 11.5px Inter, system-ui, sans-serif';
-  px.fillText(`TONE ${TONES[G.tone]}  ·  SPEED ${G.speed}%  ·  MIX ${G.mix}/${100 - G.mix}  ·  OCT ${G.oct > 0 ? '+' : ''}${G.oct}`, 340, 26);
-  const held = new Set([...pressed.values()].map(e => e.k));
+  px.font = '600 11px Inter, system-ui, sans-serif';
+  px.fillText(`TONE ${TONES[G.tone]} · SPEED ${G.speed}% · MIX ${G.mix}/${100 - G.mix}`, 297, 26);
+  const held = new Set([...pressed.values()].map(e => e.k)), hints = {};
+  layout().forEach((k, i) => { hints[k] = 'ASDFGHJK'[i]; });
   for (const g of KEYGEO) {
     const lv = L[g.k], cx = g.x + g.w / 2, down = held.has(g.k);
     if (lv === 2) { px.shadowBlur = 16; px.shadowColor = 'rgba(244,244,255,.45)'; }
@@ -1030,9 +1060,9 @@ function drawPanel(now) {
     if (lv === 2) { px.shadowBlur = 12; px.shadowColor = '#f4f4ff'; px.fillStyle = '#f6f6ff'; }
     else px.fillStyle = lv === 1 ? 'rgba(244,244,255,.40)' : '#1a1a1e';
     px.fill(); px.shadowBlur = 0;
-    if (HINT[g.k]) { px.fillStyle = '#8a8a92'; px.font = '700 11px Inter, system-ui, sans-serif'; px.fillText(HINT[g.k], cx, g.y + g.h - 13); }
+    if (hints[g.k]) { px.fillStyle = '#8a8a92'; px.font = '700 11px Inter, system-ui, sans-serif'; px.fillText(hints[g.k], cx, g.y + g.h - 13); }
   }
-  const a = KEYGEO[7], z = KEYGEO[19];
+  const a = KEYGEO[layout()[0]], z = KEYGEO[layout()[7]];
   px.strokeStyle = '#5fe3ff'; px.lineWidth = 2; px.beginPath(); px.moveTo(a.x, PH - 18); px.lineTo(a.x, PH - 13); px.lineTo(z.x + z.w, PH - 13); px.lineTo(z.x + z.w, PH - 18); px.stroke(); px.lineWidth = 1;
 }
 const toPanel = e => { const r = pan.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * PW, y: (e.clientY - r.top) / r.height * PH }; };
@@ -1040,7 +1070,7 @@ const hitKey = (x, y) => { let best = null; for (const g of KEYGEO) if (x >= g.x
 const pKeys = new Map();
 pan.addEventListener('pointerdown', e => {
   e.preventDefault(); const { x, y } = toPanel(e), g = hitKey(x, y);
-  if (g) { pan.setPointerCapture(e.pointerId); pKeys.set(e.pointerId, g.k); keyDownK('p' + e.pointerId, g.k, e.timeStamp); return; }
+  if (g) { pan.setPointerCapture(e.pointerId); pKeys.set(e.pointerId, g.k); pressKey('p' + e.pointerId, g.k, e.timeStamp, 'panel'); return; }
   const b = PBTN.find(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h); if (b) button(b.id, e.timeStamp);
 });
 const pUp = e => { if (pKeys.has(e.pointerId)) { pKeys.delete(e.pointerId); releaseNote('p' + e.pointerId, e.timeStamp); } };
@@ -1059,6 +1089,7 @@ $('offset').addEventListener('input', e => { G.offset = +e.target.value; store.s
 $('applyCal').addEventListener('click', () => { if (!G.last) return; G.offset = clamp(Math.round(G.offset + G.last.meanDt), -120, 120); store.set('keyfall.offset', G.offset); G.last.meanDt = 0; ui.offset(); ui.cal(); });
 $('zpb').value = String(G.zpb); $('zpb').addEventListener('change', e => { G.zpb = +e.target.value; store.set('keyfall.zpb', G.zpb); });
 $('auto').addEventListener('change', e => { G.auto = e.target.checked; });
+$('spread').checked = G.spread; $('spread').addEventListener('change', e => setSpread(e.target.checked));
 document.querySelectorAll('input[name=link]').forEach(r => r.addEventListener('change', e => { ensureAudio(); if (e.target.checked) Link.setMode(e.target.value); }));
 /* a click in the side panel must not keep the keys from the game */
 document.querySelectorAll('aside input[type=radio], aside input[type=checkbox], aside select, aside button').forEach(el => el.addEventListener(el.tagName === 'BUTTON' ? 'click' : 'change', () => el.blur()));
@@ -1110,7 +1141,7 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-window.KF = { G, Link, Bot, SONGS, button, enc, startSong, buildChart, keyDownK, releaseNote, get play() { return PLAY; }, setAuto(v) { G.auto = !!v; $('auto').checked = G.auto; } };
+window.KF = { G, Link, Bot, SONGS, button, enc, startSong, buildChart, pressKey, releaseNote, LAYOUTS, leds: () => ledStates(performance.now()).L, get play() { return PLAY; }, setAuto(v) { G.auto = !!v; $('auto').checked = G.auto; } };
 </script>
 </body>
 </html>

@@ -6,7 +6,7 @@ RoboSeq og SkurkyMello.
 
 | Fil | Versjon | SHA-256 |
 |---|---|---|
-| `keyfall.html` | REF 0.1.1 | `4b480fe6907b88ca178ae922a78f850161f0fb0430c9ae94e64c8512f54695e8` |
+| `keyfall.html` | REF 0.1.2 | `9b576e4e5b94e300d803e9a4d5f782d7ddd00438317c9db665dd8c1f79711c5f` |
 
 En ny HTML er en ny referanse og får en egen commit med ny SHA-256 her.
 
@@ -25,6 +25,8 @@ node tests/reference.cjs          # krever Playwright med Chromium; skjermbilder
 ```
 
 Testen spiller begge låtene på autospill og krever 100 % uten bom, begge oktavskiftene og OP BOOST. Den sjekker
-at ingen notekart har svarte tangenter, og at en svart tangent under spill blir ignorert (D1). Den sjekker
+at ingen notekart har svarte tangenter, og at en svart tangent under spill blir ignorert (D1). Med SPREAD (D2)
+sjekker den 100 % på autospill, at LED-ene bare lyser på SPREAD-tangentene, og at en tangent mellom to brukte ikke
+gjør noe. Den sjekker
 også at et trykk 80 ms for sent gir GOOD, at feil tangent bryter comboen, kampen mot boten, og to vinduer over
 LINK (roller, start, klokke, poeng og stopp).
