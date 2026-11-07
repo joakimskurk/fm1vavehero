@@ -8,7 +8,7 @@ Tallene under er **estimater** fra Dinghy-dokumentasjonen og fra målingene Star
 fm1-emu. Ingen av FM-1-appene er målt på et ekte FM-1 ennå. Derfor er første steg i porten å måle lydmotoren
 (se [ROADMAP.md](../ROADMAP.md), fase 3).
 
-## Hva FM-1 har (Dinghy 0.4)
+## Hva FM-1 har (Dinghy 0.5)
 
 | | |
 |---|---|

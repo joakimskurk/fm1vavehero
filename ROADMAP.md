@@ -1,7 +1,7 @@
 # ROADMAP
 
 Den gjeldende fasen er den første med et punkt som ikke er krysset av. Samme oppskrift som RoboSeq og Star Distroyer:
-først en spillbar nettleserreferanse som er fasit for følelse, timing og lyd, deretter en Dinghy 0.4-app som testes
+først en spillbar nettleserreferanse som er fasit for følelse, timing og lyd, deretter en Dinghy 0.5-app som testes
 på verten og i fm1-emu.
 
 **To spillere er bakt inn fra start.** Spillmotoren er deterministisk og har én protokoll for LINK
@@ -62,7 +62,8 @@ lyden er det trange, så den måles først.
       Målet er 30 % av brikken, og under 45 % i verste avbrudd. Stemmetak (24 + 6 trommelag), 3 sagtann i PAD,
       2-operator KEYS, kontrollrate og Schroeder/FDN-romklang.
 
-- [ ] `keyfall.c` på Dinghy 0.4: `APP_NAME "KEYFALL"`, egen `FELUCCA_ID`, `PLATFORM.md` med avvik fra upstream
+- [x] `keyfall.c` på Dinghy 0.5: `APP_NAME "KEYFALL"`, egen identitet (`FM-1_95N`), `PLATFORM.md` med avvik fra
+      upstream, CI via zvenson/fm1-build, `make test` på verten
 - [ ] Bane, toppstripe og knotterad i lerreter. Mål: minst 30 fps for banen.
 - [ ] Tangent-LED-er med `fm1_led_key` og `fm1_led_key_glow`, og SPREAD (GLO) lagret i innstillingene
 - [ ] Presis timing: tangentkanter leses i `LCD_IDLE` og stemples med `fm1_ticks()`

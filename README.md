@@ -2,10 +2,11 @@
 
 *Arbeidstittel.* Et rytmespill i Guitar Hero-sjangeren for FM-1. Tonene glir ned en notebane, du spiller dem på de
 hvite tangentene, og LED-ene i tangentene viser hva som kommer. To spillere med hvert sitt FM-1 kan spille mot
-hverandre. Tenkt som en Dinghy 0.4-app, i samme familie som [RoboSeq](https://github.com/joakimskurk/fm1roboseq),
+hverandre. En Dinghy 0.5-app, i samme familie som [RoboSeq](https://github.com/joakimskurk/fm1roboseq),
 [Star Distroyer](https://github.com/joakimskurk/fm1stardistroyer) og [SkurkyMello](https://github.com/joakimskurk/fm1mello).
 
-> **Status: nettleserreferanse 0.1, spillbar.** Det finnes ingen firmware ennå. Planen står i [ROADMAP.md](ROADMAP.md).
+> **Status: nettleserreferanse 0.1, spillbar. Firmware 0.1 er påbegynt:** Dinghy 0.5 ligger i `firmware/`, og
+> KEYFALL bygges i trinn, med lydmotoren først. Planen står i [ROADMAP.md](ROADMAP.md).
 
 <p align="center"><img src="docs/screens/reference-page.png" width="820" alt="Referansen i nettleseren: skjermen og FM-1-panelet med tangent-LED-er"></p>
 
@@ -43,6 +44,19 @@ egen forstudie i fase 4. Via en datamaskin virker det uansett.
   <img src="docs/screens/spread.png" width="240" alt="SPREAD: banene på annenhver hvit tangent">
 </p>
 
+## Firmware
+
+Firmwaren er en Dinghy 0.5-app i `firmware/src/keyfall.c` ([PLATFORM.md](PLATFORM.md) sier hva som er endret fra
+Dinghy). Den kjører uendret på en datamaskin, med skjermen som PNG og lyden som WAV:
+
+```sh
+make test          # KEYFALLs vertstester og Dinghys vertsmodus, uten FM-1
+make fw            # build/keyfall.fwsc: krever JieLis verktøykjede og AC79-SDK-en (docs/DINGHY_README.md)
+```
+
+GitHub Actions bygger `.fwsc`-pakken ved hver push (`.github/workflows/build.yml`, via zvenson/fm1-build). Pakken
+heter `FM-1_95N`, der N er mindreversjonen, og 0 er en utviklerbygging.
+
 ## Innhold
 
 | | |
@@ -51,16 +65,20 @@ egen forstudie i fase 4. Via en datamaskin virker det uansett.
 | [docs/songs.md](docs/songs.md) | Lag dine egne låter: kanalene, reglene og eksporten |
 | [docs/link.md](docs/link.md) | LINK: lagene fra nettleser til USB-C, og protokollen |
 | [docs/fm1-budsjett.md](docs/fm1-budsjett.md) | Får alt plass på FM-1? Minne, CPU, grafikk, låter og poeng |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D6 |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D7 |
 | [songs/](songs/) | De fire innebygde låtene som MIDI-filer, også maler. ENGINE TOUR viser alle 29 lydene, CHROME HORIZON er en hel låt i D-moll (`python3 tools/songs.py` lager dem). |
 | [ROADMAP.md](ROADMAP.md) | Fasene, med avkrysning |
 | [reference/](reference/) | Nettleserreferansen, fasit før porten |
 | [mockup/](mockup/) | Den første mockupen: enheten og fire skjermer (`node mockup/render.cjs` lager PNG-ene) |
 | [tests/reference.cjs](tests/reference.cjs) | Spiller referansen i Chromium og sjekker poeng, LINK og bot |
+| [firmware/](firmware/) | Firmwaren: Dinghy 0.5 og appen `src/keyfall.c` |
+| [PLATFORM.md](PLATFORM.md) | Hvilken Dinghy, og hva som er endret fra den |
+| [docs/API.md](docs/API.md), [docs/RULES.md](docs/RULES.md) | Dinghys API og brikkens regler (fra Dinghy) |
 
 <p align="center"><img src="mockup/keyfall-mockup.png" width="820" alt="Mockup: FM-1 med Keyfall på skjermen"></p>
 
 Panelgeometrien er hentet fra målene i [Quixotic7/MvaveFM1-Designer](https://github.com/Quixotic7/MvaveFM1-Designer).
-Låtene er egne komposisjoner. Terminus-fonten er lisensiert under SIL OFL 1.1
+Låtene er egne komposisjoner. Firmwaren er fri programvare under GPL-3.0 ([LICENSE](LICENSE), hvem som har laget
+hva står i [LICENSING.md](LICENSING.md)). Terminus-fonten er lisensiert under SIL OFL 1.1
 ([assets/fonts/Terminus-LICENSE.txt](assets/fonts/Terminus-LICENSE.txt)). Dette er et fanprosjekt og ikke et
 offisielt M-VAVE-produkt.
