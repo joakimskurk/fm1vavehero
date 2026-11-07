@@ -10,6 +10,38 @@ fs.mkdirSync(OUT, { recursive: true });
 let failures = 0;
 const check = (ok, what) => { console.log((ok ? 'ok   ' : 'FAIL ') + what); if (!ok) failures++; };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+/* a test song as a DAW might write it: format 0, running status, note-on velocity 0 as note-off */
+function smf0(title, bpm, events, ppq = 96) {
+  events.sort((x, y) => x[0] - y[0] || (x[1][2] === 0 ? -1 : 1) - (y[1][2] === 0 ? -1 : 1));
+  const vlq = n => { const o = [n & 127]; while ((n >>= 7)) o.unshift((n & 127) | 128); return o; };
+  const us = Math.round(60e6 / bpm), name = [...Buffer.from(title)];
+  const body = [0, 0xFF, 0x51, 3, (us >> 16) & 255, (us >> 8) & 255, us & 255, 0, 0xFF, 0x03, name.length, ...name];
+  let last = 0, run = 0;
+  for (const [tick, bytes] of events) {
+    body.push(...vlq(tick - last)); last = tick;
+    if (bytes[0] === run) body.push(...bytes.slice(1)); else { body.push(...bytes); run = bytes[0]; }
+  }
+  body.push(0, 0xFF, 0x2F, 0);
+  const n = body.length;
+  return Buffer.from([...Buffer.from('MThd'), 0, 0, 0, 6, 0, 0, 0, 1, ppq >> 8, ppq & 255, ...Buffer.from('MTrk'), (n >>> 24) & 255, (n >> 16) & 255, (n >> 8) & 255, n & 255, ...body]);
+}
+function emDrive() {                       /* E minor: needs a transpose, an octave climb, a chromatic note, a big chord */
+  const ppq = 96, ev = [], note = (ch, beat, pitch, len, vel = 100) => {
+    ev.push([Math.round(beat * ppq), [0x90 | ch, pitch, vel]], [Math.round((beat + len) * ppq), [0x90 | ch, pitch, 0]]);
+  };
+  const up = [64, 66, 67, 69, 71, 72, 74, 76];
+  up.forEach((p, i) => note(0, 8 + i, p, .9));                        /* bars 2-3: E4 .. E5 */
+  up.forEach((p, i) => note(0, 16 + i, p + 12, .9));                  /* bars 4-5: E5 .. E6 */
+  up.slice().reverse().forEach((p, i) => note(0, 24 + i, p, .9));     /* bars 6-7: back down */
+  note(0, 32, 70, 1);                                                  /* A#4: chromatic, lands on a black key */
+  [64, 67, 71, 76].forEach(p => note(0, 36, p, 1));                   /* a four-note chord */
+  note(0, 40, 64, 2); note(0, 44, 67, 1); note(0, 45, 71, 1);         /* a hold, and two more */
+  for (let b = 0; b < 48; b += .5) note(1, b, 40, .4, 96);             /* BASS on channel 2 */
+  for (let b = 0; b < 48; b++) note(9, b, b % 2 ? 38 : 36, .1, 110);  /* drums on channel 10 */
+  note(6, 4, 60, 1);                                                   /* channel 7: no instrument */
+  note(15, 4, 60, 1);                                                  /* channel 16: LINK's */
+  return smf0('Em Drive', 100, ev, ppq);
+}
 
 async function open(ctx) {
   const page = await ctx.newPage();
@@ -72,6 +104,42 @@ async function choose(page, song, level) {
   L = await a.page.evaluate(() => window.KF.G.last);
   check(L.acc === 100 && L.counts.S === 2 && L.counts.M === 0, `NEON CARRIER MED on autoplay: ${L.acc.toFixed(1)}%, ${L.counts.S} shifts, ${L.counts.M} misses, full combo ${L.full}`);
   await screen(a.page, '10-neon-results');
+
+  /* 1b. the built-in songs went through the MIDI import: octave shifts placed by the import, OP phrases from CC 85 */
+  const built = await a.page.evaluate(() => window.KF.SONGS.map(s => ({ title: s.title, T: s.transpose, octs: s.octs.map(e => e.t + ':' + e.dir), ph: s.phrases.length, parts: s.parts, builtIn: s.builtIn })));
+  check(built[1].octs.join() === '39.5:1,71.5:-1' && built[1].T === 0 && built[1].ph === 6 && built[0].ph === 3,
+    `the built-in MIDI files import as before: ${JSON.stringify(built.map(b => [b.title, b.octs, b.ph]))}`);
+  check(['BASS', 'PAD', 'ARP', 'LEAD', 'DRUMS'].every(k => built[1].parts[k] > 0), 'NEON CARRIER has bass, pad, arp, lead and drums: ' + JSON.stringify(built[1].parts));
+
+  /* 1c. a song of your own: loaded through the file input, transposed to white keys, played perfectly */
+  const em = path.join(OUT, 'em-drive.mid'); fs.writeFileSync(em, emDrive());
+  await a.page.setInputFiles('#file', em);
+  await a.page.waitForFunction(() => window.KF.SONGS.length === 3, null, { timeout: 5000 });
+  const imp = await a.page.evaluate(() => { const s = window.KF.SONGS[2]; return { title: s.title, T: s.transpose, octs: s.octs.length, notes: s.melody.length, report: document.getElementById('report').textContent }; });
+  check(imp.title === 'EM DRIVE' && imp.T === -5, `EM DRIVE is transposed 5 up onto white keys: ${JSON.stringify({ title: imp.title, T: imp.T })}`);
+  check(imp.octs >= 2 && /svarte tangenter/.test(imp.report) && /mer enn tre/.test(imp.report), `its climb gets OCT shifts (${imp.octs}), the chromatic note and the fourth chord note are reported`);
+  check(/Kanal 16/.test(imp.report) && /Kanal 7/.test(imp.report), 'channels 7 and 16 are reported as not played');
+  await a.page.evaluate(() => window.KF.setAuto(true));
+  await choose(a.page, 2, 1); await a.page.keyboard.press('Enter');
+  await waitResults(a.page);
+  L = await a.page.evaluate(() => window.KF.G.last);
+  check(L.acc === 100 && L.counts.M === 0, `EM DRIVE MED on autoplay: ${L.acc.toFixed(1)}%, ${L.counts.S} shifts`);
+
+  /* 1d. live MIDI, one part a channel (a sound module for a DAW) */
+  const routes = await a.page.evaluate(() => [[0x91, 40, 100], [0x81, 40, 0], [0x99, 38, 110], [0x92, 60, 90], [0x82, 60, 0], [0x96, 60, 100], [0x90, 60, 100], [0x80, 60, 0]].map(m => window.KF.midiIn(m, performance.now())));
+  check(JSON.stringify(routes) === JSON.stringify(['BASS', 'BASS', 'DRUMS', 'PAD', 'PAD', null, 'PLAY', 'PLAY']), 'live MIDI: channel 2 BASS, 3 PAD, 10 DRUMS, 1 the player, 7 nothing: ' + JSON.stringify(routes));
+
+  /* 1e. the templates download as the files in songs/ */
+  const [dl] = await Promise.all([a.page.waitForEvent('download'), a.page.click('[data-tpl="1"]')]);
+  const got = fs.readFileSync(await dl.path()), want = fs.readFileSync(path.join(__dirname, '..', 'songs', 'neon-carrier.mid'));
+  check(dl.suggestedFilename() === 'neon-carrier.mid' && got.equals(want), 'the NEON CARRIER template downloads as songs/neon-carrier.mid');
+
+  /* 1f. the sound: both songs rendered offline, loud enough and not clipping; the WAVs land next to the screens */
+  for (const [i, name] of [[0, 'first-light'], [1, 'neon-carrier']]) {
+    const r = await a.page.evaluate(async i => window.KF.renderSong(i, 20), i);
+    fs.writeFileSync(path.join(OUT, name + '-20s.wav'), Buffer.from(r.wav, 'base64'));
+    check(r.peak < 1 && r.rms > .03, `${name}: 20 s rendered, peak ${r.peak.toFixed(3)}, RMS ${r.rms.toFixed(3)}`);
+  }
   await a.page.screenshot({ path: path.join(OUT, '11-page.png') });
   check(a.errors.length === 0, 'no page errors' + (a.errors.length ? ': ' + a.errors.join(' | ') : ''));
 
@@ -156,6 +224,7 @@ async function choose(page, song, level) {
   await sleep(2600);
   const roles = await Promise.all([p1, p2].map(x => x.page.evaluate(() => ({ role: window.KF.Link.role(), linked: window.KF.Link.linked(), id: window.KF.Link.id }))));
   check(roles[0].linked && roles[1].linked && roles[0].role !== roles[1].role, 'two windows link up as P1 and P2: ' + JSON.stringify(roles));
+  check(await p2.page.evaluate(() => window.KF.SONGS.length) === 3, 'a song loaded in one window is kept for the next (EM DRIVE in the second window)');
   const lead = roles[0].role === 'P1' ? p1 : p2, follow = lead === p1 ? p2 : p1;
   await lead.page.evaluate(() => window.KF.setAuto(true));
   await follow.page.evaluate(() => window.KF.setAuto(true));
