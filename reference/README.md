@@ -6,7 +6,7 @@ RoboSeq og SkurkyMello.
 
 | Fil | Versjon | SHA-256 |
 |---|---|---|
-| `keyfall.html` | REF 0.1.5 | `82d26d78d807872adc9018ce199bd49a16b38bfc7dada05e9959ae27e0bb651b` |
+| `keyfall.html` | REF 0.1.6 | `2fecdeded7e6dc71cd90b83a8441ca4d530d2d492865b72e1a1710607f924451` |
 
 En ny HTML er en ny referanse og får en egen commit med ny SHA-256 her.
 
@@ -44,8 +44,9 @@ PREVIEW havner kanal 1 én takt foran, med oktavskift og holdtone. C#4 vises som
 tonene og skiftet. HOME går ut, og MIDI MODE holdes stengt mens LINK er på.
 
 Patcher (D6): de innebygde låtene bytter patch der nøkkelnotene sier det. Alle 22 patcher og trommesett høres alene,
-og ingen klipper. Testlåtas nøkkelnoter havner i rapporten, og den uten patch flagges. Live flytter nøkkelnoter og
-Program Change kanalens patch, mens en nøkkelnote uten patch ikke endrer noe.
+og ingen klipper. Testlåtas nøkkelnoter havner i rapporten, og den uten patch flagges. Live flytter nøkkelnoter kanalens
+patch, mens Program Change, OP-noten og en nøkkelnote uten patch ikke endrer noe. OP-fraser kommer fra note 11
+på kanal 1, ikke CC.
 
 ## Låtene
 
