@@ -27,6 +27,9 @@
 #define CV_MAX (240u * 240u)                    /* the whole screen in one canvas (113 KB of the pool) */
 static void app_idle(void);
 #define LCD_IDLE app_idle                       /* while the screen's DMA runs: keys and MIDI in (platform.c) */
+#include <stdint.h>
+static void app_note_edge(uint32_t key, uint32_t down);
+#define FM1_NOTE_EDGE(key, down) app_note_edge((key), (down))   /* each key's edge stamped by the scan (fm1_input.h) */
 #include "platform.c"
 #include "kf_engine.h"
 #include "kf_song.h"
@@ -153,19 +156,51 @@ static void midi_in(void)
     }
 }
 
-/* the keys: their edges, stamped with the frame being heard; from the main loop and while the screen is sent */
+/* the keys: their edges, read from the main loop and while the screen is sent, and stamped with the frame being
+ * heard when the key moved: the scan (10 kHz, the timer ISR) tells when (app_note_edge), so a press is not late by
+ * however long the main loop was away (a frame being drawn: ~7 ms). The state is the truth (fm1_in.notes); a board
+ * whose scan does not stamp (SMK-37) gets the time of the reading, as before. A press and its release both between
+ * two readings (a quick tap while the loop was away) still play: the scan counts the edges. */
 static uint32_t keys_prev;
+static volatile uint32_t key_ms[27][2];          /* each key's last press [0] and release [1]: fm1_ms at the scan */
+static volatile uint8_t key_edges[27];           /* its edges so far (wrapping) */
+static uint8_t key_seen[27];
+static void app_note_edge(uint32_t key, uint32_t down)   /* the scan ISR */
+{
+    if (key < 27u) {
+        key_ms[key][down ? 0 : 1] = fm1_ms;
+        key_edges[key]++;
+    }
+}
+static uint32_t key_at(uint32_t k, uint32_t which, uint32_t now, uint32_t now_ms)   /* the frame key k moved at */
+{
+    uint32_t age = now_ms - key_ms[k][which];
+    return age > 100u ? now : now - age * 441u / 10u;   /* (no stamp, or an old one: now) */
+}
+static void keys_sync(void)                      /* a song starts: what was before does not count */
+{
+    uint32_t k;
+    keys_prev = fm1_in.notes & 0x7FFFFFFu;
+    for (k = 0; k < 27u; k++) key_seen[k] = key_edges[k];
+}
 static void keys_in(void)
 {
-    uint32_t keys = fm1_in.notes & 0x7FFFFFFu, down = keys & ~keys_prev, up = keys_prev & ~keys, k, now;
-    if (!down && !up) return;
+    uint32_t keys = fm1_in.notes & 0x7FFFFFFu, down = keys & ~keys_prev, up = keys_prev & ~keys, tap = 0, k, now, now_ms;
+    for (k = 0; k < 27u; k++) {
+        uint8_t e = key_edges[k], d = (uint8_t)(e - key_seen[k]);
+        key_seen[k] = e;
+        if (d >= 2u && !((keys | keys_prev) >> k & 1u)) tap |= 1u << k;   /* down and up again, unseen */
+    }
+    if (!down && !up && !tap) return;
     keys_prev = keys;
     now = heard_now();
+    now_ms = fm1_ms;
     for (k = 0; k < 27u; k++) {
         if (scr == SCR_PLAY) {
             if (paused || demo) continue;        /* paused: the keys rest; the DEMO plays itself */
-            if (down >> k & 1u) kg_press(k, now);
-            if (up >> k & 1u) kg_release(k, now);
+            if (down >> k & 1u) kg_press(k, key_at(k, 0, now, now_ms));
+            if (up >> k & 1u) kg_release(k, key_at(k, 1, now, now_ms));
+            if (tap >> k & 1u) { kg_press(k, key_at(k, 0, now, now_ms)); kg_release(k, key_at(k, 1, now, now_ms)); }
         } else {                                 /* free play; in MIDI MODE they go out on channel 1 too */
             uint32_t pitch = (uint32_t)(53 + (int32_t)k + 12 * (scr == SCR_MIDI ? mm_oct : 0));
             if (down >> k & 1u) {
@@ -199,7 +234,7 @@ static void song_start(uint32_t idx, uint32_t level, uint32_t is_demo)
     kg_start(idx, level, is_demo ? 100u : set.speed, is_demo ? 0u : set.spread, kf_now + 6615u);   /* beat 0 in 150 ms */
     kg.auto_on = (uint8_t)(is_demo || autoplay);
     if (is_demo) kg_seek(kf_bench_beat);
-    keys_prev = fm1_in.notes & 0x7FFFFFFu;       /* (a key held from before does not count) */
+    keys_sync();                                 /* (a key held from before does not count) */
     paused = 0;
     scr = SCR_PLAY;
 }

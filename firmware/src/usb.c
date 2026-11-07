@@ -1270,11 +1270,8 @@ static void usb_poll(void)                              /* TIMER5 ISR, 2 kHz */
 #endif
 }
 
-static void usb_start(void)                             /* boot, or main-loop retry while usb.up == 0 */
+static void usb_attach_after_reset(void)                /* usb_start's second half, 25 ms after fm1_usb_reset */
 {
-    usb.timeouts = 0;
-    fm1_usb_reset();                                    /* reset whatever the ROM left */
-    fm1_delay_ms(25);
     fm1_usb_attach(ep0buf);
     sie_wr(S_POWER, 0x60);
     sie_wr(S_INTRUSBE, 0x07);                           /* suspend, resume, reset (polled) */
@@ -1285,18 +1282,43 @@ static void usb_start(void)                             /* boot, or main-loop re
     fm1_usb_ep_enable(0x1Fu);
     usb.up = usb.timeouts < 3u;                         /* a dead SIE leaves USB off */
 }
+static void usb_start(void)                             /* boot and recovery: at once, 25 ms of waiting */
+{
+    usb.timeouts = 0;
+    fm1_usb_reset();                                    /* reset whatever the ROM left */
+    fm1_delay_ms(25);
+    usb_attach_after_reset();
+}
 
 /* Powered on without a cable, the SIE does not answer and usb_start leaves
  * USB off: retry once a second from the main loop so a cable plugged in
- * later still enumerates. */
+ * later still enumerates. The retry waits its 25 ms between the reset and
+ * the attach without blocking (VaveHero: the busy wait stalled the main loop
+ * every second with no host, a power bank or a charger: frames and key
+ * timing lost); usb.up stays 0 meanwhile, so nothing else touches the SIE. */
 static void usb_retry(uint32_t now_ms)
 {
     static uint32_t t;
-    if (usb.up || usb.detached || now_ms - t < 1000u)
+    static uint8_t resetting;
+    if (usb.up || usb.detached) {
+        resetting = 0;
+        return;
+    }
+    if (resetting) {
+        if (now_ms - t >= 25u) {
+            resetting = 0;
+            t = now_ms;
+            usb_attach_after_reset();
+        }
+        return;
+    }
+    if (now_ms - t < 1000u)
         return;
     t = now_ms;
     usb.retries++;
-    usb_start();
+    usb.timeouts = 0;
+    fm1_usb_reset();
+    resetting = 1;
 }
 
 static void usb_detach(void)

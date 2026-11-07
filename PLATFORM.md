@@ -24,6 +24,9 @@ Kept small, so a later Dinghy can be merged by diffing these files.
 | `README.md` | moved to `docs/DINGHY_README.md`; VaveHero's README in its place |
 | `.gitignore` | VaveHero's `build/` line kept, Dinghy's lines added |
 | `.github/workflows/release.yml` | replaced by `build.yml` (zvenson/fm1-build, as RoboSeq and SkurkyMello) |
+| `firmware/src/usb.c` | `usb_retry` waits the 25 ms between `fm1_usb_reset` and the attach without blocking (`usb_attach_after_reset`); boot and recovery keep `usb_start`, which waits at once. Without a USB host (a power bank, a charger) the busy wait stalled the main loop for ~30 ms every second, measured in fm1-emu: frames skipped, key presses stamped late |
+| `firmware/hal/fm1_input.h` | `FM1_NOTE_EDGE(key, down)`, called in the scan (the timer ISR) as a note key's edge is debounced; a no-op unless the app defines it. VaveHero stamps each press and release with it |
+| `tests/host.c` | calls `FM1_NOTE_EDGE` for each key a script moves, as the FM-1's scan does |
 
 Nothing in `firmware/hal/`, `firmware/loader/`, `firmware/app.ld`, `platform.c` or `tests/host.c` is changed.
 

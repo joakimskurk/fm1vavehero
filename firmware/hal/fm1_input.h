@@ -51,6 +51,9 @@
 #ifndef FM1_INPUT_IDLE
 #define FM1_INPUT_IDLE() ((void)0)
 #endif
+#ifndef FM1_NOTE_EDGE                     /* a note key's debounced edge, as it happens (fm1_input_tick: the timer ISR): */
+#define FM1_NOTE_EDGE(key, down) ((void)0) /* key 0 (F3) .. 26, down 1 or 0. An app stamps it (VaveHero: its timing) */
+#endif
 #ifndef FM1_LED_US
 #define FM1_LED_US 40u           /* LED on-time per column (brightness vs scan rate) */
 #endif
@@ -202,6 +205,7 @@ static void fm1__key(uint32_t id, uint32_t closed)
         if (!on)
             fm1_in.notes_pressed |= bit;
         fm1_in.notes ^= bit;
+        FM1_NOTE_EDGE(id - 14u, !on);
     } else {
         fm1_in.buttons ^= bit;
         if (!on)

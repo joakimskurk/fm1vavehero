@@ -53,4 +53,33 @@ run "a song on AUTO to its results, again, back to the songs" sh tests/run_host.
 run "the results' screen is there" test -s build/host/vavehero-42000.png
 run "the sound file is there and not empty" test -s "$OUT/vavehero.wav"
 
+# the sanitizers: the whole app, through every script and two random ones (tests/kf/fuzz.py: buttons, encoders, keys,
+# MIDI of every kind), with AddressSanitizer and UndefinedBehaviorSanitizer; any out-of-bounds access, overflow or
+# undefined shift stops the run
+SAN="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -g -O1"
+mkdir -p build/san
+if echo 'int main(void) { return 0; }' | gcc $SAN -x c - -o build/san/probe 2>/dev/null && build/san/probe; then
+    run "the app built with the sanitizers" \
+        gcc $SAN -Wall -Wno-unused-function -DDINGHY_HOST -DAPP_VER='"san"' -Ifirmware/hal -Ifirmware/src -Ifirmware/gen \
+            -o build/san/vavehero firmware/src/vavehero.c
+    for s in default tests/kf/game.txt tests/kf/results.txt fuzz:1 fuzz:2; do
+        case $s in
+            default) arg= ;;
+            fuzz:*) python3 tests/kf/fuzz.py "${s#fuzz:}" 45 > "build/san/fuzz${s#fuzz:}.txt"; arg="build/san/fuzz${s#fuzz:}.txt" ;;
+            *) arg=$s ;;
+        esac
+        run "under the sanitizers: ${s}" sh -c "build/san/vavehero build/san/run ${arg} >/dev/null 2>build/san/err.txt || { tail -30 build/san/err.txt; exit 1; }"
+    done
+    rm -f build/san/run-*.ppm build/san/run.wav
+    run "the engine and the rules with the sanitizers: the patch tour, the worst case, every song on autoplay" sh -c "
+        gcc $SAN -Wall -Wno-unused-function -Ifirmware/src -Ifirmware/gen -o build/san/kf_render tests/kf/kf_render.c -lm &&
+        gcc $SAN -Wall -Wno-unused-function -Ifirmware/src -Ifirmware/gen -o build/san/kf_game_test tests/kf/kf_game_test.c &&
+        build/san/kf_render tour build/san/tour.wav build/san/tour.json >/dev/null &&
+        build/san/kf_render stress build/san/stress.wav >/dev/null &&
+        build/san/kf_game_test >/dev/null"
+    rm -f build/san/*.wav
+else
+    echo "== (no sanitizers here: gcc -fsanitize=address,undefined does not build or run)"
+fi
+
 [ $fail = 0 ] && echo "run_vavehero: all passed" || { echo "run_vavehero: FAILED"; exit 1; }

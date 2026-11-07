@@ -96,6 +96,25 @@ utklinging som står alene, for eksempel på slutten av en låt, får klinge hel
 
 x86-anslaget (callgrind × 0,8) sa 31,5 %, så anslaget kan brukes mellom CI-kjøringene.
 
+**Blokk for blokk og bilde for bilde** (`tools/emu_timing.py`, i CI etter `emu_cpu.sh`). Et snitt viser ikke den ene
+lydblokka som tar for lang tid og gir et klikk, eller det ene bildet som kommer for sent. Verktøyet setter
+stoppunkter på kallet inn i lydavbruddet, på `draw()` og på `song_start`, og regner ut hver lydblokk og hvert bilde:
+
+| Hva (fm1-emu, 2026-11-07) | DEMO-en, 60 bilder/s | MIDI MODE, flom fra en DAW |
+|---|---|---|
+| Lydblokkene (256 frames, 5,8 ms hver), median / verste | 36 % / 46 % av tida | 48 % / 54 % |
+| `draw()` med avbruddene i seg, median / verste | 6,6 ms / 9,3 ms | 6,3 ms / 6,6 ms (30 bilder/s) |
+| Lengst mellom to bilder | 20,7 ms | 36,7 ms |
+
+Flommen: hvert 100. ms slipper kanal 1–6 en akkord på 6 toner og spiller en ny, og kanal 10 slår fire trommer.
+Oscillatorbudsjettet holder den tyngste blokka på 54 %. CI feiler hvis en blokk bruker over 75 % av tida, eller hvis
+to bilder ligger lenger fra hverandre enn 25 ms i spillet eller 45 ms i MIDI MODE (en låts start er unntatt).
+
+Første måling fant et hull på 30–40 ms hvert sekund. `usb_retry` ventet 25 ms i en løkke når ingen USB-vert svarte,
+for eksempel med en powerbank eller en lader. Hvert sekund hoppet skjermen over tre bilder, og tangenter som ble
+trykket i mellomtiden, fikk tid som var opptil 30 ms for sen. Nå venter `usb_retry` uten å blokkere (PLATFORM.md), og
+tangentene får tid fra skanningen (`FM1_NOTE_EDGE`), ikke fra når hovedløkka leser dem.
+
 Lyden er sjekket mot referansen: alle 25 patcher og 4 trommesett ligger innenfor 1,5 dB og 25 % lysstyrke, de
 fleste innenfor 0,3 dB. Hver fjerde takt av de første 30 sekundene av alle fire låtene ligger innenfor 0,8 dB
 (`tests/run_vavehero.sh`).

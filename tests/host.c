@@ -325,8 +325,17 @@ static void platform_poll(void)                 /* one call = one millisecond */
         }
         else if (script[step].enc >= 0)
             host_enc[script[step].enc % HOST_NENC] += script[step].encn, host_enc_pos[script[step].enc % HOST_NENC] += script[step].encn;
-        else
+        else {
+            uint32_t moved = fm1_in.notes ^ script[step].keys;
             fm1_in.notes = script[step].keys;
+#ifdef FM1_NOTE_EDGE                            /* each edge stamped, as the FM-1's scan does (fm1_input.h) */
+            for (uint32_t k = 0; k < 27u; k++)
+                if (moved >> k & 1u)
+                    FM1_NOTE_EDGE(k, fm1_in.notes >> k & 1u);
+#else
+            (void)moved;
+#endif
+        }
         step++;
     }
     owed += FS;                                 /* the frames this millisecond is worth, in blocks as the ISR renders */
