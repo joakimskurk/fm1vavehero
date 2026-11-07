@@ -50,6 +50,7 @@ egen forstudie i fase 4. Via en datamaskin virker det uansett.
 | [docs/konsept.md](docs/konsept.md) | Idéskissen: spillmekanikk, nivåer, moduser og tekniske notater |
 | [docs/songs.md](docs/songs.md) | Lag dine egne låter: kanalene, reglene og eksporten |
 | [docs/link.md](docs/link.md) | LINK: lagene fra nettleser til USB-C, og protokollen |
+| [docs/fm1-budsjett.md](docs/fm1-budsjett.md) | Får alt plass på FM-1? Minne, CPU, grafikk, låter og poeng |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D6 |
 | [songs/](songs/) | De fire innebygde låtene som MIDI-filer, også maler. ENGINE TOUR viser alle 29 lydene, CHROME HORIZON er en hel låt i D-moll (`python3 tools/songs.py` lager dem). |
 | [ROADMAP.md](ROADMAP.md) | Fasene, med avkrysning |

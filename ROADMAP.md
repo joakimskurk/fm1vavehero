@@ -55,6 +55,13 @@ på verten og i fm1-emu.
 
 ## Fase 3: Dinghy-port
 
+Budsjettet for minne, CPU og grafikk står i [docs/fm1-budsjett.md](docs/fm1-budsjett.md). Kort sagt passer alt, men
+lyden er det trange, så den måles først.
+
+- [ ] **Først: mål lydmotoren i fm1-emu.** Verste tilfelle er finalen i ENGINE TOUR (alle delene, skitne patcher).
+      Målet er 30 % av brikken, og under 45 % i verste avbrudd. Stemmetak (24 + 6 trommelag), 3 sagtann i PAD,
+      2-operator KEYS, kontrollrate og Schroeder/FDN-romklang.
+
 - [ ] `keyfall.c` på Dinghy 0.4: `APP_NAME "KEYFALL"`, egen `FELUCCA_ID`, `PLATFORM.md` med avvik fra upstream
 - [ ] Bane, toppstripe og knotterad i lerreter. Mål: minst 30 fps for banen.
 - [ ] Tangent-LED-er med `fm1_led_key` og `fm1_led_key_glow`, og SPREAD (GLO) lagret i innstillingene
