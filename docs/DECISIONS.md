@@ -98,3 +98,20 @@ fra der den startet, ikke fra låtas takt. PREVIEW henger én takt etter DAW-en,
 bare spille MIDI.
 
 **Sjekkes av.** `tests/reference.cjs`, med testene beskrevet i [reference/README.md](../reference/README.md).
+
+## D6 (2026-11-07): flere patcher per instrument, valgt med nøkkelnoter
+
+**Beslutning.** Hvert instrument har flere patcher: PLAY 4, BASS, PAD, ARP, LEAD, KEYS 3 hver, og trommene 3 sett.
+Note 0–11 (C-1 til B-1) på instrumentets kanal velger patch, med note 0 som patch 1. Den høres aldri, og gjelder til
+neste nøkkelnote. Program Change gjør det samme. På kanal 1 velger den spillerens stemme når TONE står på SONG, som
+er standard. Det virker likt i MIDI-filer, i live-MIDI og i MIDI MODE. Tabellen står i [songs.md](songs.md).
+
+**Hvorfor.** Én lyd per instrument blir fort ensformig gjennom en hel låt. Nøkkelnoter er slik sample-bibliotek
+bytter artikulasjon, så de er kjente fra DAW-en. Note 0–11 brukes ikke til musikk, så de kolliderer ikke med noe.
+Program Change er med fordi mange DAW-er har den lett tilgjengelig.
+
+**Nivåer.** Hver patch er målt alene (fire toner, eller et trommemønster). Innenfor samme instrument ligger patchene
+innenfor ±2 dB av hverandre, så et bytte ikke blir et volumhopp. Refrenget i NEON CARRIER, med FM BASS og
+BELL-arpeggio, har samme balanse som i D4.
+
+**Sjekkes av.** `tests/reference.cjs`, med testene beskrevet i [reference/README.md](../reference/README.md).

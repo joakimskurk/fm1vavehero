@@ -17,10 +17,38 @@ og [`songs/neon-carrier.mid`](../songs/neon-carrier.mid). Du kan også laste dem
 | 4 | ARP | Firkant og sagtann, kort og lys, med tempo-delay |
 | 5 | LEAD | Sagtann-lead med vibrato og delay (motstemme, intro) |
 | 6 | KEYS | FM-piano |
-| 10 | DRUMS | General MIDI-trommer (under) |
+| 10 | DRUMS | General MIDI-trommer (under), tre trommesett |
 | 16 | *LINK* | Satt av til tospillerprotokollen. Noter her blir ikke spilt. |
 
 Kanal 7–9 og 11–15 har ingen lyd ennå. Importen sier fra hvis de brukes.
+
+### Patcher: flere lyder per instrument ([D6](DECISIONS.md))
+
+Hvert instrument har flere patcher. Du velger patch med en **nøkkelnote** (keyswitch) på instrumentets egen kanal:
+note 0–11, under ethvert musikalsk register, som aldri høres. Note 0 gir patch 1, note 1 patch 2, og så videre.
+Patchen gjelder fra nøkkelnoten og til neste. Uten nøkkelnote brukes patch 1. En nøkkelnote kan ligge samtidig med
+første tone den skal gjelde for.
+
+| Kanal | Note 0 (C-1) | Note 1 (C#-1) | Note 2 (D-1) | Note 3 (D#-1) |
+|---|---|---|---|---|
+| 1 PLAY | SYN LEAD | BELL EP | BRASS | GLASS |
+| 2 BASS | PULSE (pulserende sagtann) | FM BASS | SUB |  |
+| 3 PAD | SUPERSAW | STRINGS | GLASS PAD (FM) |  |
+| 4 ARP | PLUCK | BELL (FM) | SQUARE |  |
+| 5 LEAD | SAW LEAD | SQUARE LEAD | BRASS LEAD |  |
+| 6 KEYS | FM EP | TINE | ORGAN |  |
+| 10 DRUMS | GATED (80-talls gated reverb) | TIGHT (tørt) | BOOM (lang kick, lange tammer) |  |
+
+- Mange DAW-er kaller note 0 for **C-1**. Noen, blant annet Cubase, kaller den **C-2**. Det er samme note.
+- **Program Change** virker også: program 1 er patch 1.
+- På kanal 1 velger nøkkelnoten spillerens stemme gjennom låta, når TONE (KNOB 2) står på **SONG**, som er standard.
+  Spilleren kan alltid velge en fast stemme med KNOB 2 i stedet.
+- En nøkkelnote uten patch, for eksempel note 7 på BASS, gjør ingenting og vises i importrapporten.
+- Det virker likt live: send nøkkelnoter fra DAW-en, så bytter lyden med en gang (i PREVIEW i takt med resten), og
+  LIVE-skjermen viser patchen på hver kanal.
+
+NEON CARRIER viser hvordan: bassen går til FM BASS i refrenget, padden til STRINGS og spillerens stemme til BELL EP i
+det høye verset.
 
 ### Trommer på kanal 10
 

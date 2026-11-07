@@ -7,6 +7,7 @@ as a file you load yourself.
 
 Channels (1-based, as a DAW shows them): 1 PLAY (the play track), 2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS,
 10 DRUMS (General MIDI notes). Channel 16 belongs to LINK. CC 85 on channel 1 marks an OP phrase (127 on, 0 off).
+Notes 0-11 (C-1..B-1) on a channel are keyswitches: they pick the channel's patch, note 0 the first (D6).
 """
 import base64
 import json
@@ -137,7 +138,8 @@ def arrange_first_light(s):
             drums += [(b0 + 3, TOM_HI, 96), (b0 + 3.33, TOM_MID, 100), (b0 + 3.66, TOM_LO, 104)]
         if bar in (2, 6, 10):
             drums.append((b0, CRASH, 92))
-    return dict(BASS=bass, PAD=pad, ARP=arp, DRUMS=drums)
+    ks = dict(PLAY=[(0, 1)], BASS=[(0, 2)], PAD=[(0, 1)], ARP=[(0, 1)], DRUMS=[(0, 0)])   # BELL EP, SUB, STRINGS, BELL, GATED
+    return dict(BASS=bass, PAD=pad, ARP=arp, DRUMS=drums, KS=ks)
 
 
 def arrange_neon_carrier(s):
@@ -187,7 +189,12 @@ def arrange_neon_carrier(s):
             drums += [(b0 + 1, SNARE, 114), (b0 + 3, SNARE, 114)]
         if bar in (2, 10, 18, 22):
             drums.append((b0, CRASH, 104))
-    return dict(BASS=bass, PAD=pad, ARP=arp, LEAD=melody(s['lead'], 84), DRUMS=drums)
+    ks = dict(PLAY=[(8, 0), (40, 1), (72, 0)],          # SYN LEAD, BELL EP for the high verse, SYN LEAD again
+              BASS=[(0, 0), (72, 1), (104, 0)],          # PULSE, FM BASS in the chorus, PULSE to end
+              PAD=[(0, 0), (40, 1), (72, 0)],            # SUPERSAW, STRINGS in the second verse
+              ARP=[(40, 0), (72, 1)],                    # PLUCK, BELL in the chorus
+              LEAD=[(0, 0)], DRUMS=[(0, 0)])
+    return dict(BASS=bass, PAD=pad, ARP=arp, LEAD=melody(s['lead'], 84), DRUMS=drums, KS=ks)
 
 
 # ---------------------------------------------------------------- a standard MIDI file, format 1
@@ -223,6 +230,15 @@ def note_events(ch, notes, drum=False):
     return evs
 
 
+def keyswitch_events(ch, switches):
+    """a keyswitch is a short note 0-11, sorted before the notes on the same tick"""
+    evs = []
+    for beat, index in switches:
+        tick = round(beat * PPQ)
+        evs += [(tick, 1, bytes([0x90 | ch, index, 100])), (tick + PPQ // 8, 0, bytes([0x80 | ch, index, 0]))]
+    return evs
+
+
 def write_song(s, parts):
     us = round(60_000_000 / s['bpm'])
     conductor = [(0, 0, b'\xff\x51\x03' + us.to_bytes(3, 'big')), (0, 0, b'\xff\x58\x04\x04\x02\x18\x08')]
@@ -230,12 +246,13 @@ def write_song(s, parts):
     play = note_events(CH['PLAY'], melody(s['play']))
     for a, b in s['phrases']:                                           # OP phrases: CC 85 on channel 1
         play += [(a * 4 * PPQ, 1, bytes([0xB0, 85, 127])), ((b + 1) * 4 * PPQ, 1, bytes([0xB0, 85, 0]))]
-    tracks.append(mtrk('PLAY', play))
+    ks = parts.get('KS', {})
+    tracks.append(mtrk('PLAY', play + keyswitch_events(CH['PLAY'], ks.get('PLAY', []))))
     for name in ('BASS', 'PAD', 'ARP', 'LEAD', 'KEYS', 'DRUMS'):
         if parts.get(name):
             drum = name == 'DRUMS'
             notes = [(t, p, .125, v) for t, p, v in parts[name]] if drum else parts[name]
-            tracks.append(mtrk(name, note_events(CH[name], notes, drum)))
+            tracks.append(mtrk(name, note_events(CH[name], notes, drum) + keyswitch_events(CH[name], ks.get(name, []))))
     return chunk(b'MThd', struct.pack('>HHH', 1, len(tracks), PPQ)) + b''.join(tracks)
 
 

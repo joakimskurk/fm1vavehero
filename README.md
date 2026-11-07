@@ -19,7 +19,8 @@ MIDI-keyboard (Chrome og Edge), eller klikke og ta på panelet. Mer i [reference
 ## Lag dine egne låter
 
 En låt er en vanlig MIDI-fil fra en DAW. Hvert instrument har sin kanal (2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS,
-10 trommer), og spillsporet ligger på kanal 1. Lydmotoren spiller det hele i synthwave-drakt. Last fila inn i
+10 trommer), og spillsporet ligger på kanal 1. Lydmotoren spiller det hele i synthwave-drakt, og hvert
+instrument har flere patcher du velger med nøkkelnoter (note 0–11) på kanalen. Last fila inn i
 referansen, så får du en rapport og kan spille den med en gang. Koble DAW-en til med WebMIDI, så hører du låta
 gjennom lydmotoren mens du lager den. Alt står i [docs/songs.md](docs/songs.md), og malene ligger i [songs/](songs/).
 
@@ -48,7 +49,7 @@ egen forstudie i fase 4. Via en datamaskin virker det uansett.
 | [docs/konsept.md](docs/konsept.md) | Idéskissen: spillmekanikk, nivåer, moduser og tekniske notater |
 | [docs/songs.md](docs/songs.md) | Lag dine egne låter: kanalene, reglene og eksporten |
 | [docs/link.md](docs/link.md) | LINK: lagene fra nettleser til USB-C, og protokollen |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D5 |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D6 |
 | [songs/](songs/) | De innebygde låtene som MIDI-filer, også maler (`python3 tools/songs.py` lager dem) |
 | [ROADMAP.md](ROADMAP.md) | Fasene, med avkrysning |
 | [reference/](reference/) | Nettleserreferansen, fasit før porten |

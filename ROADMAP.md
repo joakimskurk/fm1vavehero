@@ -33,6 +33,8 @@ på verten og i fm1-emu.
       ned. Låtens identitet går over LINK.
 - [x] D4: synthwave-lydmotor med pad, bass, arpeggio, lead, FM-piano, gated trommer, syndrum, delay og hall
 - [x] Live-MIDI per kanal: DAW-en spiller låta gjennom lydmotoren mens den lages
+- [x] D6: flere patcher per instrument (3 hver, 4 stemmer på PLAY, 3 trommesett), valgt med nøkkelnoter 0–11 eller
+      Program Change, i filer og live. TONE har SONG som standard.
 - [x] D5: MIDI MODE. LIVE er lydmodul med kanaler, klokke og takt. PREVIEW forsinker én takt, viser kanal 1 på banen
       og lar deg spille med. Tangentene sendes ut på kanal 1 for opptak.
 - [x] Test: `node tests/reference.cjs` spiller begge låtene på autospill, prøver feil og sene trykk, bot-kamp og to vinduer
@@ -58,6 +60,7 @@ på verten og i fm1-emu.
 - [ ] Synthwave-motoren i lydavbruddet (fastkomma: sagtann med PolyBLEP, filtre, chorus, gated reverb, hall),
       målt i fm1-emu og sjekket mot referansens renders
 - [ ] `tools/mid2keyfall`: MIDI-fil til kompakt notekart og bandspor for flash, med samme import som referansen
+- [ ] Patchene (D6) i fastkomma, med nøkkelnoter og Program Change i firmware
 - [ ] MIDI MODE i firmware: USB-MIDI og TRS inn (`midi_get`), klokke og START/STOP, LIVE og PREVIEW, tangentene ut
       med `midi_send`, og LED-ene for kanal 1. Testes med en DAW mot fm1-emu og så på et ekte FM-1.
 - [ ] Notekart i firmware, og beste resultat i flash
