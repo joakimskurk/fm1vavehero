@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Copyright (C) 2026 Joakim (joakimskurk) */
-/* KEYFALL's rules, as the reference has them (reference/keyfall.html, "the game", "input"): the judgement windows,
+/* VaveHero's rules, as the reference has them (reference/vavehero.html, "the game", "input"): the judgement windows,
  * the combo and its multiplier, holds, the OCT shifts, the OP phrases and OP BOOST, the result and its grade, and
- * the autoplay. No drawing and no hardware here: keyfall.c feeds it key presses stamped with the audio clock (frames,
+ * the autoplay. No drawing and no hardware here: vavehero.c feeds it key presses stamped with the audio clock (frames,
  * as heard), and tests/kf can play whole songs with it.
  *
  * Time: the song's position is kept in T96 x 256 (1/96 beat, Q8); a beat is 24576. Windows are in frames. */
@@ -54,8 +54,8 @@ typedef struct {
 } kg_play_t;
 static kg_play_t kg;
 
-static uint32_t kg_ms;                           /* the clock for the judgements' fades (keyfall.c sets it) */
-static void kg_sound_on(uint32_t key, uint32_t pitch, int32_t detune, uint32_t bright);   /* keyfall.c */
+static uint32_t kg_ms;                           /* the clock for the judgements' fades (vavehero.c sets it) */
+static void kg_sound_on(uint32_t key, uint32_t pitch, int32_t detune, uint32_t bright);   /* vavehero.c */
 static void kg_sound_off(uint32_t key, uint32_t pitch);
 static uint32_t kg_rand(void) { static uint32_t s = 0x2545F491u; s ^= s << 13; s ^= s >> 17; s ^= s << 5; return s; }
 

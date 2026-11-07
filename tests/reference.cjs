@@ -1,10 +1,10 @@
-// Plays reference/keyfall.html in Chromium: both songs on autoplay, a match against the bot, and two windows over LINK.
+// Plays reference/vavehero.html in Chromium: both songs on autoplay, a match against the bot, and two windows over LINK.
 // node tests/reference.cjs [outdir]     (Playwright with Chromium; the screens land in outdir, default build/test)
 const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
 
-const URL = 'file://' + path.resolve(__dirname, '..', 'reference', 'keyfall.html');
+const URL = 'file://' + path.resolve(__dirname, '..', 'reference', 'vavehero.html');
 const OUT = path.resolve(process.argv[2] || path.join(__dirname, '..', 'build', 'test'));
 fs.mkdirSync(OUT, { recursive: true });
 let failures = 0;
@@ -178,7 +178,7 @@ async function choose(page, song, level) {
 
   /* 1h. the two songs to hear the engine: they import without a warning, ENGINE TOUR plays every patch, CHROME
      HORIZON (D minor) is transposed onto white keys, and both play 100 % on autoplay, side by side in two windows */
-  const demo = await a.page.evaluate(() => window.KEYFALL_SONGS.slice(2).map(f => {
+  const demo = await a.page.evaluate(() => window.VAVEHERO_SONGS.slice(2).map(f => {
     const K = window.KF, { song, report } = K.importSong(K.parseMidi(Uint8Array.from(atob(f.data), c => c.charCodeAt(0))), f.file);
     const used = new Set(song.patchLog.map(e => e.part + ':' + e.ks)), all = Object.entries(K.PATCHSET).flatMap(([p, ns]) => ns.map((n, i) => p + ':' + i));
     return { title: song.title, T: song.transpose, warn: report.warn.length, unused: all.filter(x => !used.has(x)).length, octs: song.octs.length, ph: song.phrases.length };

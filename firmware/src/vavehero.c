@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Copyright (C) 2026 Joakim (joakimskurk); from Dinghy's dinghy.c by zvenson */
-/* KEYFALL: a rhythm game for the M-VAVE FM-1 (README.md, docs/konsept.md). The notes fall down a highway, a lane
+/* VaveHero: a rhythm game for the M-VAVE FM-1 (README.md, docs/konsept.md). The notes fall down a highway, a lane
  * a white key; you play them on the keys, the key LEDs show what comes. The browser reference
- * (reference/keyfall.html) is the fasit for how it plays, looks and sounds; this is it on the FM-1.
+ * (reference/vavehero.html) is the fasit for how it plays, looks and sounds; this is it on the FM-1.
  *
  *   splash     PLAY: the songs. FX: the DEMO (ENGINE TOUR from bar 41 on autoplay: the engine's worst case,
  *              which fm1-emu times in CI); HOME or PLAY ends it
@@ -22,8 +22,8 @@
  * Rules of the road (the chip has no FPU and no libgcc): integers only, no float, no 64-bit division.
  * tests/host.c runs this file on a computer: the screen as a PNG, the sound as a WAV.
  * What platform.c offers: docs/API.md. The chip's rules: docs/RULES.md. */
-#define APP_NAME "KEYFALL"                      /* the rescue and the crash screen say this */
-#define STORE_MAGIC 0x4C41464Bu                 /* "KFAL": KEYFALL's settings and blobs, never another fork's */
+#define APP_NAME "VAVEHERO"                      /* the rescue and the crash screen say this */
+#define STORE_MAGIC 0x4F524856u                 /* "VHRO": VaveHero's settings and blobs, never another fork's */
 #define CV_MAX (240u * 240u)                    /* the whole screen in one canvas (113 KB of the pool) */
 static void app_idle(void);
 #define LCD_IDLE app_idle                       /* while the screen's DMA runs: keys and MIDI in (platform.c) */

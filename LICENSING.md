@@ -1,6 +1,6 @@
 # Licensing
 
-KEYFALL, like Dinghy under it, is free software under the GNU General Public License, version 3 only (`GPL-3.0-only`, full text in
+VaveHero, like Dinghy under it, is free software under the GNU General Public License, version 3 only (`GPL-3.0-only`, full text in
 `LICENSE`). You may use, study, change and share it. If you give someone a firmware built from it, give them its
 complete source under the same licence too.
 
@@ -14,7 +14,7 @@ complete source under the same licence too.
 | The update loader's screen: `firmware/loader/ldr_screen.c`, `tests/ldr_screen_test.c` | Copyright (C) 2026 zvenson (from OberVave, the Firmware Hub's look); the idea, a loader that draws, its 5 x 7 letters and the order of things from [Skiff](https://github.com/illuminus5/skiff) by illuminus5, GPL-3.0 |
 | From OberVave: the storage (blobs, slots), `LCD_IDLE`, the SMK-37 wiring of `platform.c`, `store.h`, the pad event queue in `smk_input.h`, `tests/smk_flash_test.c`, `tests/run_tests.sh`, the CI workflow | Copyright (C) 2026 zvenson |
 | The wiring `platform.c`, the host mode `tests/`, the docs in `docs/` (`API.md`, `RULES.md`, `MAKE-IT-YOURS.md`, `SMK37.md`, `DINGHY_README.md`) | zvenson |
-| KEYFALL: the app `firmware/src/keyfall.c` (from Dinghy's `dinghy.c` by zvenson) and its `kf_*` files, `reference/`, `mockup/`, `songs/`, `tools/songs.py`, `tests/reference.cjs`, `tests/run_keyfall.sh`, the project docs | Copyright (C) 2026 Joakim (joakimskurk) |
+| VaveHero: the app `firmware/src/vavehero.c` (from Dinghy's `dinghy.c` by zvenson) and its `kf_*` files, `reference/`, `mockup/`, `songs/`, `tools/songs.py`, `tests/reference.cjs`, `tests/run_vavehero.sh`, the project docs | Copyright (C) 2026 Joakim (joakimskurk) |
 
 ## Third-party material
 
@@ -31,4 +31,4 @@ the GPL. It marks Dinghy itself; a fork uses its own logo.
 ## Trademarks
 
 "Felucca" and "Hügelton Instruments" are names of Hügelton Instruments; "M-VAVE", "FM-1", "SMK-37" and "MKE-P37"
-belong to their owners. Neither Dinghy nor KEYFALL is made or endorsed by them.
+belong to their owners. Neither Dinghy nor VaveHero is made or endorsed by them.

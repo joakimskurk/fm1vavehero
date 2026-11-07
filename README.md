@@ -1,6 +1,6 @@
-# KEYFALL for M-VAVE FM-1
+# VaveHero for M-VAVE FM-1
 
-*Arbeidstittel.* Et rytmespill i Guitar Hero-sjangeren for FM-1. Tonene glir ned en notebane, du spiller dem på de
+Et rytmespill i Guitar Hero-sjangeren for FM-1. Tonene glir ned en notebane, du spiller dem på de
 hvite tangentene, og LED-ene i tangentene viser hva som kommer. To spillere med hvert sitt FM-1 kan spille mot
 hverandre. En Dinghy 0.5-app, i samme familie som [RoboSeq](https://github.com/joakimskurk/fm1roboseq),
 [Star Distroyer](https://github.com/joakimskurk/fm1stardistroyer) og [SkurkyMello](https://github.com/joakimskurk/fm1mello).
@@ -13,7 +13,7 @@ hverandre. En Dinghy 0.5-app, i samme familie som [RoboSeq](https://github.com/j
 
 ## Prøv det
 
-Åpne [`reference/keyfall.html`](reference/keyfall.html) i en nettleser og trykk Enter. De hvite tangentene C4–C5 ligger
+Åpne [`reference/vavehero.html`](reference/vavehero.html) i en nettleser og trykk Enter. De hvite tangentene C4–C5 ligger
 på `A S D F G H J K`, OCT− og OCT+ på `Z` og `X`, og FX (OP BOOST) på mellomromstasten. `Q` (GLO) slår på
 SPREAD, som legger banene på annenhver hvit tangent for store fingre. Du kan også bruke et
 MIDI-keyboard (Chrome og Edge), eller klikke og ta på panelet. Mer i [reference/README.md](reference/README.md).
@@ -47,7 +47,7 @@ egen forstudie i fase 4. Via en datamaskin virker det uansett.
 
 ## Firmware
 
-Firmwaren er en Dinghy 0.5-app (`firmware/src/keyfall.c`, [PLATFORM.md](PLATFORM.md) sier hva som er endret fra
+Firmwaren er en Dinghy 0.5-app (`firmware/src/vavehero.c`, [PLATFORM.md](PLATFORM.md) sier hva som er endret fra
 Dinghy). Den spiller som referansen: samme regler, samme notekart, samme skjermer og samme lyd.
 
 <p align="center">
@@ -74,15 +74,15 @@ patcher og 4 trommesett ligger innenfor 1,5 dB av referansen, og hele låtene in
 [docs/fm1-budsjett.md](docs/fm1-budsjett.md).
 
 ```sh
-make test          # KEYFALLs vertstester: lyden mot referansen, reglene, skjermene; uten FM-1
-make fw            # build/keyfall.fwsc: krever JieLis verktøykjede og AC79-SDK-en (docs/DINGHY_README.md)
+make test          # VaveHeros vertstester: lyden mot referansen, reglene, skjermene; uten FM-1
+make fw            # build/vavehero.fwsc: krever JieLis verktøykjede og AC79-SDK-en (docs/DINGHY_README.md)
 ```
 
 GitHub Actions bygger `.fwsc`-pakken ved hver push, kjører testene og måler DEMO-en i fm1-emu
 (`.github/workflows/build.yml`, via zvenson/fm1-build). Pakken heter `FM-1_95N`, der N er mindreversjonen, og 0 er
 en utviklerbygging.
 
-**Prøv den uten FM-1:** last ned `packages` fra en bygging under *Actions* på GitHub, pakk ut `keyfall.fwsc` og åpne
+**Prøv den uten FM-1:** last ned `packages` fra en bygging under *Actions* på GitHub, pakk ut `vavehero.fwsc` og åpne
 den i [fm1-emu](https://joakimeriksson.github.io/fm1-emu/) i nettleseren. Siden kan åpne en lokal pakke. Tangentene
 og knappene ligger på datamaskinens tastatur og mus, og et MIDI-keyboard virker i Chrome og Edge.
 
@@ -94,17 +94,17 @@ og knappene ligger på datamaskinens tastatur og mus, og et MIDI-keyboard virker
 | [docs/songs.md](docs/songs.md) | Lag dine egne låter: kanalene, reglene og eksporten |
 | [docs/link.md](docs/link.md) | LINK: lagene fra nettleser til USB-C, og protokollen |
 | [docs/fm1-budsjett.md](docs/fm1-budsjett.md) | Får alt plass på FM-1? Minne, CPU, grafikk, låter og poeng |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D8 |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutningene D1–D9 |
 | [songs/](songs/) | De fire innebygde låtene som MIDI-filer, også maler. ENGINE TOUR viser alle 29 lydene, CHROME HORIZON er en hel låt i D-moll (`python3 tools/songs.py` lager dem). |
 | [ROADMAP.md](ROADMAP.md) | Fasene, med avkrysning |
 | [reference/](reference/) | Nettleserreferansen, fasit før porten |
 | [mockup/](mockup/) | Den første mockupen: enheten og fire skjermer (`node mockup/render.cjs` lager PNG-ene) |
 | [tests/reference.cjs](tests/reference.cjs) | Spiller referansen i Chromium og sjekker poeng, LINK og bot |
-| [firmware/](firmware/) | Firmwaren: Dinghy 0.5 og appen `src/keyfall.c` |
+| [firmware/](firmware/) | Firmwaren: Dinghy 0.5 og appen `src/vavehero.c` |
 | [PLATFORM.md](PLATFORM.md) | Hvilken Dinghy, og hva som er endret fra den |
 | [docs/API.md](docs/API.md), [docs/RULES.md](docs/RULES.md) | Dinghys API og brikkens regler (fra Dinghy) |
 
-<p align="center"><img src="mockup/keyfall-mockup.png" width="820" alt="Mockup: FM-1 med Keyfall på skjermen"></p>
+<p align="center"><img src="mockup/vavehero-mockup.png" width="820" alt="Mockup: FM-1 med VaveHero på skjermen"></p>
 
 Panelgeometrien er hentet fra målene i [Quixotic7/MvaveFM1-Designer](https://github.com/Quixotic7/MvaveFM1-Designer).
 Låtene er egne komposisjoner. Firmwaren er fri programvare under GPL-3.0 ([LICENSE](LICENSE), hvem som har laget

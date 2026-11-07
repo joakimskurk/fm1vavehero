@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Copyright (C) 2026 Joakim (joakimskurk) */
-/* KEYFALL's screens, drawn as the reference draws them (reference/keyfall.html, "the highway", "the screens"):
+/* VaveHero's screens, drawn as the reference draws them (reference/vavehero.html, "the highway", "the screens"):
  * the splash, the songs, the play (the highway with its gems, holds, chords, OCT bands, beams and bursts, the key
  * strip, the header, the OP meter, the banners) and the results. Each draws the whole screen into the canvas
- * (kf_gfx.h); keyfall.c sends it. */
+ * (kf_gfx.h); vavehero.c sends it. */
 #pragma once
 #include "kf_gfx.h"
 #include "kf_game.h"
@@ -195,8 +195,8 @@ static void ks_splash(uint32_t ms, const char *version)
     krect(0, 58, 240, 44, kmix(K_BG, K_BLACK, Q12(.45)));
     krect(0, 57, 240, 1, K_CYAN);
     krect(0, 102, 240, 1, K_CYAN);
-    x = ktextOut(&FONT_L, 120 - (ktw(&FONT_L, "KEYFALL") >> 1), 64, "KEY", K_TEXT, K_BG, 1);
-    ktextOut(&FONT_L, x, 64, "FALL", K_CYAN, K_BG, 1);
+    x = ktextOut(&FONT_L, 120 - (ktw(&FONT_L, "VAVEHERO") >> 1), 64, "VAVE", K_TEXT, K_BG, 1);
+    ktextOut(&FONT_L, x, 64, "HERO", K_CYAN, K_BG, 1);
     krect(0, 108, 240, 18, kmix(K_BG, K_BLACK, Q12(.45)));
     ktextC(&FONT_S, 120, 109, "A RHYTHM GAME FOR FM-1", K_DIM);
     if ((ms / 500u) % 2u == 0u) { krect(70, 168, 100, 18, K_BG); ktextC(&FONT_S, 120, 169, "PRESS PLAY", K_AMBER); }
@@ -286,7 +286,7 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
     int32_t pos = kg.pos, boost = kg_boosting(), i, ocn;
     uint8_t st[8] = {0};
     char s[24], *p;
-    /* (the canvas starts as the background: keyfall.c's draw) */
+    /* (the canvas starts as the background: vavehero.c's draw) */
     krect(0, 0, 240, KH_TOPY, K_BG);
     krect(0, KH_HIT, 240, 240 - KH_HIT, K_BG);
     krect(0, KH_TOPY, KH_NL, KH_HIT - KH_TOPY, K_BG);

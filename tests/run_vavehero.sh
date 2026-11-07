@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-only
-# KEYFALL's own host tests (no FM-1, no JieLi toolchain): the app compiles cleanly for the host and plays, the
+# VaveHero's own host tests (no FM-1, no JieLi toolchain): the app compiles cleanly for the host and plays, the
 # engine against the reference (every patch's level and brightness, tests/kf/parity.py), the worst case renders
 # without clipping, the tables are what the reference makes. Dinghy's own tests: tests/run_tests.sh (after
 # ./build.sh). The engine's cost on the chip: tools/emu_cpu.sh (fm1-emu, CI).
@@ -13,15 +13,15 @@ run() { echo "== $1"; shift; "$@" || fail=1; }
 
 if command -v node >/dev/null 2>&1; then
     run "firmware/gen/kf_tables.h is what tools/gen_kf_tables.mjs makes from the reference" node tools/gen_kf_tables.mjs --check
-    run "firmware/gen/kf_songs.h is what the reference's import makes of songs/ (tools/mid2keyfall.mjs)" node tools/mid2keyfall.mjs --check
+    run "firmware/gen/kf_songs.h is what the reference's import makes of songs/ (tools/mid2vavehero.mjs)" node tools/mid2vavehero.mjs --check
 fi
-run "keyfall.c compiles for the host without a warning (-Werror)" \
+run "vavehero.c compiles for the host without a warning (-Werror)" \
     cc -O2 -Wall -Werror -Wno-unused-function -DDINGHY_HOST -DAPP_VER='"test"' -Ifirmware/hal -Ifirmware/src -Ifirmware/gen \
-       -o "$OUT/keyfall-werror" firmware/src/keyfall.c
+       -o "$OUT/vavehero-werror" firmware/src/vavehero.c
 if command -v clang >/dev/null 2>&1; then           # (the chip's compiler is a clang: its warnings, e.g. a constant that does not fit)
-    run "keyfall.c with clang, as the chip's compiler sees it (-Werror)" \
+    run "vavehero.c with clang, as the chip's compiler sees it (-Werror)" \
         clang -O2 -Wall -Werror -Wno-unused-function -DDINGHY_HOST -DAPP_VER='"test"' -Ifirmware/hal -Ifirmware/src -Ifirmware/gen \
-           -o "$OUT/keyfall-clang" firmware/src/keyfall.c
+           -o "$OUT/vavehero-clang" firmware/src/vavehero.c
 fi
 run "the engine alone compiles without a warning (-Wextra -Werror)" \
     cc -O2 -Wall -Wextra -Werror -Wno-unused-function -Ifirmware/src -Ifirmware/gen -o build/kf_render tests/kf/kf_render.c -lm
@@ -45,9 +45,9 @@ run "the rules compile without a warning (-Wextra -Werror)" \
 run "the rules: every song on autoplay 100 %, late, wrong, black and outside keys, a broken hold" build/kf_game_test
 run "the app on the host: the default script" sh tests/run_host.sh
 run "the game on the host: splash, DEMO, songs, a song, MIDI MODE" sh tests/run_host.sh tests/kf/game.txt
-run "the screens are there" sh -c 'for t in 600 2500 7400 8400 15000 15800; do test -s build/host/keyfall-$t.png || exit 1; done'
+run "the screens are there" sh -c 'for t in 600 2500 7400 8400 15000 15800; do test -s build/host/vavehero-$t.png || exit 1; done'
 run "a song on AUTO to its results, again, back to the songs" sh tests/run_host.sh tests/kf/results.txt
-run "the results' screen is there" test -s build/host/keyfall-42000.png
-run "the sound file is there and not empty" test -s "$OUT/keyfall.wav"
+run "the results' screen is there" test -s build/host/vavehero-42000.png
+run "the sound file is there and not empty" test -s "$OUT/vavehero.wav"
 
-[ $fail = 0 ] && echo "run_keyfall: all passed" || { echo "run_keyfall: FAILED"; exit 1; }
+[ $fail = 0 ] && echo "run_vavehero: all passed" || { echo "run_vavehero: FAILED"; exit 1; }

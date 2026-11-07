@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Joakim (joakimskurk)
-// The reference's engine (reference/keyfall.html) playing the engine tour of tests/kf/kf_render.c: every patch
+// The reference's engine (reference/vavehero.html) playing the engine tour of tests/kf/kf_render.c: every patch
 // alone, every kit, rendered offline in Chromium. Its levels are the fasit for the firmware's engine
 // (tests/kf/parity.py). Also the compressor's static curve (--comp), to fit kf_comp_gain.
 //   node tools/ref_tour.cjs [outdir]      -> outdir/ref-tour.json, ref-tour.wav (default build/audio)
@@ -10,7 +10,7 @@ const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
 
-const URL = 'file://' + path.resolve(__dirname, '..', 'reference', 'keyfall.html');
+const URL = 'file://' + path.resolve(__dirname, '..', 'reference', 'vavehero.html');
 const args = process.argv.slice(2);
 const OUT = path.resolve(args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--songs') || path.join(__dirname, '..', 'build', 'audio'));
 fs.mkdirSync(OUT, { recursive: true });

@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 Joakim (joakimskurk), after Star Distroyer's tools/emu_cpu.sh
 # The engine's load on the chip, in fm1-emu (ROADMAP.md, phase 3: "first, measure the engine"): the audio
-# interrupt's share of the chip while KEYFALL's DEMO plays (FX on the splash: kf_bench.h, the worst case), in instructions (the
+# interrupt's share of the chip while VaveHero's DEMO plays (FX on the splash: kf_bench.h, the worst case), in instructions (the
 # emulator counts instructions, not cycles). Two runs: 1.6 s of silence, then 9.6 s with FX pressed at 1.6 s;
 # the difference is 8 s of the DEMO: ENGINE TOUR's bars 41-44. The main loop spins in the emulator, so its count says nothing about the chip.
-#   tools/emu_cpu.sh build/keyfall.fwsc [label]
+#   tools/emu_cpu.sh build/vavehero.fwsc [label]
 #   FM1_EMU   the fm1-emu binary (default: ~/fm1-emu/target/release/fm1-emu; tools/emu_ci.sh builds it)
 #   EMU_MAX   fail if the share is above this many percent (default: report only)
 set -e

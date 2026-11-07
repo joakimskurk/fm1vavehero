@@ -96,7 +96,7 @@ x86-anslaget (callgrind × 0,8) sa 31,5 %, så anslaget kan brukes mellom CI-kj�
 
 Lyden er sjekket mot referansen: alle 25 patcher og 4 trommesett ligger innenfor 1,5 dB og 25 % lysstyrke, de
 fleste innenfor 0,3 dB. Hver fjerde takt av de første 30 sekundene av alle fire låtene ligger innenfor 0,8 dB
-(`tests/run_keyfall.sh`).
+(`tests/run_vavehero.sh`).
 
 ## Grafikk
 
@@ -113,7 +113,7 @@ fleste innenfor 0,3 dB. Hver fjerde takt av de første 30 sekundene av alle fire
 
 ## Låter og poeng
 
-- **Innebygde låter:** `tools/mid2keyfall` gjør MIDI-filene om til kompakte tabeller når firmwaren bygges. De ligger i
+- **Innebygde låter:** `tools/mid2vavehero` gjør MIDI-filene om til kompakte tabeller når firmwaren bygges. De ligger i
   flash og koster ikke RAM. Transponering, oktavskift og nivåer regnes ut der, ikke på FM-1.
 - **Egne låter på FM-1:** SysEx er plattformens og brukes til oppdateringer, så en fil kan ikke sendes rett inn.
   To veier, begge med bare noter (D3):

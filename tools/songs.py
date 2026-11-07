@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """The built-in songs, written as standard MIDI files exactly as docs/songs.md asks of a song made in a DAW, and
-embedded in reference/keyfall.html so the reference stays one file. The reference imports them with the same code
+embedded in reference/vavehero.html so the reference stays one file. The reference imports them with the same code
 as a file you load yourself.
 
-    python3 tools/songs.py            # writes songs/*.mid and the songs block in reference/keyfall.html
+    python3 tools/songs.py            # writes songs/*.mid and the songs block in reference/vavehero.html
 
 Channels (1-based, as a DAW shows them): 1 PLAY (the play track), 2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS,
 10 DRUMS (General MIDI notes). Channel 16 belongs to LINK. Everything is a note, no CC and no program change:
@@ -499,15 +499,15 @@ def main():
             f.write(data)
         files.append({'file': s['file'], 'data': base64.b64encode(data).decode()})
         print(f"songs/{s['file']}: {len(data)} bytes")
-    ref = os.path.join(HERE, 'reference', 'keyfall.html')
+    ref = os.path.join(HERE, 'reference', 'vavehero.html')
     html = open(ref, encoding='utf-8').read()
-    block = '/*@SONGS*/window.KEYFALL_SONGS = ' + json.dumps(files) + ';/*SONGS@*/'
+    block = '/*@SONGS*/window.VAVEHERO_SONGS = ' + json.dumps(files) + ';/*SONGS@*/'
     new, n = re.subn(r'/\*@SONGS\*/.*?/\*SONGS@\*/', lambda m: block, html, flags=re.S)
     if n != 1:
-        raise SystemExit('reference/keyfall.html has no songs block (/*@SONGS*/ ... /*SONGS@*/)')
+        raise SystemExit('reference/vavehero.html has no songs block (/*@SONGS*/ ... /*SONGS@*/)')
     if new != html:
         open(ref, 'w', encoding='utf-8').write(new)
-        print('reference/keyfall.html: songs block updated')
+        print('reference/vavehero.html: songs block updated')
 
 
 if __name__ == '__main__':

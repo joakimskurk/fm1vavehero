@@ -1,4 +1,4 @@
-# Every push and pull request: KEYFALL's host tests, Dinghy's platform tests and the real FM-1 package, built and
+# Every push and pull request: VaveHero's host tests, Dinghy's platform tests and the real FM-1 package, built and
 # attested by the shared zvenson/fm1-build workflow (JieLi toolchain + AC79 SDK), as RoboSeq and SkurkyMello do. A tag
 # vX.Y also publishes the release. (Every branch builds: the .fwsc of a work branch is what fm1-emu measures.)
 name: build
@@ -20,5 +20,5 @@ jobs:
     with:
       build: |
         if [ "$GITHUB_REF_TYPE" = tag ]; then ./build.sh --release "${GITHUB_REF_NAME#v}"; else ./build.sh; fi
-      test: sh tests/run_keyfall.sh && sh tests/run_tests.sh && sh tools/emu_ci.sh
-      packages: build/keyfall*.fwsc
+      test: sh tests/run_vavehero.sh && sh tests/run_tests.sh && sh tools/emu_ci.sh
+      packages: build/vavehero*.fwsc

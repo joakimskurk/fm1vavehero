@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Copyright (C) 2026 Joakim (joakimskurk) */
-/* KEYFALL's rules on the host (firmware/src/kf_game.h), as tests/reference.cjs checks the reference's: every song
+/* VaveHero's rules on the host (firmware/src/kf_game.h), as tests/reference.cjs checks the reference's: every song
  * on autoplay, EASY and MED, normal and SPREAD: 100 %, no miss, a full combo, every OCT shift, OP BOOST where the
  * song has phrases; a press 80 ms late is GOOD; a wrong key breaks the combo; a key outside the layout does nothing
  * (D1, D2); a hold let go at half is broken. */

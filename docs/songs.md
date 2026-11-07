@@ -1,6 +1,6 @@
 # Lag dine egne låter
 
-En Keyfall-låt er en vanlig MIDI-fil (`.mid`), laget i hvilken som helst DAW. Hvert instrument har sin egen
+En VaveHero-låt er en vanlig MIDI-fil (`.mid`), laget i hvilken som helst DAW. Hvert instrument har sin egen
 MIDI-kanal, og spillsporet, tonene spilleren skal spille, ligger på en kanal for seg. Lydmotoren spiller resten i
 synthwave-drakt ([D3](DECISIONS.md), [D4](DECISIONS.md)).
 
@@ -103,7 +103,7 @@ det høye verset.
 ## Tempo og takt
 
 - Ett tempo per låt. Har fila tempoendringer, brukes det første.
-- Keyfall teller i 4/4. Andre taktarter importeres, men banens taktstreker følger 4/4.
+- VaveHero teller i 4/4. Andre taktarter importeres, men banens taktstreker følger 4/4.
 - Låta slutter ved slutten av takten der den siste tonen slutter.
 
 ## Eksporter
@@ -114,7 +114,7 @@ høyst 15 tegn.
 
 ## Prøv låta i referansen
 
-1. Åpne `reference/keyfall.html`.
+1. Åpne `reference/vavehero.html`.
 2. Trykk **Last inn .mid** under *Egne låter*, eller slipp fila på siden.
 3. Rapporten viser tempo, lengde, toner per nivå, transponering, oktavskift, OP-fraser og alt som er tatt ut eller
    ignorert.

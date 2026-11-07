@@ -1,9 +1,9 @@
-# KEYFALL: et rytmespill for M-VAVE FM-1 (idéskisse)
+# VaveHero: et rytmespill for M-VAVE FM-1 (idéskisse)
 
-*Arbeidstittel. Inspirert av sjangeren Guitar Hero satte, men med egen grafikk, egne låter og spillmekanikk bygget
-rundt FM-1s eget panel. «Hero» er Activisions varemerke, så et eget navn er tryggest hvis dette skal deles.*
+*Inspirert av sjangeren Guitar Hero satte, men med egen grafikk, egne låter og spillmekanikk bygget rundt FM-1s eget
+panel. Arbeidstittelen var KEYFALL. Navnet VaveHero er bestemt i D9.*
 
-![Mockup](../mockup/keyfall-mockup.png)
+![Mockup](../mockup/vavehero-mockup.png)
 
 ## Kjerneidé
 
@@ -33,11 +33,11 @@ I M-VAVEs egen firmware er de seks første svarte tangentene **OP1–OP6**. Det 
 
 ## Slik lages det (samme oppskrift som de andre FM-1-prosjektene)
 
-1. **`reference/keyfall.html`, en spillbar nettleserversjon.** Den er fasit for lyd, følelse og timing, slik
+1. **`reference/vavehero.html`, en spillbar nettleserversjon.** Den er fasit for lyd, følelse og timing, slik
    `roboseq.html` og `skurkymello.html` er det for sine prosjekter. Den spilles med tastaturet på datamaskinen, og
    valgfritt med et FM-1 eller annet MIDI-keyboard over WebMIDI. Her finner vi ut om spillet er gøy: banebredde,
    tidsvinduer, nivåer og notekart.
-2. **En Dinghy 0.4-app**, laget som RoboSeq og Star Distroyer: `keyfall.c`, `APP_NAME "KEYFALL"`, egen
+2. **En Dinghy 0.4-app**, laget som RoboSeq og Star Distroyer: `vavehero.c`, `APP_NAME "VAVEHERO"`, egen
    `FELUCCA_ID`, testet på verten og i fm1-emu, og levert som `.fwsc` med commit og SHA-256. Den kan også få et
    `fmhub.json`-kort til Firmware Hub.
 3. **Gjenbruk fra egne repoer:**
@@ -152,7 +152,6 @@ Se `mockup/screens/` (240 × 240 px, nøyaktig som de ville tegnes): **SONGS**, 
   finnes et FM-1 å teste på. Fram til da brukes fm1-emu og vertsbygget.
 - Går det an å få anslagsdynamikk fra silikontangentene? Hvis ja, kan aksenttoner bli en egen notetype.
 - Perspektivbane eller flat bane på EXP? Det avgjøres i HTML-referansen.
-- Navn: KEYFALL, OP RUSH, SIX OPS, CARRIER eller SKURKY KEYS?
 
 ## Plan
 

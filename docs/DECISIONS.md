@@ -159,7 +159,22 @@ fordi pad-ene har lange utklingninger. Med budsjettet bruker lyden 31,6 % av bri
 (målt i fm1-emu). En
 konvolusjon på 2,8 s er langt over det brikken kan.
 
-**Sjekkes av.** `tests/run_keyfall.sh`: alle 25 patcher og 4 trommesett innenfor 1,5 dB og 25 % lysstyrke av
+**Sjekkes av.** `tests/run_vavehero.sh`: alle 25 patcher og 4 trommesett innenfor 1,5 dB og 25 % lysstyrke av
 referansen, de fleste innenfor 0,3 dB, og hver fjerde takt av de fire låtenes første 30 sekunder innenfor 0,8 dB.
 `tools/emu_cpu.sh` i CI feiler hvis det tyngste stedet bruker mer enn 45 % av brikken.
+
+## D9 (2026-11-07): spillet heter VaveHero
+
+**Beslutning.** Spillet heter VaveHero, etter M-VAVE og «hero» fra sjangeren. Arbeidstittelen KEYFALL er borte fra
+filnavn, skjermer, firmware og dokumenter. På skjermen står det VAVEHERO, med VAVE i hvitt og HERO i cyan, fordi
+den store fonten bare har store bokstaver. Firmwaren heter `vavehero.fwsc`, appen `firmware/src/vavehero.c`,
+referansen `reference/vavehero.html`, og pakkens identitet er fortsatt `FM-1_95N`.
+
+**Hva det koster.** Innstillinger lagret i flash av en tidligere bygging starter på nytt, fordi lagringen har fått
+eget merke (`STORE_MAGIC` "VHRO"). Det samme gjelder det referansen har lagret i nettleseren, også egne låter, fordi
+nøklene nå heter `vavehero.*`. Interne navn i koden (`kf_`, `kg_`, `ks_` og `window.KF`) er beholdt, slik at koden ikke
+endres bare for navnets skyld.
+
+**Å sjekke før utgivelse.** «Hero» i Guitar Hero er Activisions varemerke, som konseptet allerede nevnte. VaveHero er
+et eget navn, men det bør vurderes før spillet legges ut på Firmware Hub.
 

@@ -1,6 +1,6 @@
 # PLATFORM
 
-KEYFALL runs on **Dinghy 0.5**, imported as source (commit `1444aa4` of this repo, unchanged).
+VaveHero runs on **Dinghy 0.5**, imported as source (commit `1444aa4` of this repo, unchanged).
 
 - upstream: https://github.com/zvenson/dinghy
 - commit: `ea1b6bf` (2026-11, after "Dinghy 0.5" `1675934`; the release workflow's file pattern only). Dinghy 0.5
@@ -15,14 +15,14 @@ Kept small, so a later Dinghy can be merged by diffing these files.
 
 | file | change |
 | --- | --- |
-| `firmware/src/dinghy.c` | renamed `keyfall.c`: the app; `APP_NAME "KEYFALL"`, `STORE_MAGIC` "KFAL" |
-| `tools/build.py` | compiles `keyfall.c`; outputs `keyfall.*`; identity `FM-1_95N` (N = the minor version, 0 = a dev build; 95N is free in Dinghy's list); loader screen "KEYFALL" in cyan `0x5F1F`; data family `KEYFALL` |
+| `firmware/src/dinghy.c` | renamed `vavehero.c`: the app; `APP_NAME "VAVEHERO"`, `STORE_MAGIC` "VHRO" |
+| `tools/build.py` | compiles `vavehero.c`; outputs `vavehero.*`; identity `FM-1_95N` (N = the minor version, 0 = a dev build; 95N is free in Dinghy's list); loader screen "VAVEHERO" in cyan `0x5F1F`; data family `VHERO` |
 | `build.sh` | a comment |
-| `tests/run_host.sh` | builds `keyfall.c` as `build/host/keyfall` |
-| `tests/run_tests.sh` | `keyfall.*` names; the SMK-37 packages' identities `_95N` |
-| `tests/install_test.py` | `keyfall.*` names |
-| `README.md` | moved to `docs/DINGHY_README.md`; KEYFALL's README in its place |
-| `.gitignore` | KEYFALL's `build/` line kept, Dinghy's lines added |
+| `tests/run_host.sh` | builds `vavehero.c` as `build/host/vavehero` |
+| `tests/run_tests.sh` | `vavehero.*` names; the SMK-37 packages' identities `_95N` |
+| `tests/install_test.py` | `vavehero.*` names |
+| `README.md` | moved to `docs/DINGHY_README.md`; VaveHero's README in its place |
+| `.gitignore` | VaveHero's `build/` line kept, Dinghy's lines added |
 | `.github/workflows/release.yml` | replaced by `build.yml` (zvenson/fm1-build, as RoboSeq and SkurkyMello) |
 
 Nothing in `firmware/hal/`, `firmware/loader/`, `firmware/app.ld`, `platform.c` or `tests/host.c` is changed.

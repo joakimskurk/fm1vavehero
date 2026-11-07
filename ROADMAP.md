@@ -14,7 +14,7 @@ på verten og i fm1-emu.
 
 ## Fase 1: nettleserreferanse 0.1
 
-- [x] `reference/keyfall.html`: én fil, spillbar med datamaskintastaturet, panelet (mus og berøring) og WebMIDI
+- [x] `reference/vavehero.html`: én fil, spillbar med datamaskintastaturet, panelet (mus og berøring) og WebMIDI
 - [x] Skjermen tegnet piksel for piksel i 240 × 240 med `FONT_S` og `FONT_L`
 - [x] To låter (FIRST LIGHT, NEON CARRIER) med EASY og MED. Nivåene lages av samme notekart.
 - [x] Notebane i perspektiv med én bane per hvit tangent, akkorder, hold-toner og oktavskift (OCT+/OCT−)
@@ -62,7 +62,7 @@ lyden er det trange, så den måles først.
       utklingninger) bruker 31,6 % av brikken alene, og 34,0 % med spillet rundt (36,9 % med plattformen). CI feiler over 45 %. Det som skulle til:
       24 stemmer og 10 trommelag, et oscillatorbudsjett på 48 (D8), kontrollrate på 32 frames og FDN-romklang.
 
-- [x] `keyfall.c` på Dinghy 0.5: `APP_NAME "KEYFALL"`, egen identitet (`FM-1_95N`), `PLATFORM.md` med avvik fra
+- [x] `vavehero.c` på Dinghy 0.5: `APP_NAME "VAVEHERO"`, egen identitet (`FM-1_95N`), `PLATFORM.md` med avvik fra
       upstream, CI via zvenson/fm1-build, `make test` på verten
 - [x] Bane, toppstripe og knotterad i ett helskjermslerret, tegnet som referansen. Beregnet til omtrent 9 % av
       brikken ved 30 fps (callgrind × 0,8). Må måles på et ekte FM-1.
@@ -71,7 +71,7 @@ lyden er det trange, så den måles først.
       (forsinkelsen på et ekte FM-1 må kalibreres)
 - [x] Synthwave-motoren i lydavbruddet (fastkomma: sagtann med PolyBLEP, filtre, chorus, gated reverb, hall),
       målt i fm1-emu og sjekket mot referansens renders (alle patcher innenfor 1,5 dB, låtene innenfor 0,8 dB)
-- [x] `tools/mid2keyfall.mjs`: MIDI-fil til notekart og bandspor for flash, med referansens egen import-kode
+- [x] `tools/mid2vavehero.mjs`: MIDI-fil til notekart og bandspor for flash, med referansens egen import-kode
 - [x] Patchene (D6) og GRIT (D7) i fastkomma, med nøkkelnoter i firmware. GRIT ligger på ALGORITHM.
 - [x] MIDI MODE LIVE i firmware: USB-MIDI og TRS inn (`midi_get`), klokke og STOP, nøkkelnoter, tangentene ut på
       kanal 1 med `midi_send`

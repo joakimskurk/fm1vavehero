@@ -1,4 +1,4 @@
-# KEYFALL on the host: FIRST LIGHT on AUTO (SEQ) from start to its results (60 beats at 96 BPM, then 4 more), PLAY
+# VaveHero on the host: FIRST LIGHT on AUTO (SEQ) from start to its results (60 beats at 96 BPM, then 4 more), PLAY
 # again, HOME to the songs (AUTO's result is not kept: the list still says NEW)
 300 btn 12
 600 btn 11

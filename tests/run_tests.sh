@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-only
-# Dinghy's host tests, on KEYFALL's build (no hardware). Run from the repo root after building, the SMK-37 first, the FM-1 last
+# Dinghy's host tests, on VaveHero's build (no hardware). Run from the repo root after building, the SMK-37 first, the FM-1 last
 # (both boards write the same build/ intermediates; the tests expect the FM-1 binaries):
 #   BOARD=smk37 sh build.sh; BOARD=smk37 MODEL=elite sh build.sh; BOARD=smk37 MODEL=mke sh build.sh; sh build.sh
 #   sh tests/run_tests.sh
@@ -16,7 +16,7 @@ CC="${CC:-cc} -O1 -Wall -Wno-unused-function"
 fail=0
 run() { echo "== $1"; shift; "$@" || fail=1; }
 
-[ -f build/keyfall.fwsc ] || { echo "run ./build.sh first"; exit 1; }
+[ -f build/vavehero.fwsc ] || { echo "run ./build.sh first"; exit 1; }
 
 run "FM-1 app on the host: the default script plays, screens and sound" sh tests/run_host.sh
 run "SMK-37 app on the host: the default script" env BOARD=smk37 sh tests/run_host.sh
@@ -29,17 +29,17 @@ $CC -o "$OUT/smk_wheel_test" tests/smk_wheel_test.c
 run "SMK-37 pitch wheel: the bend is back to 0 at rest, however slowly the wheel was moved" "$OUT/smk_wheel_test"
 
 $CC -o "$OUT/ota_test" tests/ota_test.c
-run "M-UPGRADE entry (FM-1)" "$OUT/ota_test" build/keyfall.fwsc
-head -c 60000 build/keyfall.bin > "$OUT/old_app.bin"
+run "M-UPGRADE entry (FM-1)" "$OUT/ota_test" build/vavehero.fwsc
+head -c 60000 build/vavehero.bin > "$OUT/old_app.bin"
 python3 tools/fm1pkg_make.py "$OUT/old_app.bin" build/loader/ota.bin "$OUT/old.fwsc" >/dev/null
 $CC -o "$OUT/ldr_screen_test" tests/ldr_screen_test.c
 run "update loader's screen (from Skiff): UPDATE MODE, WRITING and its bar, UPDATE FAILED" "$OUT/ldr_screen_test" "$OUT"
 $CC -o "$OUT/ldr_test" tests/ldr_test.c
-run "update loader (FM-1): other app -> this build" "$OUT/ldr_test" "$OUT/old.fwsc" build/keyfall.fwsc
+run "update loader (FM-1): other app -> this build" "$OUT/ldr_test" "$OUT/old.fwsc" build/vavehero.fwsc
 
 # SMK-37: the OTA staging and the loader windows on SMK-layout packages (made here from the FM-1 binaries: only the
 # layout and the protocol are under test), then the real SMK packages
-python3 tools/fm1pkg_make.py --board smk37 build/keyfall.bin build/loader/ota.bin "$OUT/smk_new.fwsc" >/dev/null
+python3 tools/fm1pkg_make.py --board smk37 build/vavehero.bin build/loader/ota.bin "$OUT/smk_new.fwsc" >/dev/null
 python3 tools/fm1pkg_make.py --board smk37 "$OUT/old_app.bin" build/loader/ota.bin "$OUT/smk_old.fwsc" >/dev/null
 run "SMK-37 package layout (fm1pkg_make --board smk37): PRCT 0x9D000, stock region table" \
     python3 tests/smk_pkg_test.py "$OUT/smk_new.fwsc" "SMK-37 Pro_900"
@@ -53,10 +53,10 @@ $CC -DBOARD_SMK37=1 -o "$OUT/ldr_test_smk" tests/ldr_test.c
 run "update loader, SMK-37: app area 0x4000-0x9CFFF, protected ranges untouched" "$OUT/ldr_test_smk" "$OUT/smk_old.fwsc" "$OUT/smk_new.fwsc"
 found=0
 for m in ":SMK-37 Pro_95" "-elite:SMK-37 Elite_95" "-mke:MKE-P37_95"; do
-    for f in build/keyfall*-smk37${m%%:*}.fwsc; do
+    for f in build/vavehero*-smk37${m%%:*}.fwsc; do
         [ -f "$f" ] || continue
         found=1
-        v=$(echo "$f" | sed -n 's/.*keyfall-[0-9]\.\([0-9]\).*/\1/p'); v=${v:-0}
+        v=$(echo "$f" | sed -n 's/.*vavehero-[0-9]\.\([0-9]\).*/\1/p'); v=${v:-0}
         run "SMK-37 package $f: layout, identity ${m#*:}$v, the loader marker" python3 tests/smk_pkg_test.py "$f" "${m#*:}$v"
     done
 done

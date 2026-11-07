@@ -1,4 +1,4 @@
-# KEYFALL on the host: the splash, the DEMO (FX: ENGINE TOUR from bar 41 on autoplay), the songs, a song (NEON
+# VaveHero on the host: the splash, the DEMO (FX: ENGINE TOUR from bar 41 on autoplay), the songs, a song (NEON
 # CARRIER, MED) with its banner and count, HOME, then MIDI MODE with the song channels (D3) and a keyswitch (D6)
 600 shot
 800 btn 2

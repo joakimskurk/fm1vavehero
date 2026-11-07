@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Copyright (C) 2026 Joakim (joakimskurk) */
-/* KEYFALL's synthwave engine in fixed point: the reference's WebAudio engine (reference/keyfall.html, "sound") as
+/* VaveHero's synthwave engine in fixed point: the reference's WebAudio engine (reference/vavehero.html, "sound") as
  * the FM-1 can run it in its audio interrupt. The patches and the drum kits come from the reference through
  * tools/gen_kf_tables.mjs (firmware/gen/kf_tables.h); this file is the machinery.
  *

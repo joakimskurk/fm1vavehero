@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Copyright (C) 2026 Joakim (joakimskurk) */
-/* KEYFALL's drawing on Dinghy's canvas (gfx.c), the whole screen at once (CV_MAX 240 x 240): the reference's
- * pixel shapes (reference/keyfall.html, "pixel shapes", "the highway", "Terminus"), in integers.
+/* VaveHero's drawing on Dinghy's canvas (gfx.c), the whole screen at once (CV_MAX 240 x 240): the reference's
+ * pixel shapes (reference/vavehero.html, "pixel shapes", "the highway", "Terminus"), in integers.
  *
  *   colours   0xRRGGBB as the reference writes them; kmix() is its mix(), c565() the screen's
  *   text      Terminus, alpha-blended onto what is there (the reference's text, textOut, textC, textR), scale 1 or 2
@@ -170,7 +170,7 @@ static char *knum(char *p, uint32_t v, int32_t pad)   /* decimal, zero-padded to
     return p;
 }
 
-/* ---- the highway (reference/keyfall.html, "the highway"): HIT 190, TOPY 40, lanes from 4 to 236 (29 px), the eye 3
+/* ---- the highway (reference/vavehero.html, "the highway"): HIT 190, TOPY 40, lanes from 4 to 236 (29 px), the eye 3
  * deep; a row's scale s = (y - HY) / (HIT - HY), the depth's row Y(z) = HY + (HIT - HY) 3 / (3 + z) */
 #define KH_HIT 190
 #define KH_TOPY 40
