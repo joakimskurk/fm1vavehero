@@ -51,12 +51,16 @@ I M-VAVEs egen firmware er de seks første svarte tangentene **OP1–OP6**. Det 
 
 ### Notebanen
 
-- **Ett spillvindu er én oktav:** åtte baner, én per hvit tangent (C–C). Svarte toner faller som mørke kapsler
-  på skillelinjene mellom banene, akkurat der den svarte tangenten sitter.
-- Nederst på skjermen er det en tangentstripe med to rader kapsler, formet som FM-1s egne tangenter, så øyet
-  finner tangenten raskt.
-- **Oktavskift:** et lilla OCT+- eller OCT−-bånd kommer ned banen. Trykk knappen i takt, så glir vinduet. Slik
-  dekker en låt hele det 27 tangenter brede klaviaturet uten at banene blir for smale.
+- **Bare de hvite tangentene spilles** ([beslutning D1](DECISIONS.md)). Ett spillvindu er én oktav: åtte baner,
+  én per hvit tangent fra C til C. De svarte tangentene sitter i en egen rad på FM-1. Der er de ikke med i spillet:
+  de gir ingen poeng og ingen straff, og de er ledige til funksjoner senere.
+- **Hvite tangenter betyr ikke bare C-dur.** Spillet kan transponere lyden, så de hvite tangentene følger låtas
+  toneart. En låt i Es-dur spilles med C-dur-grep og høres i Es. Modusene får man ved å velge grunntone: A-moll,
+  D-dorisk, E-frygisk og så videre.
+- Nederst på skjermen står åtte kapsler, formet som FM-1s hvite tangenter, med LED-stripa inni. Den lyser og gløder
+  som LED-en på tangenten, så øyet finner tangenten raskt.
+- **Oktavskift:** et lilla OCT+- eller OCT−-bånd kommer ned banen. Trykk knappen i takt, så flytter vinduet seg en
+  oktav. Slik får en låt større toneomfang uten at banene blir for smale.
 - **Haler** er toner du holder. **Akkorder** er toner på samme linje, bundet sammen med en tynn strek.
 
 ### Nivåer: flere tangenter, ikke bare flere toner
@@ -64,9 +68,9 @@ I M-VAVEs egen firmware er de seks første svarte tangentene **OP1–OP6**. Det 
 | Nivå | Tangenter | Innhold |
 |---|---|---|
 | EASY | 5 hvite (C–G, én håndstilling) | Enkeltoner, ingen skift |
-| MED | Hele oktaven C–C, noen svarte | Toakkorder, haler, et og annet OCT-skift |
-| HARD | Alle 12 toner i vinduet | Treklanger, raske skift, sweep-partier |
-| EXP | Alle 27 tangenter, flat bane (15 px per hvit tangent, som minikeyboardet i RoboSeq) | Alt |
+| MED | Hele oktaven C–C, 8 hvite | Toakkorder, haler, et og annet OCT-skift |
+| HARD | Hele oktaven, 8 hvite | Raske løp, treklanger, hyppige skift, sweep-partier |
+| EXP | Alle 16 hvite tangenter, F3–G5, på en flat bane (14,5 px per bane) | Alt |
 
 Nivåene kan genereres fra én MIDI-fil: tonene flyttes inn i vinduet, akkorder tynnes ut, og rytmen kvantiseres.
 

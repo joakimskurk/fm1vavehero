@@ -1,7 +1,7 @@
 # KEYFALL for M-VAVE FM-1
 
 *Arbeidstittel.* Et rytmespill i Guitar Hero-sjangeren for FM-1. Tonene glir ned en notebane, du spiller dem på de
-27 tangentene, og LED-ene i tangentene viser hva som kommer. To spillere med hvert sitt FM-1 kan spille mot
+hvite tangentene, og LED-ene i tangentene viser hva som kommer. To spillere med hvert sitt FM-1 kan spille mot
 hverandre. Tenkt som en Dinghy 0.4-app, i samme familie som [RoboSeq](https://github.com/joakimskurk/fm1roboseq),
 [Star Distroyer](https://github.com/joakimskurk/fm1stardistroyer) og [SkurkyMello](https://github.com/joakimskurk/fm1mello).
 
@@ -11,8 +11,8 @@ hverandre. Tenkt som en Dinghy 0.4-app, i samme familie som [RoboSeq](https://gi
 
 ## Prøv det
 
-Åpne [`reference/keyfall.html`](reference/keyfall.html) i en nettleser og trykk Enter. Tangentene C4–C5 ligger på
-`A W S E D F T G Y H U J K`, OCT− og OCT+ på `Z` og `X`, og FX (OP BOOST) på mellomromstasten. Du kan også bruke et
+Åpne [`reference/keyfall.html`](reference/keyfall.html) i en nettleser og trykk Enter. De hvite tangentene C4–C5 ligger
+på `A S D F G H J K`, OCT− og OCT+ på `Z` og `X`, og FX (OP BOOST) på mellomromstasten. Du kan også bruke et
 MIDI-keyboard (Chrome og Edge), eller klikke og ta på panelet. Mer i [reference/README.md](reference/README.md).
 
 ## To spillere, to FM-1-er
