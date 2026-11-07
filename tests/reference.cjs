@@ -86,7 +86,7 @@ async function choose(page, song, level) {
   await waitBeat(a.page, 8.03);
   const after = await a.page.evaluate(() => {                    /* C4, stamped exactly 80 ms after it was due */
     const p = window.KF.play, bms = 60000 / p.bpm, ts = performance.now() - (p.beat - 8) * bms + 80 + window.KF.G.offset;
-    window.KF.keyDownK('test-late', 7, ts); window.KF.releaseNote('test-late', ts + 50);
+    window.KF.pressKey('test-late', 7, ts, 'test'); window.KF.releaseNote('test-late', ts + 50);
     return { state: p.notes[0].state, judge: p.judge && p.judge.text, combo: p.combo };
   });
   check(probe.pitch === 60 && after.state === 'hit' && after.judge === 'GOOD', `C4 80 ms late is GOOD: ${JSON.stringify(after)}`);
@@ -97,11 +97,44 @@ async function choose(page, song, level) {
   await waitBeat(a.page, 11.93);                                 /* G4 is due at beat 12 (bar 3, beat 0)... */
   const black = await a.page.evaluate(() => {                    /* ...and a black key (C#4) next to it changes nothing */
     const p = window.KF.play, before = { combo: p.combo, judge: p.judge && p.judge.text, t0: p.judge && p.judge.t0 };
-    window.KF.keyDownK('test-black', 8, performance.now()); window.KF.releaseNote('test-black', performance.now());
+    window.KF.pressKey('test-black', 8, performance.now(), 'test'); window.KF.releaseNote('test-black', performance.now());
     return { before, combo: p.combo, judge: p.judge && p.judge.text, same: (p.judge && p.judge.t0) === before.t0 };
   });
   check(black.same && black.combo === black.before.combo, `D1: a black key in play is ignored: ${JSON.stringify(black)}`);
   await a.page.keyboard.press('Escape');
+
+  /* 2b. SPREAD (D2): every other white key. Autoplay is still perfect, the LEDs light only the spread keys,
+     a key between them does nothing, and the spread key of the lane hits. */
+  await a.page.evaluate(() => { document.getElementById('spread').click(); window.KF.setAuto(true); });
+  check(await a.page.evaluate(() => window.KF.G.spread) === true, 'SPREAD turns on');
+  await choose(a.page, 1, 1); await a.page.keyboard.press('Enter');
+  await waitBeat(a.page, 8);                                     /* after the intro, when the notes come */
+  let ledsOk = true, seen = new Set();
+  for (let i = 0; i < 40; i++) {
+    const r = await a.page.evaluate(() => ({ L: window.KF.leds(), lay: window.KF.LAYOUTS.spread }));
+    r.L.forEach((v, k) => { if (v) { seen.add(k); if (!r.lay.includes(k)) ledsOk = false; } });
+    await sleep(120);
+  }
+  check(ledsOk && seen.size >= 4, `SPREAD: the LEDs light only F3 A3 C4 E4 G4 B4 D5 F5 (saw keys ${[...seen].sort((x, y) => x - y).join(' ')})`);
+  await screen(a.page, '05c-spread'); await a.page.screenshot({ path: path.join(OUT, '05d-page-spread.png') });
+  await waitResults(a.page);
+  L = await a.page.evaluate(() => window.KF.G.last);
+  check(L.acc === 100 && L.counts.M === 0, `NEON CARRIER MED with SPREAD on autoplay: ${L.acc.toFixed(1)}%`);
+  await a.page.evaluate(() => window.KF.setAuto(false));
+  await a.page.keyboard.press('Escape'); await choose(a.page, 0, 1); await a.page.keyboard.press('Enter');
+  await waitBeat(a.page, 7.97);
+  const sp = await a.page.evaluate(() => {                       /* C4 is due at beat 8: lane 0, the F3 key with SPREAD */
+    const p = window.KF.play, bms = 60000 / p.bpm, at = performance.now() - (p.beat - 8) * bms + window.KF.G.offset;
+    const t0 = p.judge && p.judge.t0;
+    window.KF.pressKey('sp-gap', 9, at, 'test'); window.KF.releaseNote('sp-gap', at + 30);       /* D4: between two spread keys */
+    const gapIgnored = (p.judge && p.judge.t0) === t0 && p.notes[0].state === 'pending';
+    window.KF.pressKey('sp-hit', 0, at, 'test'); window.KF.releaseNote('sp-hit', at + 30);       /* F3: lane 0 */
+    return { gapIgnored, state: p.notes[0].state, judge: p.judge && p.judge.text };
+  });
+  check(sp.gapIgnored && sp.state === 'hit' && sp.judge === 'PERFECT', `SPREAD: the key between does nothing, F3 plays lane 0: ${JSON.stringify(sp)}`);
+  await a.page.keyboard.press('Escape');
+  await a.page.evaluate(() => document.getElementById('spread').click());
+  check(await a.page.evaluate(() => window.KF.G.spread) === false, 'SPREAD turns off');
 
   /* 3. against the bot: the protocol's receive path, and a winner */
   await a.page.evaluate(() => { document.querySelector('input[name=link][value=bot]').click(); window.KF.setAuto(true); });
