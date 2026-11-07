@@ -1,28 +1,47 @@
 # KEYFALL for M-VAVE FM-1
 
 *Arbeidstittel.* Et rytmespill i Guitar Hero-sjangeren for FM-1. Tonene glir ned en notebane, du spiller dem på de
-27 tangentene, og LED-ene i tangentene viser hva som kommer. Tenkt som en Dinghy 0.4-app, i samme familie som
-[RoboSeq](https://github.com/joakimskurk/fm1roboseq), [Star Distroyer](https://github.com/joakimskurk/fm1stardistroyer)
-og [SkurkyMello](https://github.com/joakimskurk/fm1mello).
+27 tangentene, og LED-ene i tangentene viser hva som kommer. To spillere med hvert sitt FM-1 kan spille mot
+hverandre. Tenkt som en Dinghy 0.4-app, i samme familie som [RoboSeq](https://github.com/joakimskurk/fm1roboseq),
+[Star Distroyer](https://github.com/joakimskurk/fm1stardistroyer) og [SkurkyMello](https://github.com/joakimskurk/fm1mello).
 
-> **Status: idéstadiet.** Det som finnes er en konseptbeskrivelse og en mockup. Ingen kode ennå.
+> **Status: nettleserreferanse 0.1, spillbar.** Det finnes ingen firmware ennå. Planen står i [ROADMAP.md](ROADMAP.md).
 
-<p align="center"><img src="mockup/keyfall-mockup.png" width="900" alt="Keyfall-mockup: FM-1 med spillet på skjermen"></p>
+<p align="center"><img src="docs/screens/reference-page.png" width="820" alt="Referansen i nettleseren: skjermen og FM-1-panelet med tangent-LED-er"></p>
+
+## Prøv det
+
+Åpne [`reference/keyfall.html`](reference/keyfall.html) i en nettleser og trykk Enter. Tangentene C4–C5 ligger på
+`A W S E D F T G Y H U J K`, OCT− og OCT+ på `Z` og `X`, og FX (OP BOOST) på mellomromstasten. Du kan også bruke et
+MIDI-keyboard (Chrome og Edge), eller klikke og ta på panelet. Mer i [reference/README.md](reference/README.md).
+
+## To spillere, to FM-1-er
+
+Protokollen for to spillere er bakt inn fra start ([docs/link.md](docs/link.md)). Den består av MIDI-meldinger på
+kanal 16 og klokke, de eneste meldingene en Dinghy-app mottar. I referansen virker den mellom to vinduer og mot en
+bot. Målet er én USB-C-kabel mellom to FM-1-er, men det krever at det ene FM-1 kan være USB-vert. Det avklares i en
+egen forstudie i fase 4. Via en datamaskin virker det uansett.
 
 <p align="center">
-  <img src="mockup/screens/songs.png" width="240" alt="Låtvalg">
-  <img src="mockup/screens/play.png" width="240" alt="Spill">
-  <img src="mockup/screens/op-boost.png" width="240" alt="OP BOOST">
-  <img src="mockup/screens/results.png" width="240" alt="Resultat">
+  <img src="docs/screens/link-p1.png" width="240" alt="P1 i en kamp, P2s poeng i toppstripa">
+  <img src="docs/screens/link-p2.png" width="240" alt="P2 i samme kamp">
+  <img src="docs/screens/oct-band.png" width="240" alt="Et oktavskift på vei ned banen">
 </p>
 
-- **[docs/konsept.md](docs/konsept.md):** idéskissen, med spillmekanikk, nivåer, moduser, tekniske notater og
-  neste steg.
-- **[mockup/](mockup/):** `keyfall-mockup.html` tegner mockupen. Skjermene er tegnet piksel for piksel i
-  240 × 240 med Dinghys egne Terminus-bitmaps (`terminus.js`). `node mockup/render.cjs` lager PNG-ene på nytt
-  (krever Playwright).
+## Innhold
 
-Panelgeometrien i mockupen er hentet fra målene i
-[Quixotic7/MvaveFM1-Designer](https://github.com/Quixotic7/MvaveFM1-Designer). Terminus-fonten er lisensiert under
-SIL OFL 1.1 ([assets/fonts/Terminus-LICENSE.txt](assets/fonts/Terminus-LICENSE.txt)). Dette er et fanprosjekt og
-ikke et offisielt M-VAVE-produkt.
+| | |
+|---|---|
+| [docs/konsept.md](docs/konsept.md) | Idéskissen: spillmekanikk, nivåer, moduser og tekniske notater |
+| [docs/link.md](docs/link.md) | LINK: lagene fra nettleser til USB-C, og protokollen |
+| [ROADMAP.md](ROADMAP.md) | Fasene, med avkrysning |
+| [reference/](reference/) | Nettleserreferansen, fasit før porten |
+| [mockup/](mockup/) | Den første mockupen: enheten og fire skjermer (`node mockup/render.cjs` lager PNG-ene) |
+| [tests/reference.cjs](tests/reference.cjs) | Spiller referansen i Chromium og sjekker poeng, LINK og bot |
+
+<p align="center"><img src="mockup/keyfall-mockup.png" width="820" alt="Mockup: FM-1 med Keyfall på skjermen"></p>
+
+Panelgeometrien er hentet fra målene i [Quixotic7/MvaveFM1-Designer](https://github.com/Quixotic7/MvaveFM1-Designer).
+Låtene er egne komposisjoner. Terminus-fonten er lisensiert under SIL OFL 1.1
+([assets/fonts/Terminus-LICENSE.txt](assets/fonts/Terminus-LICENSE.txt)). Dette er et fanprosjekt og ikke et
+offisielt M-VAVE-produkt.
