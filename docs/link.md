@@ -46,10 +46,11 @@ klokkepulser.
 |---|---|---|---|
 | HELLO | `BF 64 v` (CC 100) | Begge, hvert sekund | Protokollversjon, nå 1 |
 | ID | `BF 65 id` (CC 101) | Begge, hvert sekund | Tilfeldig 1–126. Lavest blir P1 (boten er 127). Ved likhet trekker mottakeren nytt. |
-| SONG | `BF 66 n` (CC 102) | P1 | Låt |
+| SONG | `BF 66 n` (CC 102) | P1 | Låtens plass i P1s liste, bare til visning |
+| SONG-ID | `BF 69 hi` `BF 6A lo` (CC 105–106) | P1 | Låtens identitet: 14 bits hash av spillsporet og tempoet. P2 finner låta ut fra den, ikke ut fra plassen i lista. |
 | LEVEL | `BF 67 n` (CC 103) | P1 | 0 EASY, 1 MED, 2 HARD, 3 EXP |
 | SPEED | `BF 68 %` (CC 104) | P1 | Tempo i prosent, 50–100 |
-| START | `FA` | P1 | Begge starter låta nå. P2 bruker siste SONG, LEVEL og SPEED. |
+| START | `FA` | P1 | Begge starter låta nå. P2 bruker siste SONG-ID, LEVEL og SPEED. Har ikke P2 låta, vises `SONG NOT HERE` og P2 starter ikke. |
 | CLOCK | `F8` | P1 | 24 pulser per beat, fra START |
 | STOP | `FC` | P1 | Kampen avbrytes, begge går til SONGS |
 | SCORE | `BF 6E hi` `BF 6F mid` `BF 70 lo` (CC 110–112) | Begge | Poeng i tre 7-bits deler, opptil 2 097 151. Tas i bruk når `lo` kommer. |

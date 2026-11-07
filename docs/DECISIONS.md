@@ -44,3 +44,32 @@ så i en kamp kan den ene spilleren ha SPREAD på og den andre ikke.
 
 **Sjekkes av.** `tests/reference.cjs` spiller NEON CARRIER med SPREAD på autospill (100 %). Den sjekker også at
 LED-ene bare lyser på SPREAD-tangentene, at en tangent mellom to brukte ikke gjør noe, og at F3 spiller første bane.
+
+## D3 (2026-11-07): låtene er MIDI-filer, ett instrument per kanal
+
+**Beslutning.** En låt er en standard MIDI-fil (format 0 eller 1). Kanal 1 er spillsporet. Kanal 2 BASS, 3 PAD,
+4 ARP, 5 LEAD, 6 KEYS og 10 DRUMS (General MIDI) er bandet. Kanal 16 er satt av til LINK. CC 85 på kanal 1 markerer
+OP-fraser. Importen transponerer spillsporet til hvite tangenter (D1), legger inn oktavskift og lager EASY. De
+innebygde låtene er laget på samme måte (`tools/songs.py` skriver `songs/*.mid`) og går gjennom samme import. Hele
+reglen står i [songs.md](songs.md).
+
+**Hvorfor.** Låter skal kunne lages helt i en DAW, med verktøy som allerede finnes. Én kanal per instrument er
+vanlig MIDI-praksis, og den samme kanalfordelingen virker både for filer og for live-MIDI. Når DAW-en spiller inn i
+referansen, blir den en lydmodul der du hører låta som i spillet.
+
+**Sjekkes av.** `tests/reference.cjs`: de innebygde filene gir de samme notekartene og oktavskiftene som før. En
+testlåt i E-moll (format 0, running status) transponeres, får oktavskift, og spilles 100 % på autospill. Rapporten
+nevner den kromatiske tonen, den fjerde akkordtonen, kanal 7 og kanal 16. Live-MIDI går til riktig del per kanal.
+
+## D4 (2026-11-07): lydmotoren er synthwave
+
+**Beslutning.** Lydmotoren er laget for synthwave og retrowave: sagtann-pads med chorus, pulserende bass,
+arpeggio med tempo-delay (punktert åttedel), lead med vibrato, FM-piano, gated reverb på skarptromme og klapp,
+syndrum-tammer og mørk hall. Spillerens stemme kan være SYN LEAD (standard), BELL EP, BRASS eller GLASS.
+
+**Nivåer.** Målt i refrenget til NEON CARRIER, hver del alene: spillerens stemme −20 til −22 dB RMS, trommer −21,
+bass −24,5, pad og arpeggio −30. Hele miksen har en toppverdi på 0,75. Spillerens stemme skal ligge øverst eller
+likt med trommene. Den sjekken gjentas når lyden endres.
+
+**Hva det koster.** Mange oscillatorer per tone (fire per pad-tone). På FM-1 må motoren lages i fastkomma og måles i
+fm1-emu. Hvis den er for tung, blir pad-stemmene og hallen enklere først.

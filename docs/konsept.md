@@ -87,9 +87,15 @@ Nivåene kan genereres fra én MIDI-fil: tonene flyttes inn i vinduet, akkorder 
 - **Sweep-partier** er en egen mekanikk (gitarspillets whammy-bar finnes ikke her). En målbue vises, og du vrir
   **KNOB 1** inn i den og holder den der. Knotten styrer FM-modulasjonen i sanntid, så du hører at du treffer.
 
+### Lyden: synthwave
+
+Lydmotoren er laget for synthwave og retrowave ([D4](DECISIONS.md)): detunede sagtann-pads med chorus og stor hall,
+pulserende åttedelsbass, arpeggio med tempo-delay, en sagtann-lead, FM-piano, skarptromme og klapp med gated reverb,
+og syndrum-tammer. Spilleren velger sin egen stemme med KNOB 2 (TONE): SYN LEAD, BELL EP, BRASS eller GLASS.
+
 ### Lyden svarer
 
-- En lang combo gjør lyden gradvis lysere (modulatoren opp, litt mer feedback).
+- En lang combo gjør lyden gradvis lysere (filteret eller modulatoren åpner seg).
 - En bom demper tonen kort og gjør den litt ustemt, uten at kompet stopper.
 - Dette er hovedforskjellen fra en gitarkontroller: på FM-1 er instrumentet og spillet det samme.
 
@@ -129,8 +135,13 @@ Se `mockup/screens/` (240 × 240 px, nøyaktig som de ville tegnes): **SONGS**, 
   endrer seg.
 - **Lyd:** spillerens stemme og kompet går i samme lydavbrudd, med fastkomma og begrenset arbeid per blokk, som i
   de andre prosjektene. Spillogikken holdes i hovedløkka og kommuniserer med lyden gjennom `volatile`-variabler.
-- **Notekart:** et kompakt format, for eksempel 4 byte per tone (tid, tangent, lengde, flagg). 1000 toner tar
-  4 KB, så 20–30 låter kan ligge i firmwaren. Egne innspillinger går i slots.
+- **Låter er MIDI-filer** ([D3](DECISIONS.md), [songs.md](songs.md)). Hvert instrument har sin MIDI-kanal, og
+  spillsporet ligger på kanal 1. De lages i en DAW, prøves i referansen, og gjøres om til et kompakt notekart for
+  firmwaren, for eksempel 4 byte per tone (tid, tangent, lengde, flagg). 1000 toner tar 4 KB, så 20–30 låter kan
+  ligge i flash. Egne innspillinger går i slots.
+- **Lydmotoren på FM-1:** synthwave-lyden må lages i fastkomma. Det betyr sagtann med PolyBLEP, enkle filtre,
+  chorus, gated reverb og hall, og det må måles i fm1-emu. Star Distroyer har allerede oscillatorer, delay og
+  romklang i fastkomma på FM-1.
 - **Låter:** bruk egne komposisjoner, egne arrangementer av musikk som er fri for opphavsrett, eller låter fra
   miljøet. Ikke kommersielle låter.
 

@@ -28,6 +28,11 @@ på verten og i fm1-emu.
       matt ved feil.
 - [x] Latensinnstilling, med kalibrering fra siste rundes snittavvik
 - [x] LINK L0 og L1: protokoll versjon 1, to vinduer, og en bot som motstander
+- [x] D3: låtene er MIDI-filer, ett instrument per kanal, spillsporet på kanal 1 ([docs/songs.md](docs/songs.md)).
+      Importen transponerer, legger inn oktavskift og OP-fraser. Egne filer lastes inn og huskes, og malene kan lastes
+      ned. Låtens identitet går over LINK.
+- [x] D4: synthwave-lydmotor med pad, bass, arpeggio, lead, FM-piano, gated trommer, syndrum, delay og hall
+- [x] Live-MIDI per kanal: DAW-en spiller låta gjennom lydmotoren mens den lages
 - [x] Test: `node tests/reference.cjs` spiller begge låtene på autospill, prøver feil og sene trykk, bot-kamp og to vinduer
 
 ## Fase 2: referanse 0.2, spillfølelse
@@ -39,7 +44,7 @@ på verten og i fm1-emu.
 - [ ] Øvemodus: loop av et parti, «vent på riktig tangent», og en hjelpemelodi
 - [ ] Egen kalibreringsskjerm: trykk i takt med klikk
 - [ ] HARD-nivå og 2–3 nye låter
-- [ ] Notekartformat i JSON, og import fra MIDI
+- [ ] MIDI-import: tempoendringer, og CC for å overstyre de automatiske oktavskiftene
 - [ ] Lydsjekk: renders av referansen som fasit for porten, som i RoboSeq
 
 ## Fase 3: Dinghy-port
@@ -48,7 +53,9 @@ på verten og i fm1-emu.
 - [ ] Bane, toppstripe og knotterad i lerreter. Mål: minst 30 fps for banen.
 - [ ] Tangent-LED-er med `fm1_led_key` og `fm1_led_key_glow`, og SPREAD (GLO) lagret i innstillingene
 - [ ] Presis timing: tangentkanter leses i `LCD_IDLE` og stemples med `fm1_ticks()`
-- [ ] FM-motor og band i lydavbruddet (fastkomma, begrenset arbeid), sjekket mot referansens renders
+- [ ] Synthwave-motoren i lydavbruddet (fastkomma: sagtann med PolyBLEP, filtre, chorus, gated reverb, hall),
+      målt i fm1-emu og sjekket mot referansens renders
+- [ ] `tools/mid2keyfall`: MIDI-fil til kompakt notekart og bandspor for flash, med samme import som referansen
 - [ ] Notekart i firmware, og beste resultat i flash
 - [ ] Spillmotoren er klar for LINK fra første versjon: START, klokke og poeng går gjennom én modul
 - [ ] Vertstester, fm1-emu i strict mode, og `.fwsc` med commit og SHA-256
