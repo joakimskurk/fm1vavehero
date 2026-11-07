@@ -6,7 +6,7 @@ RoboSeq og SkurkyMello.
 
 | Fil | Versjon | SHA-256 |
 |---|---|---|
-| `vavehero.html` | REF 0.1.11 (tittelskjermens synthwave i hele spillet: banen på neongulvet under solnedgangen, tittelskjermens gulv er spillets bane, menyene i nattehimmelen, krom på de store ordene, D10) | `c50d4a2a85abc030cba8e454931394fc4f42a6889431b72fba9d1404444d4de6` |
+| `vavehero.html` | REF 0.1.11 (tittelskjermens synthwave i hele spillet: banen på neongulvet under solnedgangen, tittelskjermens gulv er spillets bane, menyene i nattehimmelen, krom på de store ordene, D10) | `38e17f2ce67eed9d923cd746311eb84e99cc4dd385ee978475886f958798145c` |
 
 En ny HTML er en ny referanse og får en egen commit med ny SHA-256 her.
 

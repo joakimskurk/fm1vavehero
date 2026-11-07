@@ -141,7 +141,7 @@ const P = { bg: '#0c041e', surf: '#1d0d38', surf2: '#2e1752', line: '#47226f', t
             cyan: '#5fe3ff', amber: '#ffb347', violet: '#b388ff', coral: '#ff6b5a', blue: '#5b9bff', gold: '#ffd36b', ink: '#1a1206', green: '#6ee7a0' };
 const KC = ['#5b9be0', '#f59a3a', '#f2e4c4', '#ee6048'];             /* KNOB 1-4 */
 /* the splash's: its horizon's neon, the floor's grid, the floor from the horizon to you, the ink round text on the art */
-const NEON = '#ff4fd8', GRID = '#ff3df0', FLOOR0 = '#1a0638', FLOOR1 = '#05010d', OUT = '#0b0220';
+const NEON = '#ff4fd8', GRID = '#ff3df0', FLOOR0 = '#1a0638', FLOOR1 = '#06020e', OUT = '#0b0220';
 const LANE = ['#2ee6c8', '#3fc1ff', '#5b9bff', '#8b7dff', '#b86cff', '#ff5fc8', '#ff7a59', '#ffb43d'];
 const laneCol = p => Number.isInteger(p) ? mix(LANE[p - 1], LANE[p], .5) : LANE[Math.floor(p)];
 const JCOL = { PERFECT: P.cyan, GREAT: P.blue, GOOD: P.violet, MISS: P.coral, WRONG: P.coral, SHIFT: P.violet, HOLD: P.green };
@@ -1390,7 +1390,7 @@ const SP_NOTES = [[0, 1], [1, 3], [2, 5], [3, 4], [4, 2], [4, 6], [6, 7], [7, 5]
 const spS = y => idiv((2 * y + 1 - 2 * SP.HY) * 4096, 2 * (SP.HIT - SP.HY));                  /* a row's scale, Q12 */
 const spXu = (b16, s) => 120 * 4096 + ((((SP.NL * 16 + b16 * SP.LW) - 120 * 16) * s) >> 4);   /* lane position b16 (1/16 lane) */
 const spScz = z => idiv(50331648, 12288 + z), spYq = z => SP.HY * 4096 + (SP.HIT - SP.HY) * spScz(z);
-const spFl = y => kmixI(0x1a0638, 0x05010d, idiv((y - SP.HZN) * 4096, 92));
+const spFl = y => kmixI(0x1a0638, 0x06020e, idiv((y - SP.HZN) * 4096, 92));
 const spNear = y => Math.min(4096, idiv((y - SP.HZN) * 4096, SP.HIT - SP.HZN)), spF = y => clamp(idiv((y - SP.HZN) * 4096, 16), 0, 4096);
 function drawSplash(ctx, now) {
   const ms = Math.floor(now), beat = idiv((ms % (8 * SP.BEAT)) * 4096, SP.BEAT), st = [0, 0, 0, 0, 0, 0, 0, 0], H = c => hexI(c);

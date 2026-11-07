@@ -33,7 +33,7 @@ typedef uint32_t rgb_t;
 #define K_NEON 0xff4fd8u
 #define K_GRID 0xff3df0u
 #define K_FLOOR0 0x1a0638u
-#define K_FLOOR1 0x05010du
+#define K_FLOOR1 0x06020eu
 #define K_OUT 0x0b0220u
 static const rgb_t KC[4] = {0x5b9be0u, 0xf59a3au, 0xf2e4c4u, 0xee6048u};
 static const rgb_t LANE[8] = {0x2ee6c8u, 0x3fc1ffu, 0x5b9bffu, 0x8b7dffu, 0xb86cffu, 0xff5fc8u, 0xff7a59u, 0xffb43du};
