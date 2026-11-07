@@ -141,11 +141,58 @@ async function choose(page, song, level) {
     check(r.peak < 1 && r.rms > .03, `${name}: 20 s rendered, peak ${r.peak.toFixed(3)}, RMS ${r.rms.toFixed(3)}`);
   }
   await a.page.screenshot({ path: path.join(OUT, '11-page.png') });
+
+  /* 1g. MIDI MODE (D5): a DAW plays into the FM-1 */
+  await a.page.evaluate(() => { window.KF.setAuto(false); window.KF.G.scr = 'songs'; window.KF.G.sel = window.KF.SONGS.length; });
+  await screen(a.page, '18-songs-midi-row');
+  await a.page.keyboard.press('Enter');
+  check(await a.page.evaluate(() => window.KF.G.scr === 'midi' && window.KF.MM.mode === 'LIVE'), 'the last row of SONGS opens MIDI MODE, LIVE');
+  const clk = await a.page.evaluate(() => {                     /* a DAW's clock at 120 BPM: 48 pulses a second, after START */
+    const t0 = performance.now(); window.KF.midiIn([0xFA], t0);
+    for (let i = 0; i < 48; i++) window.KF.midiIn([0xF8], t0 + i * 1000 / 48);
+    return { bpm: window.KF.MM.bpm, count: window.KF.MM.count, running: window.KF.MM.running };
+  });
+  check(Math.abs(clk.bpm - 120) < .5 && clk.count === 48 && clk.running, `MIDI clock: ${clk.bpm} BPM, ${clk.count} pulses, running`);
+  const live = await a.page.evaluate(() => {
+    const t = performance.now(), K = window.KF;
+    K.midiIn([0x91, 40, 100], t); K.midiIn([0x90, 64, 100], t); K.midiIn([0x99, 36, 110], t);
+    const r = { act: Object.keys(K.MM.act).map(Number).sort((a, b) => a - b).join(), ledE4: K.leds()[11] };
+    K.midiIn([0x81, 40, 0], t + 5); K.midiIn([0x80, 64, 0], t + 5);
+    K.pressKey('test-echo', 7, t, 'test'); K.releaseNote('test-echo', t + 10);
+    r.sent = K.MM.sent.slice(-2).map(m => m.join(' ')); return r;
+  });
+  check(live.act === '0,1,9' && live.ledE4 === 2, `LIVE: channels 1, 2 and 10 light up, and the DAW's E4 on channel 1 lights the E4 key: ${JSON.stringify(live)}`);
+  check(live.sent.join() === '144 60 100,128 60 0', 'the FM-1 key C4 goes out on channel 1 for the DAW to record: ' + live.sent.join(' | '));
+  await a.page.evaluate(() => { window.KF.midiIn([0x91, 45, 90], performance.now()); window.KF.midiIn([0x92, 57, 80], performance.now()); window.KF.midiIn([0x90, 61, 90], performance.now()); });
+  await screen(a.page, '19-midi-live');
+  await a.page.evaluate(() => { window.KF.midiIn([0x81, 45, 0], performance.now()); window.KF.midiIn([0x82, 57, 0], performance.now()); window.KF.midiIn([0x80, 61, 0], performance.now()); });
+  await a.page.keyboard.press('Enter');                          /* PLAY: PREVIEW */
+  const pv = await a.page.evaluate(() => {
+    const K = window.KF; K.setAuto(true);
+    const t = performance.now(), beat = K.play.beat, bms = 60000 / K.play.bpm;
+    K.midiIn([0x90, 60, 100], t); K.midiIn([0x90, 60, 0], t + bms * .5);                 /* C4 */
+    K.midiIn([0x90, 61, 100], t + bms * .5); K.midiIn([0x90, 61, 0], t + bms * .9);      /* C#4: a black key */
+    K.midiIn([0x90, 84, 100], t + bms); K.midiIn([0x90, 84, 0], t + bms * 3);            /* C6: a new window, a hold */
+    K.midiIn([0x91, 40, 100], t);                                                          /* the band, a bar late */
+    return { live: !!K.play.live, notes: K.play.notes.map(n => [Math.round((n.t - beat) * 10) / 10, n.pitch, n.hold]), ghosts: K.play.ghosts.length, octs: K.play.octs.length, pending: K.MM.pending.size };
+  });
+  check(pv.live && JSON.stringify(pv.notes.map(n => n.slice(0, 2))) === '[[4,60],[5,84]]' && pv.ghosts === 1 && pv.octs === 1 && pv.notes[1][2] === true,
+    `PREVIEW: channel 1 lands a bar ahead (C4, then C6 as a hold after an OCT shift), C#4 is shown as a warning: ${JSON.stringify(pv)}`);
+  await sleep(1400); await screen(a.page, '20-midi-preview');
+  await sleep(2600);
+  const pr = await a.page.evaluate(() => ({ P: window.KF.play.counts.P, M: window.KF.play.counts.M, S: window.KF.play.counts.S, combo: window.KF.play.combo }));
+  check(pr.P === 2 && pr.M === 0 && pr.S === 1, `PREVIEW: playing along on autoplay hits both notes and the shift: ${JSON.stringify(pr)}`);
+  await a.page.keyboard.press('Escape');
+  check(await a.page.evaluate(() => window.KF.G.scr === 'songs' && !window.KF.MM.on && !window.KF.play), 'HOME leaves MIDI MODE for SONGS');
+  await a.page.evaluate(() => { document.querySelector('input[name=link][value=bot]').click(); window.KF.G.sel = window.KF.SONGS.length; });
+  await a.page.keyboard.press('Enter');
+  check(await a.page.evaluate(() => window.KF.G.scr === 'songs' && !window.KF.MM.on), 'MIDI MODE stays shut while LINK is on (the clock and START would clash)');
+  await a.page.evaluate(() => { document.querySelector('input[name=link][value=off]').click(); window.KF.setAuto(false); });
   check(a.errors.length === 0, 'no page errors' + (a.errors.length ? ': ' + a.errors.join(' | ') : ''));
 
   /* 2. a wrong key breaks the combo, a late press is GOOD, not PERFECT */
-  await a.page.evaluate(() => window.KF.setAuto(false));
-  await a.page.keyboard.press('Escape'); await choose(a.page, 0, 1); await a.page.keyboard.press('Enter');
+  await a.page.evaluate(() => { window.KF.setAuto(false); window.KF.G.scr = 'songs'; });
+  await choose(a.page, 0, 1); await a.page.keyboard.press('Enter');
   await waitBeat(a.page, 7.5);
   const probe = await a.page.evaluate(() => {
     const p = window.KF.play, n = p.notes[0];               /* C4 at beat 8 */
