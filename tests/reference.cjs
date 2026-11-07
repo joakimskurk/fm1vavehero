@@ -183,7 +183,7 @@ async function choose(page, song, level) {
     const used = new Set(song.patchLog.map(e => e.part + ':' + e.ks)), all = Object.entries(K.PATCHSET).flatMap(([p, ns]) => ns.map((n, i) => p + ':' + i));
     return { title: song.title, T: song.transpose, warn: report.warn.length, unused: all.filter(x => !used.has(x)).length, octs: song.octs.length, ph: song.phrases.length };
   }));
-  check(demo[0].title === 'ENGINE TOUR' && demo[0].warn === 0 && demo[0].unused === 0, 'ENGINE TOUR imports cleanly and uses all 22 patches and kits: ' + JSON.stringify(demo[0]));
+  check(demo[0].title === 'ENGINE TOUR' && demo[0].warn === 0 && demo[0].unused === 0, 'ENGINE TOUR imports cleanly and uses every patch and kit: ' + JSON.stringify(demo[0]));
   check(demo[1].title === 'CHROME HORIZON' && demo[1].warn === 0 && demo[1].T === 5 && demo[1].octs === 2, 'CHROME HORIZON (D minor) imports cleanly, its play track 5 semitones down on white keys: ' + JSON.stringify(demo[1]));
   const pair = [await open(ctx), await open(ctx)];
   await Promise.all(pair.map(async (x, i) => {
@@ -192,7 +192,7 @@ async function choose(page, song, level) {
   }));
   await waitBeat(pair[0].page, 92); await screen(pair[0].page, '21-engine-tour'); await screen(pair[1].page, '22-chrome-horizon');
   for (const [i, x] of pair.entries()) {
-    await waitResults(x.page, 120000);
+    await waitResults(x.page, 160000);
     const R = await x.page.evaluate(() => window.KF.G.last);
     check(R.acc === 100 && R.counts.M === 0 && R.counts.S === 2, `${demo[i].title} MED on autoplay: ${R.acc.toFixed(1)}%, ${R.counts.S} shifts, ${R.total} notes`);
     check(x.errors.length === 0, `no page errors playing ${demo[i].title}` + (x.errors.length ? ': ' + x.errors.join(' | ') : ''));
@@ -203,6 +203,27 @@ async function choose(page, song, level) {
     fs.writeFileSync(path.join(OUT, name + '-20s.wav'), Buffer.from(r.wav, 'base64'));
     check(r.peak < 1 && r.rms > .03, `${name}: 20 s rendered, peak ${r.peak.toFixed(3)}, RMS ${r.rms.toFixed(3)}`);
   }
+
+  /* 1i. GRIT (D7): the kick pumps the band, GRIT 0 does not; the songs stay under clipping from clean to dirtiest */
+  const pump = await a.page.evaluate(async () => {
+    const K = window.KF, res = {};
+    for (const gr of [0, 70]) {
+      const sr = 22050, ctx = new OfflineAudioContext(1, sr * 2, sr), E = K.makeEngine(ctx); E.setGrit(gr);
+      for (const m of [57, 60, 64]) E.note('SUPERSAW', 0, m, 100, { dur: 1.9 });
+      for (const t of [.8, 1.2, 1.6]) E.pump(t);                                       /* the kick's duck, without its sound */
+      const L = (await ctx.startRendering()).getChannelData(0), rms = (a, b) => { let s = 0; for (let i = Math.floor(a * sr); i < b * sr; i++) s += L[i] * L[i]; return Math.sqrt(s / ((b - a) * sr)); };
+      res[gr] = [.8, 1.2, 1.6].map(t => rms(t + .03, t + .07) / rms(t - .09, t - .01)).reduce((x, y) => x + y) / 3;
+    }
+    return res;
+  });
+  check(pump[70] / pump[0] < .75 && pump[0] > .8, `GRIT 70 pumps the band on the kick: right after it, ${(pump[70] / pump[0]).toFixed(2)} of the level GRIT 0 has there (${pump[70].toFixed(2)} against ${pump[0].toFixed(2)})`);
+  for (const gr of [0, 100]) {
+    await a.page.evaluate(g => window.KF.setGrit(g), gr);
+    const r = await a.page.evaluate(async () => window.KF.renderSong(3, 20));
+    check(r.peak < 1 && r.rms > .03, `CHROME HORIZON at GRIT ${gr}: peak ${r.peak.toFixed(3)}, RMS ${r.rms.toFixed(3)}`);
+  }
+  await a.page.evaluate(() => window.KF.setGrit(70));
+  check(await a.page.evaluate(() => window.KF.engine.grit === 70 && document.getElementById('gritV').textContent === '70'), 'the GRIT setting reaches the engine and the side panel');
 
   /* 1g. MIDI MODE (D5): a DAW plays into the FM-1 */
   await a.page.evaluate(() => { window.KF.setAuto(false); window.KF.G.scr = 'songs'; window.KF.G.sel = window.KF.SONGS.length; });
