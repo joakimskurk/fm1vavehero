@@ -6,7 +6,7 @@ RoboSeq og SkurkyMello.
 
 | Fil | Versjon | SHA-256 |
 |---|---|---|
-| `keyfall.html` | REF 0.1.7 | `d42b5d124f4c62437f8730c9d8cdb37236084601033d34ade1bb05ac7dad566c` |
+| `keyfall.html` | REF 0.1.8 | `7b68a42b4932815b2360bb7ab072098208a5dba1762dcfb43556d65adb70774d` |
 
 En ny HTML er en ny referanse og får en egen commit med ny SHA-256 her.
 
@@ -43,9 +43,12 @@ pulstelling. I LIVE lyser kanal 1, 2 og 10, og E4 fra DAW-en tenner E4-LED-en. T
 PREVIEW havner kanal 1 én takt foran, med oktavskift og holdtone. C#4 vises som varsel, og autospill treffer begge
 tonene og skiftet. HOME går ut, og MIDI MODE holdes stengt mens LINK er på.
 
-Lydprøvene: ENGINE TOUR og CHROME HORIZON importeres uten advarsler. ENGINE TOUR bruker alle 22 patcher og
+Lydprøvene: ENGINE TOUR og CHROME HORIZON importeres uten advarsler. ENGINE TOUR bruker alle 29 patcher og
 trommesett, og CHROME HORIZON (D-moll) flyttes 5 halvtoner ned til hvite tangenter. Begge spilles 100 % på
 autospill, i to vinduer samtidig, og rendres uten klipping.
+
+GRIT (D7): ved GRIT 70 dukker bandet til omtrent halve nivået rett etter kicket, sammenlignet med GRIT 0.
+CHROME HORIZON klipper verken på GRIT 0 eller 100, og innstillingen når motoren og sidepanelet.
 
 Patcher (D6): de innebygde låtene bytter patch der nøkkelnotene sier det. Alle 22 patcher og trommesett høres alene,
 og ingen klipper. Testlåtas nøkkelnoter havner i rapporten, og den uten patch flagges. Live flytter nøkkelnoter kanalens
