@@ -51,7 +51,7 @@
     <div class="card">
       <h2>Slik spiller du</h2>
       <table>
-        <tr><td><kbd>A</kbd> <kbd>W</kbd> <kbd>S</kbd> … <kbd>K</kbd></td><td>Tangentene C4–C5 (hvite: A S D F G H J K, svarte: W E T Y U)</td></tr>
+        <tr><td><kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> … <kbd>K</kbd></td><td>De hvite tangentene C4–C5: A S D F G H J K. Bare de hvite spilles.</td></tr>
         <tr><td><kbd>Z</kbd> <kbd>X</kbd></td><td>OCT− / OCT+</td></tr>
         <tr><td><kbd>Mellomrom</kbd></td><td>FX: OP BOOST når måleren er full</td></tr>
         <tr><td><kbd>Enter</kbd></td><td>PLAY: start, pause</td></tr>
@@ -97,7 +97,7 @@ window.TERMINUS = {"S": {"h": 16, "pad": 2, "first": 32, "last": 126, "adv": [8,
 /* KEYFALL, the browser reference. Until the Dinghy port exists, this file is the authority for how Keyfall feels,
    times and sounds. Everything the FM-1 has is here: the 240 x 240 screen in Dinghy's Terminus fonts, the 27 keys
    with their two LED levels, the buttons and knobs, and the LINK protocol for two players. */
-const VERSION = 'REF 0.1';
+const VERSION = 'REF 0.1.1';
 
 /* ================================================================ small things */
 const $ = id => document.getElementById(id);
@@ -159,7 +159,7 @@ function pcap(ctx, x, y, w, h, c) {
   x = Math.round(x); y = Math.round(y); w = Math.max(1, Math.round(w)); h = Math.max(1, Math.round(h));
   const r = Math.min(h, w) / 2; ctx.fillStyle = c;
   for (let j = 0; j < h; j++) {
-    const dy = Math.abs(j + .5 - h / 2);
+    const yc = j + .5, dy = h <= w ? Math.abs(yc - h / 2) : yc < r ? r - yc : yc > h - r ? yc - (h - r) : 0;   /* standing capsules round at top and bottom */
     const ins = r < 2 ? 0 : Math.round(.92 * (dy >= r ? r : r - Math.sqrt(r * r - dy * dy)));
     ctx.fillRect(x + ins, y + j, Math.max(1, w - 2 * ins), 1);
   }
@@ -171,7 +171,6 @@ const HY = HIT - (HIT - TOPY) / (1 - RT), ZTOP = D / RT - D;
 const sc = z => D / (D + z), Y = z => HY + (HIT - HY) * sc(z), sAt = y => (y - HY) / (HIT - HY);
 const X = (u, s) => CX + (u - CX) * s, U = p => NL + p * LW;
 const fadeAt = y => clamp((y - TOPY) / 26, 0, 1);
-const BLACK_B = [1, 2, 4, 5, 6];
 const BLACK_S = new Set([1, 3, 6, 8, 10]);
 const S2P = [.5, 1, 1.5, 2, 2.5, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7.5];   /* semitone in the window -> lane position */
 const stripKey = s => BLACK_S.has(s) ? 'b' + S2P[s] : 'w' + (S2P[s] - .5);
@@ -191,7 +190,7 @@ function highwayBg(boost) {
     for (let b = 0; b <= 8; b++) {
       const edge = b === 0 || b === 8;
       let x = Math.round(X(U(b), s)); if (b === 8) x -= 1;
-      const col = edge ? (boost ? P.gold : '#4d4b96') : BLACK_B.includes(b) ? '#2b2a58' : '#1c1b38';
+      const col = edge ? (boost ? P.gold : '#4d4b96') : '#24234a';
       rect(ctx, x, y, 1, 1, mix(P.bg, col, f));
     }
   }
@@ -262,15 +261,16 @@ function burstDraw(ctx, cx, cy, col, age, big) {
   if (age < .5) { rect(ctx, cx - 3, cy - 1, 7, 2, '#ffffff'); rect(ctx, cx - 1, cy - 4, 2, 7, '#ffffff'); }
   ctx.globalAlpha = 1;
 }
-function keyStrip(ctx, st) {                                           /* the FM-1's two rows of capsule keys */
-  const cap = (cx, y, w, h, col, state, black) => {
-    const x = cx - w / 2;
-    if (state === 'lit') { pcap(ctx, x - 1, y - 1, w + 2, h + 2, mix(P.bg, col, .55)); pcap(ctx, x, y, w, h, col); rect(ctx, x + h / 2, y + 2, w - h, 1, mix(col, '#ffffff', .65)); }
-    else if (state === 'next') { pcap(ctx, x, y, w, h, col); pcap(ctx, x + 1, y + 1, w - 2, h - 2, mix(black ? '#1a1930' : '#2b2a46', col, .22)); }
-    else { pcap(ctx, x, y, w, h, black ? '#37366a' : '#3d3c64'); pcap(ctx, x + 1, y + 1, w - 2, h - 2, black ? '#191830' : '#2b2a46'); }
-  };
-  BLACK_B.forEach(b => cap(U(b), 193, 18, 12, laneCol(b), st['b' + b], true));
-  for (let i = 0; i < 8; i++) cap(U(i + .5), 207, 25, 14, LANE[i], st['w' + i], false);
+const LANE_K = [7, 9, 11, 12, 14, 16, 18, 19];                       /* lane -> the FM-1's key (C4 D4 E4 F4 G4 A4 B4 C5) */
+function keyStrip(ctx, st, led = []) {                                 /* the FM-1's white keys: tall capsules with their LED slit */
+  for (let i = 0; i < 8; i++) {
+    const col = LANE[i], state = st['w' + i], lv = led[i] || 0, w = 16, h = 26, x = Math.round(U(i + .5) - w / 2), y = 194;
+    if (state === 'lit') { pcap(ctx, x - 1, y - 1, w + 2, h + 2, mix(P.bg, col, .55)); pcap(ctx, x, y, w, h, col); }
+    else if (state === 'next') { pcap(ctx, x, y, w, h, col); pcap(ctx, x + 1, y + 1, w - 2, h - 2, mix('#2b2a46', col, .22)); }
+    else { pcap(ctx, x, y, w, h, '#3d3c64'); pcap(ctx, x + 1, y + 1, w - 2, h - 2, '#2b2a46'); }
+    const base = state === 'lit' ? mix(col, '#000000', .35) : '#1b1a30';
+    pcap(ctx, x + 6, y + 5, 4, 12, lv === 2 ? '#ffffff' : lv === 1 ? mix(base, '#ffffff', .4) : base);
+  }
 }
 function header(ctx, num, title, right, prog, rightCol = P.amber) {
   rect(ctx, 0, 0, 240, 18, P.surf);
@@ -344,17 +344,17 @@ const SONGS = [
 3: A4 0 1 | G4 1 .5 | F4 1.5 .5 | E4 2 2
 4: E4 0 .5 | G4 .5 .5 | C5 1 1 | B4 2 .5 | A4 2.5 .5 | G4 3 1
 5: D4 0 1 | G4 1 1 | B4 2 2
-6: E4 0 1 | A4 1 1 | C5 2 1 | E4 3 .5 | D#4 3.5 .5
+6: E4 0 1 | A4 1 1 | C5 2 1 | E4 3 .5 | D4 3.5 .5
 7: E4 0 .5 | F4 .5 .5 | A4 1 1 | G4 2 1 | F4 3 1
 8: E4 0 1 | C4 1 1 | G4 2 2
-9: D4+G4 0 2 | B4 2 1 | G#4 3 .5
+9: D4+G4 0 2 | B4 2 1 | A4 3 .5
 10: F5 0 1 | A5 1 1 | C6 2 1 | A5 3 1
 11: G5 0 1 | B5 1 .5 | A5 1.5 .5 | G5 2 2
 12: E5 0 .5 | G5 .5 .5 | B5 1 1 | G5 2 .5 | E5 2.5 .5 | D5 3 1
 13: E5 0 1 | A5 1 1 | A5+C6 2 2
 14: F5 0 .5 | G5 .5 .5 | A5 1 .5 | C6 1.5 1.5 | A5 3 1
 15: B5 0 1 | G5 1 1 | D5 2 1 | G5 3 1
-16: G5 0 1 | F#5 1 1 | E5 2 2
+16: G5 0 1 | D5 1 1 | E5 2 2
 17: A5 0 1 | C6 1 1 | B5 2 1 | G5 3 .5
 18: E4 0 1 | G4 1 .5 | C5 1.5 1.5 | B4 3 .5 | A4 3.5 .5
 19: G4 0 2 | D4 2 1 | G4 3 1
@@ -384,6 +384,7 @@ function buildChart(song, level) {
   notes.forEach((n, i) => {
     n.i = i; n.oct = octAt(song, n.t); n.s = n.pitch - 60 - 12 * n.oct; n.p = S2P[n.s];
     if (n.p === undefined) throw new Error('note outside the window: ' + JSON.stringify(n));
+    if (BLACK_S.has(mod12(n.s))) throw new Error('a black key in the chart (D1: white keys only): ' + JSON.stringify(n));
     n.hold = n.len >= 1.5; n.state = 'pending';
     const bar = Math.floor(n.t / 4); n.ph = phrases.findIndex(r => bar >= r.a && bar <= r.b); if (n.ph >= 0) phrases[n.ph].total++;
   });
@@ -666,6 +667,7 @@ function pressNote(id, k, pitch, s, ts) {
   ensureAudio(); if (!A.ctx) return;
   const p = PLAY;
   if (p && p.paused) return;
+  if (p && G.scr === 'play' && BLACK_S.has(mod12(s))) return;   /* D1: the black keys are not in the game: no note, no penalty, no sound */
   let o = { bright: 1 };
   if (p && G.scr === 'play') {
     const r = judgePress(p, id, pitch, s, ts);
@@ -717,7 +719,7 @@ function enc(id, d) {
     else if (!p2Follow()) { G.speed = clamp(G.speed + 10 * d, 50, 100); toast('SPEED ' + G.speed + '%'); }
   } else if (id === 'K4') { G.mix = clamp(G.mix + 10 * d, 0, 100); applyMix(); toast('MIX ' + G.mix + '/' + (100 - G.mix)); }
 }
-const KEYMAP = { KeyA: 7, KeyW: 8, KeyS: 9, KeyE: 10, KeyD: 11, KeyF: 12, KeyT: 13, KeyG: 14, KeyY: 15, KeyH: 16, KeyU: 17, KeyJ: 18, KeyK: 19 };
+const KEYMAP = { KeyA: 7, KeyS: 9, KeyD: 11, KeyF: 12, KeyG: 14, KeyH: 16, KeyJ: 18, KeyK: 19 };   /* the white keys C4..C5 */
 const KEYACT = { KeyZ: () => button('OCT-'), KeyX: () => button('OCT+'), Space: () => button('FX'), Enter: () => button('PLAY'),
   NumpadEnter: () => button('PLAY'), Escape: () => button('HOME'), Backspace: () => button('HOME'),
   ArrowUp: () => enc('SELECT', -1), ArrowDown: () => enc('SELECT', 1), ArrowLeft: () => enc('K1', -1), ArrowRight: () => enc('K1', 1),
@@ -901,10 +903,10 @@ function drawPlay(ctx, now) {
   rect(ctx, NL, HIT - 1, NR - NL, 2, boost ? P.gold : P.cyan);
   p.fx = p.fx.filter(f => now - f.t0 < 260);
   for (const f of p.fx) burstDraw(ctx, U(f.p), HIT - 1, f.col, (now - f.t0) / 260, f.big);
-  const keys = {};
+  const keys = {}, leds = ledStates(now).L;
   for (const e of pressed.values()) if (e.s >= 0 && e.s <= 12) keys[stripKey(e.s)] = 'lit';
   for (const n of p.notes) { if (n.t > beat + 1) break; if (n.state === 'pending' && n.t >= beat - .1) { const k = stripKey(n.s); if (!keys[k]) keys[k] = 'next'; } }
-  keyStrip(ctx, keys);
+  keyStrip(ctx, keys, LANE_K.map(k => leds[k]));
   if (p.judge && now - p.judge.t0 < 450) {
     const y = 150 - Math.round((now - p.judge.t0) / 450 * 4);
     textOut(ctx, 'S', Math.round(CX - tw('S', p.judge.text) / 2), y, p.judge.text, JCOL[p.judge.text], P.bg);
@@ -973,7 +975,7 @@ const pan = $('panel'), px = pan.getContext('2d'), PW = 760, PH = 236;
 const WHITE_X = [71, 119, 167, 215, 264, 312, 360, 408, 456, 504, 553, 601, 649, 697, 745, 794];
 const BLACK_X = [95, 143, 191, 288, 336, 432, 480, 529, 625, 673, 769];
 const keyBlack = k => (0x54A >> ((k + 5) % 12)) & 1;
-const KS = 720 / 765, HINT = { 7: 'A', 8: 'W', 9: 'S', 10: 'E', 11: 'D', 12: 'F', 13: 'T', 14: 'G', 15: 'Y', 16: 'H', 17: 'U', 18: 'J', 19: 'K' };
+const KS = 720 / 765, HINT = { 7: 'A', 9: 'S', 11: 'D', 12: 'F', 14: 'G', 16: 'H', 18: 'J', 19: 'K' };
 const KEYGEO = []; { let w = 0, b = 0; for (let k = 0; k < 27; k++) { const bl = keyBlack(k), x0 = bl ? BLACK_X[b++] : WHITE_X[w++];
   KEYGEO.push({ k, black: !!bl, x: 20 + (x0 - 71) * KS, y: 56 + (bl ? 0 : 82 * KS), w: 42 * KS, h: 76 * KS }); } }
 const PBTN = [{ id: 'OCT-', x: 20, hint: 'Z' }, { id: 'OCT+', x: 96, hint: 'X' }, { id: 'FX', x: 512, hint: 'SPACE' }, { id: 'PLAY', x: 594, hint: 'ENTER' }, { id: 'HOME', x: 676, hint: 'ESC' }]
@@ -994,7 +996,7 @@ function ledStates(now) {
     for (const e of p.octs) if (e.state === 'pending') { const d = e.t - beat; if (d <= 2 && d >= -.5) B[e.dir > 0 ? 'OCT+' : 'OCT-'] = d <= .5 ? 2 : 1; }
     B.PLAY = mod12(Math.floor(beat * 4)) % 4 === 0 ? 2 : 0;
     B.FX = boosting(p) ? 2 : p.ops >= 6 ? (Math.floor(now / 125) % 2 ? 2 : 0) : 0;
-  } else if (G.scr === 'songs') for (let k = 7; k <= 19; k++) L[k] = 1;      /* landmarks: the window */
+  } else if (G.scr === 'songs') for (const k of LANE_K) L[k] = 1;             /* landmarks: the window's white keys */
   for (const e of pressed.values()) if (!p && e.k >= 0 && e.k < 27) L[e.k] = 2;
   return { L, B };
 }
@@ -1108,7 +1110,7 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-window.KF = { G, Link, Bot, SONGS, button, enc, startSong, buildChart, get play() { return PLAY; }, setAuto(v) { G.auto = !!v; $('auto').checked = G.auto; } };
+window.KF = { G, Link, Bot, SONGS, button, enc, startSong, buildChart, keyDownK, releaseNote, get play() { return PLAY; }, setAuto(v) { G.auto = !!v; $('auto').checked = G.auto; } };
 </script>
 </body>
 </html>
