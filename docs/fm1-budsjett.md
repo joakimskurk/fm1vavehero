@@ -71,6 +71,26 @@ mot 30 %, uten at det skal høres mye:
 
 Grit (D7) er billig: forvrengning og bitcrush er et tabelloppslag, og pumping er én multiplikasjon per frame.
 
+### Målt (firmware 0.1 under arbeid, 2026-11-07)
+
+Lydmotoren finnes nå i fastkomma (`firmware/src/kf_engine.h`) og er målt i fm1-emu i CI (`tools/emu_cpu.sh`):
+
+| Hva | Målt |
+|---|---|
+| Plattformen alene, stille (USB, tangenter, lydavbruddet uten lyd) | 2,8 % |
+| Et syntetisk verste tilfelle, alle delene på skitne patcher (første DEMO) | 43,9 %, 2390 instruksjoner per frame |
+| x86 mot brikken, samme kode | brikken teller omtrent 0,8 ganger x86 (callgrind) |
+
+Sangene er tyngre enn budsjettet over antok, fordi pad-ene har lange utklingninger (SUPERSAW har τ = 1 s). I
+ENGINE TOURs tyngste takter (41–52) var 24 stemmer i bruk, med omtrent 76 oscillatorer per frame. Derfor har
+motoren et **oscillatorbudsjett** på 48: er det sprengt, toner de stilleste utklingningene ut på 25 ms. En
+utklinging som står alene, for eksempel på slutten av en låt, får klinge helt ut. Med budsjettet er ENGINE TOURs
+finale beregnet til **omtrent 31 %** av brikken (x86 × 0,8), og DEMO-en måler nå akkurat den i fm1-emu.
+
+Lyden er sjekket mot referansen: alle 25 patcher og 4 trommesett ligger innenfor 1,5 dB og 25 % lysstyrke, de
+fleste innenfor 0,3 dB. Hver fjerde takt av de første 30 sekundene av alle fire låtene ligger innenfor 0,8 dB
+(`tests/run_keyfall.sh`).
+
 ## Grafikk
 
 - En hel skjerm er 240 × 240 × 2 byte = 115 KB over SPI. DMA sender 240 × 64 piksler på omtrent 3 ms, så hele

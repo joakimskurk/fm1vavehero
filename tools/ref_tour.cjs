@@ -5,13 +5,14 @@
 // (tests/kf/parity.py). Also the compressor's static curve (--comp), to fit kf_comp_gain.
 //   node tools/ref_tour.cjs [outdir]      -> outdir/ref-tour.json, ref-tour.wav (default build/audio)
 //   node tools/ref_tour.cjs --comp        the DynamicsCompressor's gain for a sine at -40..+6 dBFS
+//   node tools/ref_tour.cjs --songs [S]   each built-in song as renderSong plays it (S seconds, default 30): ref-songN.json
 const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
 
 const URL = 'file://' + path.resolve(__dirname, '..', 'reference', 'keyfall.html');
 const args = process.argv.slice(2);
-const OUT = path.resolve(args.find(a => !a.startsWith('--')) || path.join(__dirname, '..', 'build', 'audio'));
+const OUT = path.resolve(args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--songs') || path.join(__dirname, '..', 'build', 'audio'));
 fs.mkdirSync(OUT, { recursive: true });
 
 (async () => {
@@ -19,6 +20,32 @@ fs.mkdirSync(OUT, { recursive: true });
   const page = await browser.newPage();
   await page.goto(URL);
   await page.waitForFunction(() => window.KF && window.KF.makeEngine);
+  if (args.includes('--songs')) {                     /* each built-in song as renderSong plays it: its levels every 4 bars */
+    const secs = +(args[args.indexOf('--songs') + 1] || 30);
+    const res = await page.evaluate(async (secs) => {
+      const out = [];
+      for (let i = 0; i < 4; i++) {
+        const song = KF.SONGS[i], r = await KF.renderSong(i, secs), bin = atob(r.wav), n = (bin.length - 44) / 4, bar = 4 * 60 / song.bpm, rows = [];
+        const v = new DataView(new ArrayBuffer(bin.length)); for (let k = 0; k < bin.length; k++) v.setUint8(k, bin.charCodeAt(k));
+        for (let t0 = .05, k = 0; t0 + 4 * bar <= secs + 1e-6; t0 += 4 * bar, k++) {
+          const a = Math.round(t0 * 44100), b = Math.min(n, Math.round((t0 + 4 * bar) * 44100));
+          let sum = 0, dsum = 0, peak = 0, pl = 0, pr = 0;
+          for (let j = a; j < b; j++) { const l = v.getInt16(44 + 4 * j, true), rr = v.getInt16(46 + 4 * j, true); sum += l * l + rr * rr; dsum += (l - pl) ** 2 + (rr - pr) ** 2; pl = l; pr = rr; peak = Math.max(peak, Math.abs(l), Math.abs(rr)) }
+          sum /= 2 * (b - a) * 32768 * 32768; dsum /= 2 * (b - a) * 32768 * 32768;
+          rows.push({ name: `bars ${4 * k + 1}-${4 * k + 4}`, rms_db: +(10 * Math.log10(sum + 1e-12)).toFixed(2), peak: +(peak / 32768).toFixed(4), bright: +Math.sqrt(dsum / (sum + 1e-12)).toFixed(4) });
+        }
+        out.push({ title: song.title, rows, wav: r.wav });
+      }
+      return out;
+    }, secs);
+    res.forEach((s, i) => {
+      fs.writeFileSync(path.join(OUT, `ref-song${i}.json`), JSON.stringify(s.rows, null, 1) + '\n');
+      fs.writeFileSync(path.join(OUT, `ref-song${i}.wav`), Buffer.from(s.wav, 'base64'));
+      console.log(s.title, s.rows.map(r => r.rms_db.toFixed(1)).join(' '));
+    });
+    await browser.close();
+    return;
+  }
   if (args.includes('--comp')) {
     const rows = await page.evaluate(async () => {
       const out = [];

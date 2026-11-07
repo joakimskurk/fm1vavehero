@@ -29,6 +29,10 @@
 #endif
 
 #define KF_NV 24u                                /* voices */
+#ifndef KF_OSC_BUDGET
+#define KF_OSC_BUDGET 48u                        /* oscillators the voices may run at once; above it the quietest release
+                                                  * tails fade out fast (25 ms): the pads' long tails under new chords */
+#endif
 #define KF_NL 10u                                /* drum layers */
 #define KF_FS 44100u
 
@@ -86,6 +90,7 @@ static int32_t kf_tanh_q15(int32_t z)            /* tanh(z / 4096), Q15 */
 /* ---- the voices */
 typedef struct {
     uint8_t state;                               /* 0 free, 1 held, 2 released */
+    uint8_t fast;                                /* released and fading fast: the oscillator budget wants it */
     uint8_t patch, part, pitch;
     uint32_t age;
     int32_t t, rt, rel_at;                       /* ticks since the start; since the release; the release's tick */
@@ -300,6 +305,7 @@ static void kf_on(const kf_ev_t *e)
     p = &KF_PATCH[e->patch];
     v = kf_pick();
     v->state = 1;
+    v->fast = 0;
     v->patch = e->patch;
     v->part = e->part;
     v->pitch = e->pitch;
@@ -439,7 +445,7 @@ static void kf_voice_tick(kf_voice_t *v)
         if (v->t * 32 < p->att) { next = env + v->att_step; if (next > v->A) next = v->A; }
         else next = env + (int32_t)(((int64_t)((int32_t)(((int64_t)v->A * p->sus) >> 15) - env) * p->c_dec) >> 24);
     } else {
-        next = env - (int32_t)(((int64_t)env * p->c_rel) >> 24);
+        next = env - (int32_t)(((int64_t)env * (v->fast ? 1210000 : p->c_rel)) >> 24);   /* fast: 1 - exp(-T / 10 ms) */
         v->rt++;
     }
     envd = (next - env) >> 5;
@@ -490,19 +496,32 @@ static void kf_voice_tick(kf_voice_t *v)
         if (v->fval != v->fcoef) { kf_svf_coef(v->fval, p->k, &v->a1, &v->a2, &v->a3); v->fcoef = v->fval; }
         a1 = v->a1; a2 = v->a2; a3 = v->a3;
 
-        for (i = 0; i < KF_TICK; i++) buf[i] = 0;
-        for (o = 0; o < p->nosc; o++) {          /* the oscillators, one at a time over the tick */
-            uint32_t ph = v->ph[o], inc = v->inc[o], ri = v->rinc[o];
-            int32_t lv = p->lvl[o];
+        for (o = 0; o < p->nosc; ) {             /* the oscillators over the tick: equal saws together, the rest alone */
+            uint32_t ph = v->ph[o], inc = v->inc[o], ri = v->rinc[o], inc2 = inc << 1;
+            int32_t lv = p->lvl[o], first = o == 0;
             /* the PolyBLEP's window is a step either side of the wrap: q + inc < 2 inc catches both in one test,
              * and it is rare (two frames a period), so the common frame is a ramp and a multiply-add */
-            uint32_t inc2 = inc << 1;
+            if (p->wav[o] == 0u && o + 1u < p->nosc && p->wav[o + 1u] == 0u && p->lvl[o + 1u] == lv) {
+                /* two saws of one level (the detuned pairs): summed, then one multiply */
+                uint32_t ph1 = v->ph[o + 1u], inc1 = v->inc[o + 1u], ri1 = v->rinc[o + 1u], inc12 = inc1 << 1;
+                for (i = 0; i < KF_TICK; i++) {
+                    uint32_t q = ph + 0x80000000u, q1 = ph1 + 0x80000000u;
+                    int32_t y = (int32_t)(q >> 16) + (int32_t)(q1 >> 16) - 65536;
+                    if (__builtin_expect(q + inc < inc2, 0)) y += kf_blep(q, ri);
+                    if (__builtin_expect(q1 + inc1 < inc12, 0)) y += kf_blep(q1, ri1);
+                    if (first) buf[i] = y * lv; else buf[i] += y * lv;
+                    ph += inc; ph1 += inc1;
+                }
+                v->ph[o] = ph; v->ph[o + 1u] = ph1;
+                o += 2u;
+                continue;
+            }
             if (p->wav[o] == 0u) {                /* saw: 0 at phase 0, rising (WebAudio's); PolyBLEP at the step */
                 for (i = 0; i < KF_TICK; i++) {
                     uint32_t q = ph + 0x80000000u;
                     int32_t y = (int32_t)(q >> 16) - 32768;
                     if (__builtin_expect(q + inc < inc2, 0)) y += kf_blep(q, ri);
-                    buf[i] += y * lv;
+                    if (first) buf[i] = y * lv; else buf[i] += y * lv;
                     ph += inc;
                 }
             } else if (p->wav[o] == 1u) {         /* square: +1 then -1 (WebAudio's); PolyBLEP at both steps */
@@ -511,18 +530,20 @@ static void kf_voice_tick(kf_voice_t *v)
                     int32_t y = (int32_t)(q >> 31) * 65535 - 32768;   /* ph < 1/2: +1 */
                     if (__builtin_expect(ph + inc < inc2, 0)) y -= kf_blep(ph, ri);
                     if (__builtin_expect(q + inc < inc2, 0)) y += kf_blep(q, ri);
-                    buf[i] += y * lv;
+                    if (first) buf[i] = y * lv; else buf[i] += y * lv;
                     ph += inc;
                 }
             } else {                              /* triangle: 0 at phase 0, rising */
                 for (i = 0; i < KF_TICK; i++) {
                     int32_t d = (int32_t)(ph + 0x40000000u - 0x80000000u);
                     uint32_t ad = (uint32_t)(d ^ (d >> 31));
-                    buf[i] += (32768 - (int32_t)(ad >> 15)) * lv;
+                    int32_t y = (32768 - (int32_t)(ad >> 15)) * lv;
+                    if (first) buf[i] = y; else buf[i] += y;
                     ph += inc;
                 }
             }
             v->ph[o] = ph;
+            o++;
         }
         for (i = 0; i < KF_TICK; i++) {          /* the filter, the drive, the crushed copy, the level */
             int32_t v0 = buf[i] >> 12, v3 = v0 - ic2, v1, v2;
@@ -547,7 +568,7 @@ static void kf_voice_tick(kf_voice_t *v)
     v->env = next;
     v->t++;
     kf_pb_used |= 1u << v->patch;
-    if (v->state == 2u && v->t > v->rel_at && (v->rt > p->rel_end || next < (v->A >> 10) || next < 64)) v->state = 0;   /* -60 dB */
+    if (v->state == 2u && v->t > v->rel_at && (v->rt > p->rel_end || next < v->A / 100 || next < 64)) v->state = 0;   /* -40 dB: under the mix */
 }
 
 /* ---- a drum layer, a tick */
@@ -654,6 +675,20 @@ static void kf_render(int32_t *out, uint32_t n)
         }
         for (i = 0; i < KF_TICK; i++) P[i] = B[i] = D[i] = RV[i] = GT[i] = DL[i] = C[i] = 0;
 
+        /* the oscillator budget: the quietest release tails fade out fast while it is exceeded */
+        {
+            uint32_t osc = 0;
+            for (k = 0; k < KF_NV; k++)
+                if (kf_v[k].state && !kf_v[k].fast) osc += KF_PATCH[kf_v[k].patch].fm ? 1u + KF_PATCH[kf_v[k].patch].nmod : KF_PATCH[kf_v[k].patch].nosc;
+            while (osc > KF_OSC_BUDGET) {
+                kf_voice_t *q = 0;
+                for (k = 0; k < KF_NV; k++)
+                    if (kf_v[k].state == 2u && !kf_v[k].fast && kf_v[k].t >= kf_v[k].rel_at && (!q || kf_v[k].env < q->env)) q = &kf_v[k];
+                if (!q) break;
+                q->fast = 1;
+                osc -= KF_PATCH[q->patch].fm ? 1u + KF_PATCH[q->patch].nmod : KF_PATCH[q->patch].nosc;
+            }
+        }
         /* the voices, into their patches' buffers; then each patch to its bus and sends */
         for (k = 0; k < KF_NV; k++)
             if (kf_v[k].state) { kf_voice_tick(&kf_v[k]); voices++; }

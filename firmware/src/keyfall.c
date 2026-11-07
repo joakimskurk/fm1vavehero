@@ -7,7 +7,7 @@
  *   OCT- OCT+  the octave
  *   PRESETS    the patch; SELECT: the drum kit (MIDI channel 10)
  *   KNOB 1     GRIT (D7), KNOB 4 MIX (the player against the band), as the reference's
- *   PLAY       DEMO: the engine's worst case (kf_bench.h), every part on its gritty patch, looped
+ *   PLAY       DEMO: the engine's worst case (kf_bench.h): ENGINE TOUR from bar 41, looped
  *   MIDI in    the song channels (D3): 1 PLAY, 2 BASS, 3 PAD, 4 ARP, 5 LEAD, 6 KEYS, 10 DRUMS; notes 0-11 pick a
  *              channel's patch (D6); the clock sets the delay's tempo. USB or the TRS jack.
  *
@@ -20,6 +20,7 @@ static void app_idle(void);
 #define LCD_IDLE app_idle                       /* while the screen's DMA runs: MIDI in (platform.c) */
 #include "platform.c"
 #include "kf_engine.h"
+#include "kf_song.h"
 #include "kf_bench.h"
 
 static void app_audio(int32_t *out, uint32_t n) { kf_render(out, n); }

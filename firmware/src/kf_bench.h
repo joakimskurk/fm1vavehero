@@ -1,52 +1,38 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Copyright (C) 2026 Joakim (joakimskurk) */
 /* The engine's worst case, to measure it (tests/kf/kf_render.c stress; the firmware's DEMO, which fm1-emu times):
- * ENGINE TOUR's finale as docs/fm1-budsjett.md counts it. Every part on its gritty patch at once: FUZZ (the
- * player, bright), DIRT BASS in 8ths (overlapping), GRIT PAD (3 notes), CRUSH arpeggio in 16ths, FUZZ LEAD, GRIT EP
- * stabs (3 notes), the DIRT kit with 16th hats; 120 BPM, 4 bars, looped. */
+ * ENGINE TOUR from bar 41, its heaviest stretch (every part on its gritty patch, the pads' long tails, 24 voices
+ * busy), the band and the melody as the reference's renderSong plays them. */
 #pragma once
 #include "kf_engine.h"
+#include "kf_song.h"
 
-static uint8_t kf_bench_pid(const char *name)
+#define KF_BENCH_SONG 2u                         /* ENGINE TOUR */
+#define KF_BENCH_BEAT 160u                       /* bar 41 */
+static uint32_t kf_bench_mi;                     /* the melody's next note */
+static void kf_bench_start(uint32_t t0)          /* bar 41 sounds at frame t0 */
 {
-    uint32_t i, k;
-    for (i = 0; i < KF_NPATCH; i++) {
-        const char *a = KF_PATCH[i].name;
-        for (k = 0; a[k] && a[k] == name[k]; k++) {}
-        if (!a[k] && !name[k]) return (uint8_t)i;
+    const kf_song_t *s = &KF_SONG[KF_BENCH_SONG];
+    uint32_t from = KF_BENCH_BEAT * 96u;
+    kf_seq_start(s, 0, 100);
+    kf_seq.t0 = t0 - kf_seq_len(from);
+    while (kf_seq.bi < s->nband && s->band[kf_seq.bi].t < from) {   /* the keyswitches up to bar 41, nothing sounds */
+        const kf_bev_t *e = &s->band[kf_seq.bi++];
+        if (e->ks) kf_seq.patch[e->part] = (uint8_t)(e->ks - 1u);
     }
-    return 0;
+    for (kf_bench_mi = 0; kf_bench_mi < s->nchart[1] && s->chart[1][kf_bench_mi].t < from; kf_bench_mi++) {}
 }
-static uint32_t kf_bench_step;                   /* the next 16th to post */
-static uint32_t kf_bench_t0;                     /* its bar 1's frame */
-static void kf_bench_start(uint32_t t0) { kf_bench_step = 0; kf_bench_t0 = t0; kf_sched_clear(); kf_set_tempo(12000); }
-static void kf_bench_post(uint32_t upto)         /* post the 16ths that start before upto (frames) */
+static void kf_bench_post(uint32_t upto)
 {
-    static const uint8_t CH[4][3] = {{57, 60, 64}, {53, 57, 60}, {55, 59, 62}, {52, 55, 59}};
-    static uint8_t fuzz, dirt, gpad, crush, flead, gep, ok;
-    const uint32_t S16 = 5513u, SPB = 22050u;    /* frames: a 16th, a beat (120 BPM) */
-    if (!ok) {
-        fuzz = kf_bench_pid("FUZZ"); dirt = kf_bench_pid("DIRT BASS"); gpad = kf_bench_pid("GRIT PAD");
-        crush = kf_bench_pid("CRUSH"); flead = kf_bench_pid("FUZZ LEAD"); gep = kf_bench_pid("GRIT EP"); ok = 1;
+    const kf_song_t *s = &KF_SONG[KF_BENCH_SONG];
+    const kf_cnote_t *m = s->chart[1];
+    while (kf_bench_mi < s->nchart[1] && (int32_t)(kf_seq_frame(m[kf_bench_mi].t) - upto) < 0) {
+        uint32_t t = kf_seq_frame(m[kf_bench_mi].t);
+        kf_seq_post(t + 1u);
+        kf_sched_note(t, KF_P_PLAY, kf_seq_play_patch(), (uint32_t)(m[kf_bench_mi].pitch + s->transpose), 104,
+                      kf_seq_len(m[kf_bench_mi].len) * 19u / 20u);
+        kf_bench_mi++;
     }
-    for (;;) {
-        uint32_t st = kf_bench_step % 64u, t = kf_bench_t0 + kf_bench_step * 44100u / 8u, j;
-        const uint8_t *c = CH[st / 16u];
-        if ((int32_t)(t - upto) >= 0) break;
-        if (st % 16u == 0u) {                    /* a bar: the pad, the keys, the lead */
-            for (j = 0; j < 3u; j++) kf_sched_note(t, KF_P_PAD, gpad, c[j], 90, 4u * SPB * 98u / 100u);
-            for (j = 0; j < 3u; j++) kf_sched_note(t, KF_P_KEYS, gep, c[j] + 12u, 90, SPB * 3u / 2u);
-            kf_sched_note(t, KF_P_LEAD, flead, c[2] + 12u, 100, 2u * SPB);
-        }
-        kf_sched_note(t, KF_P_ARP, crush, c[(st % 16u) % 3u] + 12u, 90, S16 * 98u / 100u);
-        if (st % 2u == 0u) kf_sched_note(t, KF_P_BASS, dirt, c[0] - 24u, 100, S16 * 22u / 10u);
-        kf_drum(t, 3, 42, 80);
-        if (st % 4u == 0u) kf_drum(t, 3, 36, 110);
-        if (st % 8u == 4u) kf_drum(t, 3, 38, 105);
-        if (st % 4u == 2u) { kf_sched_flush(t + 1u); kf_note_on(t, KF_P_PLAY, fuzz, c[1] + 24u, 104, 0, 7000);
-                             kf_offs[kf_noffs].t = t + SPB * 9u / 10u; kf_offs[kf_noffs].part = KF_P_PLAY;
-                             kf_offs[kf_noffs].pitch = (uint8_t)(c[1] + 24u); kf_noffs++; }
-        kf_bench_step++;
-    }
-    kf_sched_flush(upto);
+    kf_seq_post(upto);
+    if (kf_seq.bi >= s->nband && kf_bench_mi >= s->nchart[1]) kf_bench_start(upto + 22050u);   /* the end: again */
 }

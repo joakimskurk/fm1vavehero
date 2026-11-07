@@ -3,8 +3,8 @@
 # Copyright (C) 2026 Joakim (joakimskurk), after Star Distroyer's tools/emu_cpu.sh
 # The engine's load on the chip, in fm1-emu (ROADMAP.md, phase 3: "first, measure the engine"): the audio
 # interrupt's share of the chip while KEYFALL's DEMO plays (kf_bench.h, the worst case), in instructions (the
-# emulator counts instructions, not cycles). Two runs: 1.6 s of silence, then 5.6 s with PLAY pressed at 1.6 s;
-# the difference is 4 s of the DEMO. The main loop spins in the emulator, so its count says nothing about the chip.
+# emulator counts instructions, not cycles). Two runs: 1.6 s of silence, then 9.6 s with PLAY pressed at 1.6 s;
+# the difference is 8 s of the DEMO: ENGINE TOUR's bars 41-44. The main loop spins in the emulator, so its count says nothing about the chip.
 #   tools/emu_cpu.sh build/keyfall.fwsc [label]
 #   FM1_EMU   the fm1-emu binary (default: ~/fm1-emu/target/release/fm1-emu; tools/emu_ci.sh builds it)
 #   EMU_MAX   fail if the share is above this many percent (default: report only)
@@ -14,12 +14,15 @@ PKG="$1"
 LABEL="${2:-$(basename "$PKG" .fwsc)}"
 EMU="${FM1_EMU:-$HOME/fm1-emu/target/release/fm1-emu}"
 SILENT_MS=1600
-PLAY_MS=4000
+PLAY_MS=8000
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 cp "$PKG" "$WORK/pkg.fwsc"
 emu() {    # ms, keys, log
-    (cd "$WORK" && mkdir -p work && "$EMU" --fwsc pkg.fwsc --ms "$1" ${2:+--keys "$2"} >"$3" 2>&1) || true
+    echo "emu_cpu: $1 ms${2:+, $2}"
+    s0=$(date +%s)
+    (cd "$WORK" && mkdir -p work && timeout "${EMU_TIMEOUT:-500}" "$EMU" --fwsc pkg.fwsc --ms "$1" ${2:+--keys "$2"} >"$3" 2>&1) || true
+    echo "emu_cpu: took $(( $(date +%s) - s0 )) s"
     grep -q "in an ISR" "$3" || { cat "$3"; echo "emu_cpu: no report"; exit 1; }
 }
 emu $((SILENT_MS + PLAY_MS)) "$SILENT_MS:PLAY" "$WORK/play.txt"

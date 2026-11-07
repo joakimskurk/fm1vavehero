@@ -10,6 +10,8 @@ if [ ! -x "$DIR/target/release/fm1-emu" ]; then
     git init -q "$DIR"
     git -C "$DIR" fetch -q --depth 1 https://github.com/joakimeriksson/fm1-emu "$REV"
     git -C "$DIR" checkout -q FETCH_HEAD
-    (cd "$DIR" && cargo build -q --release -p fm1-emu)
+    echo "emu_ci: building fm1-emu ($REV)"
+    (cd "$DIR" && timeout 900 cargo build -q --release -p fm1-emu)
 fi
-sh tools/emu_cpu.sh build/keyfall.fwsc
+echo "emu_ci: fm1-emu ready"
+timeout 1200 sh tools/emu_cpu.sh build/keyfall.fwsc

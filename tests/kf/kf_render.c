@@ -4,7 +4,8 @@
  *   kf_render tour OUT.wav OUT.json   every patch alone (4 notes) and every kit (one hit of each drum), as
  *                                     tools/ref_tour.cjs plays them in the reference: the levels to compare
  *   kf_render stress OUT.wav          the worst case: every part on its gritty patch at once, 8 s (the cost)
- *   kf_render impulse                 the hall's and the gate's impulse energy (their levels against the reference)
+ *   kf_render song N SECS OUT.wav [OUT.json]   a built-in song as the reference's renderSong plays it, its
+ *                                     levels every 4 bars
  * The tour is defined twice, here and in tools/ref_tour.cjs: keep them the same. */
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +13,7 @@
 #include <math.h>
 #define KF_POOL
 #include "kf_engine.h"
+#include "kf_song.h"
 #include "kf_bench.h"
 
 #define SR 44100
@@ -110,11 +112,48 @@ static void stress(const char *wavp)
     wav(wavp);
 }
 
+/* a song as the reference's renderSong plays it: the band from 0.05 s, and the melody (MED's chart, heard at
+ * pitch + transpose) on the player's voice of channel 1's keyswitches, velocity 104, .95 of each note */
+static void song(int idx, double secs, const char *wavp, const char *jsp)
+{
+    const kf_song_t *s = &KF_SONG[idx];
+    const kf_cnote_t *m = s->chart[1];
+    uint32_t f, mi = 0, n = s->nchart[1];
+    kf_set_grit(70);
+    kf_seq_start(s, fr(.05), 100);
+    for (f = 0; f < fr(secs); f += 256u) {
+        uint32_t upto = f + 2048u;
+        while (mi < n && (int32_t)(kf_seq_frame(m[mi].t) - upto) < 0) {   /* the melody, in time with the band */
+            uint32_t t = kf_seq_frame(m[mi].t);
+            kf_seq_post(t + 1u);
+            kf_sched_note(t, KF_P_PLAY, kf_seq_play_patch(), (uint32_t)(m[mi].pitch + s->transpose), 104, kf_seq_len(m[mi].len) * 19u / 20u);
+            mi++;
+        }
+        kf_seq_post(upto);
+        render_to(f + 256u);
+    }
+    if (jsp) {                                   /* the levels, every 4 bars */
+        FILE *js = fopen(jsp, "w");
+        double bar = 4 * 60.0 / (s->bpm_x100 / 100.0), t0;
+        int k = 0;
+        fprintf(js, "[\n");
+        for (t0 = .05; t0 + 4 * bar <= secs + 1e-6; t0 += 4 * bar, k++) {
+            char name[32];
+            snprintf(name, sizeof name, "bars %d-%d", 4 * k + 1, 4 * k + 4);
+            stats(js, name, t0, t0 + 4 * bar, t0 + 8 * bar > secs + 1e-6);
+        }
+        fprintf(js, "]\n");
+        fclose(js);
+    }
+    wav(wavp);
+}
+
 int main(int argc, char **argv)
 {
     kf_init();
     if (argc >= 4 && !strcmp(argv[1], "tour")) tour(argv[2], argv[3]);
     else if (argc >= 3 && !strcmp(argv[1], "stress")) stress(argv[2]);
-    else { fprintf(stderr, "usage: kf_render tour OUT.wav OUT.json | stress OUT.wav\n"); return 2; }
+    else if (argc >= 5 && !strcmp(argv[1], "song")) song(atoi(argv[2]), atof(argv[3]), argv[4], argc >= 6 ? argv[5] : 0);
+    else { fprintf(stderr, "usage: kf_render tour OUT.wav OUT.json | stress OUT.wav | song N SECS OUT.wav [OUT.json]\n"); return 2; }
     return 0;
 }
