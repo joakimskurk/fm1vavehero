@@ -6,7 +6,7 @@ RoboSeq og SkurkyMello.
 
 | Fil | Versjon | SHA-256 |
 |---|---|---|
-| `keyfall.html` | REF 0.1.6 | `2fecdeded7e6dc71cd90b83a8441ca4d530d2d492865b72e1a1710607f924451` |
+| `keyfall.html` | REF 0.1.7 | `d42b5d124f4c62437f8730c9d8cdb37236084601033d34ade1bb05ac7dad566c` |
 
 En ny HTML er en ny referanse og får en egen commit med ny SHA-256 her.
 
@@ -42,6 +42,10 @@ MIDI MODE (D5): den åpnes fra siste rad i låtlista, og en MIDI-klokke på 120 
 pulstelling. I LIVE lyser kanal 1, 2 og 10, og E4 fra DAW-en tenner E4-LED-en. Tangenten C4 sendes ut på kanal 1. I
 PREVIEW havner kanal 1 én takt foran, med oktavskift og holdtone. C#4 vises som varsel, og autospill treffer begge
 tonene og skiftet. HOME går ut, og MIDI MODE holdes stengt mens LINK er på.
+
+Lydprøvene: ENGINE TOUR og CHROME HORIZON importeres uten advarsler. ENGINE TOUR bruker alle 22 patcher og
+trommesett, og CHROME HORIZON (D-moll) flyttes 5 halvtoner ned til hvite tangenter. Begge spilles 100 % på
+autospill, i to vinduer samtidig, og rendres uten klipping.
 
 Patcher (D6): de innebygde låtene bytter patch der nøkkelnotene sier det. Alle 22 patcher og trommesett høres alene,
 og ingen klipper. Testlåtas nøkkelnoter havner i rapporten, og den uten patch flagges. Live flytter nøkkelnoter kanalens
