@@ -12,7 +12,8 @@ hverandre. Tenkt som en Dinghy 0.4-app, i samme familie som [RoboSeq](https://gi
 ## Prøv det
 
 Åpne [`reference/keyfall.html`](reference/keyfall.html) i en nettleser og trykk Enter. De hvite tangentene C4–C5 ligger
-på `A S D F G H J K`, OCT− og OCT+ på `Z` og `X`, og FX (OP BOOST) på mellomromstasten. Du kan også bruke et
+på `A S D F G H J K`, OCT− og OCT+ på `Z` og `X`, og FX (OP BOOST) på mellomromstasten. `Q` (GLO) slår på
+SPREAD, som legger banene på annenhver hvit tangent for store fingre. Du kan også bruke et
 MIDI-keyboard (Chrome og Edge), eller klikke og ta på panelet. Mer i [reference/README.md](reference/README.md).
 
 ## To spillere, to FM-1-er
@@ -26,6 +27,7 @@ egen forstudie i fase 4. Via en datamaskin virker det uansett.
   <img src="docs/screens/link-p1.png" width="240" alt="P1 i en kamp, P2s poeng i toppstripa">
   <img src="docs/screens/link-p2.png" width="240" alt="P2 i samme kamp">
   <img src="docs/screens/oct-band.png" width="240" alt="Et oktavskift på vei ned banen">
+  <img src="docs/screens/spread.png" width="240" alt="SPREAD: banene på annenhver hvit tangent">
 </p>
 
 ## Innhold

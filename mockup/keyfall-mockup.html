@@ -100,7 +100,7 @@
         <div class="ctl"><span class="k">KNOB 4</span><span>MIX: din stemme mot kompet.</span></div>
         <div class="ctl"><span class="k">MASTER</span><span>Volum.</span></div>
       </div>
-      <div class="note">Kompet (trommer, bass, akkorder) og stemmen din spilles av appens egen motor, slik som i RoboSeq og SkurkyMello. Bare de hvite tangentene spilles, så de svarte er ledige til funksjoner. LED-ene er hvite og har to nivåer (<code>fm1_led_key</code> og <code>fm1_led_key_glow</code>), så farge finnes bare på skjermen.</div>
+      <div class="note">Kompet (trommer, bass, akkorder) og stemmen din spilles av appens egen motor, slik som i RoboSeq og SkurkyMello. Bare de hvite tangentene spilles. De svarte vises, men har ingen funksjon. Med SPREAD brukes annenhver hvit tangent, for store fingre. LED-ene er hvite og har to nivåer (<code>fm1_led_key</code> og <code>fm1_led_key_glow</code>), så farge finnes bare på skjermen.</div>
     </div>
   </div>
 </div>
@@ -169,6 +169,7 @@ const HY = HIT - (HIT - TOPY) / (1 - RT);
 const sc = z => D / (D + z), Y = z => HY + (HIT - HY) * sc(z), sAt = y => (y - HY) / (HIT - HY);
 const X = (u, s) => CX + (u - CX) * s, U = p => NL + p * LW;
 const fadeAt = y => Math.max(0, Math.min(1, (y - TOPY) / 26));
+const BLACK_B = [1, 2, 4, 5, 6];
 
 function highway(ctx, o) {
   for (let y = TOPY; y < HIT; y++) {
@@ -182,7 +183,7 @@ function highway(ctx, o) {
     for (let b = 0; b <= 8; b++) {
       const edge = b === 0 || b === 8;
       let x = Math.round(X(U(b), s)); if (b === 8) x -= 1;
-      const c = edge ? (o.boost ? P.gold : '#4d4b96') : '#24234a';
+      const c = edge ? (o.boost ? P.gold : '#4d4b96') : BLACK_B.includes(b) ? '#2b2a58' : '#1c1b38';
       rect(ctx, x, y, 1, 1, mix(P.bg, c, f));
     }
   }
@@ -249,16 +250,17 @@ function burst(ctx, cx, cy, col, big) {
   if (big) { rect(ctx, cx - 3, cy - 1, 7, 2, '#ffffff'); rect(ctx, cx - 1, cy - 4, 2, 7, '#ffffff'); }
   else { rect(ctx, cx - 1, cy - 2, 2, 3, '#ffffff'); }
 }
-function keyStrip(ctx, o) {                                           /* the FM-1's white keys: tall capsules with their LED slit */
+function keyStrip(ctx, o) {                                           /* the FM-1's two rows of capsule keys */
   const st = o.keys || {};
-  for (let i = 0; i < 8; i++) {
-    const col = LANE[i], state = st['w' + i], w = 16, h = 26, x = Math.round(U(i + .5) - w / 2), y = 194;
-    if (state === 'lit') { pcap(ctx, x - 1, y - 1, w + 2, h + 2, mix(P.bg, col, .55)); pcap(ctx, x, y, w, h, col); }
-    else if (state === 'next') { pcap(ctx, x, y, w, h, col); pcap(ctx, x + 1, y + 1, w - 2, h - 2, mix('#2b2a46', col, .22)); }
-    else { pcap(ctx, x, y, w, h, '#3d3c64'); pcap(ctx, x + 1, y + 1, w - 2, h - 2, '#2b2a46'); }
-    const base = state === 'lit' ? mix(col, '#000000', .35) : '#1b1a30';
-    pcap(ctx, x + 6, y + 5, 4, 12, state === 'lit' ? '#ffffff' : state === 'next' ? mix(base, '#ffffff', .4) : base);
-  }
+  const cap = (cx, y, w, h, col, state, black) => {
+    const x = cx - w / 2;
+    if (state === 'lit') { pcap(ctx, x - 1, y - 1, w + 2, h + 2, mix(P.bg, col, .55)); pcap(ctx, x, y, w, h, col);
+      rect(ctx, x + h / 2, y + 2, w - h, 1, mix(col, '#ffffff', .65)); }
+    else if (state === 'next') { pcap(ctx, x, y, w, h, col); pcap(ctx, x + 1, y + 1, w - 2, h - 2, mix(black ? '#1a1930' : '#2b2a46', col, .22)); }
+    else { pcap(ctx, x, y, w, h, black ? '#37366a' : '#3d3c64'); pcap(ctx, x + 1, y + 1, w - 2, h - 2, black ? '#191830' : '#2b2a46'); }
+  };
+  BLACK_B.forEach(b => cap(U(b), 193, 18, 12, null, null, true));     /* shown where they sit, never in the game (D1) */
+  for (let i = 0; i < 8; i++) cap(U(i + .5), 207, 25, 14, LANE[i], st['w' + i], false);
 }
 function header(ctx, num, title, diff, prog) {
   rect(ctx, 0, 0, 240, 18, P.surf);
@@ -505,7 +507,7 @@ const LEGEND = [
   [22, 96,   '<b>Combo.</b> Hver tiende treff på rad øker multiplikatoren, opp til ×4.'],
   [232, 100, '<b>Sweep-parti.</b> Vri KNOB 1 inn i målbuen og hold den der. Det styrer FM-modulasjonen i sanntid.'],
   [160, 140, '<b>Notebanen.</b> Én bane per hvit tangent, og bare de hvite spilles. Haler er toner du holder, streker binder akkorder.'],
-  [226, 207, '<b>Trefflinja</b> over åtte kapsler formet som FM-1s hvite tangenter. LED-stripa i dem lyser som på tangentene.'],
+  [226, 199, '<b>Trefflinja</b> over to rader kapseltangenter, formet som FM-1s egne. De svarte vises der de sitter, men har ingen funksjon.'],
   [118, 231, '<b>Knotterad.</b> Hva KNOB 1–4 gjør akkurat nå, i knottenes farger.'],
 ];
 

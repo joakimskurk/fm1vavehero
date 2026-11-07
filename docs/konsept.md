@@ -52,13 +52,16 @@ I M-VAVEs egen firmware er de seks første svarte tangentene **OP1–OP6**. Det 
 ### Notebanen
 
 - **Bare de hvite tangentene spilles** ([beslutning D1](DECISIONS.md)). Ett spillvindu er én oktav: åtte baner,
-  én per hvit tangent fra C til C. De svarte tangentene sitter i en egen rad på FM-1. Der er de ikke med i spillet:
-  de gir ingen poeng og ingen straff, og de er ledige til funksjoner senere.
+  én per hvit tangent fra C til C. De svarte tangentene vises på skjermen der de sitter, men har ingen funksjon. De
+  gir ingen poeng og ingen straff.
+- **SPREAD for store fingre** ([D2](DECISIONS.md)): banene legges på annenhver hvit tangent (F3 A3 C4 E4 G4 B4 D5 F5),
+  med én ubrukt tangent mellom hver. Musikken er den samme, bare med mer plass mellom fingrene. SPREAD slås av og på
+  med GLO.
 - **Hvite tangenter betyr ikke bare C-dur.** Spillet kan transponere lyden, så de hvite tangentene følger låtas
   toneart. En låt i Es-dur spilles med C-dur-grep og høres i Es. Modusene får man ved å velge grunntone: A-moll,
   D-dorisk, E-frygisk og så videre.
-- Nederst på skjermen står åtte kapsler, formet som FM-1s hvite tangenter, med LED-stripa inni. Den lyser og gløder
-  som LED-en på tangenten, så øyet finner tangenten raskt.
+- Nederst på skjermen står tangentstripa i to rader, formet som FM-1s kapseltangenter: de svarte øverst, de hvite
+  under. Med SPREAD viser den de brukte tangentene med LED-stripe, og en mørk, ubrukt tangent mellom hver.
 - **Oktavskift:** et lilla OCT+- eller OCT−-bånd kommer ned banen. Trykk knappen i takt, så flytter vinduet seg en
   oktav. Slik får en låt større toneomfang uten at banene blir for smale.
 - **Haler** er toner du holder. **Akkorder** er toner på samme linje, bundet sammen med en tynn strek.

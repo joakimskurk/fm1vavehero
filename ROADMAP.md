@@ -18,7 +18,9 @@ på verten og i fm1-emu.
 - [x] Skjermen tegnet piksel for piksel i 240 × 240 med `FONT_S` og `FONT_L`
 - [x] To låter (FIRST LIGHT, NEON CARRIER) med EASY og MED. Nivåene lages av samme notekart.
 - [x] Notebane i perspektiv med én bane per hvit tangent, akkorder, hold-toner og oktavskift (OCT+/OCT−)
-- [x] D1: bare de hvite tangentene spilles (REF 0.1.1, [docs/DECISIONS.md](docs/DECISIONS.md))
+- [x] D1: bare de hvite tangentene spilles. De svarte vises, men har ingen funksjon (REF 0.1.2,
+      [docs/DECISIONS.md](docs/DECISIONS.md)).
+- [x] D2: SPREAD, annenhver hvit tangent for store fingre, med GLO
 - [x] Poeng: PERFECT ±35 ms, GREAT ±70 ms, GOOD ±110 ms, combo og multiplikator, WRONG for feil tangent
 - [x] OP-fraser og OP BOOST med FX
 - [x] Tangent-LED-er (lyser og glød) og knappe-LED-er, slik FM-1 ville vist dem
@@ -32,7 +34,7 @@ på verten og i fm1-emu.
 
 - [ ] Spilltest med ekte hender: banebredde, notefart og tidsvinduer
 - [ ] Sweep-partier med KNOB 1
-- [ ] Bestemme hva de svarte tangentene skal gjøre: ingenting, eller funksjoner som i RoboSeq (for eksempel FX)
+- [ ] Spilltest av SPREAD med ekte hender: er F3–F5 riktig, eller G3–G5?
 - [ ] Transponering per låt, så de hvite tangentene følger låtas toneart
 - [ ] Øvemodus: loop av et parti, «vent på riktig tangent», og en hjelpemelodi
 - [ ] Egen kalibreringsskjerm: trykk i takt med klikk
@@ -44,7 +46,7 @@ på verten og i fm1-emu.
 
 - [ ] `keyfall.c` på Dinghy 0.4: `APP_NAME "KEYFALL"`, egen `FELUCCA_ID`, `PLATFORM.md` med avvik fra upstream
 - [ ] Bane, toppstripe og knotterad i lerreter. Mål: minst 30 fps for banen.
-- [ ] Tangent-LED-er med `fm1_led_key` og `fm1_led_key_glow`
+- [ ] Tangent-LED-er med `fm1_led_key` og `fm1_led_key_glow`, og SPREAD (GLO) lagret i innstillingene
 - [ ] Presis timing: tangentkanter leses i `LCD_IDLE` og stemples med `fm1_ticks()`
 - [ ] FM-motor og band i lydavbruddet (fastkomma, begrenset arbeid), sjekket mot referansens renders
 - [ ] Notekart i firmware, og beste resultat i flash
