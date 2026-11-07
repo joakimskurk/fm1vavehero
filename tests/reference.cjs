@@ -42,6 +42,7 @@ function emDrive() {                       /* E minor: needs a transpose, an oct
   note(15, 4, 60, 1);                                                  /* channel 16: LINK's */
   note(1, 0, 1, .1); note(1, 16, 0, .1);                              /* keyswitches on channel 2: FM BASS, then PULSE */
   note(1, 8, 7, .1);                                                   /* ...and one with no patch (BASS has three) */
+  note(0, 16, 11, 8);                                                  /* the OP note, held over bars 5-6 */
   return smf0('Em Drive', 100, ev, ppq);
 }
 
@@ -107,7 +108,7 @@ async function choose(page, song, level) {
   check(L.acc === 100 && L.counts.S === 2 && L.counts.M === 0, `NEON CARRIER MED on autoplay: ${L.acc.toFixed(1)}%, ${L.counts.S} shifts, ${L.counts.M} misses, full combo ${L.full}`);
   await screen(a.page, '10-neon-results');
 
-  /* 1b. the built-in songs went through the MIDI import: octave shifts placed by the import, OP phrases from CC 85 */
+  /* 1b. the built-in songs went through the MIDI import: octave shifts placed by the import, OP phrases from the OP note */
   const built = await a.page.evaluate(() => window.KF.SONGS.map(s => ({ title: s.title, T: s.transpose, octs: s.octs.map(e => e.t + ':' + e.dir), ph: s.phrases.length, parts: s.parts, builtIn: s.builtIn })));
   check(built[1].octs.join() === '39.5:1,71.5:-1' && built[1].T === 0 && built[1].ph === 6 && built[0].ph === 3,
     `the built-in MIDI files import as before: ${JSON.stringify(built.map(b => [b.title, b.octs, b.ph]))}`);
@@ -139,6 +140,8 @@ async function choose(page, song, level) {
   check(imp.octs >= 2 && /svarte tangenter/.test(imp.report) && /mer enn tre/.test(imp.report), `its climb gets OCT shifts (${imp.octs}), the chromatic note and the fourth chord note are reported`);
   check(/Kanal 16/.test(imp.report) && /Kanal 7/.test(imp.report), 'channels 7 and 16 are reported as not played');
   check(/Patcher: BASS FM BASS fra takt 1, PULSE fra takt 5/.test(imp.report) && /uten patch: kanal 2, note 7/.test(imp.report), 'the keyswitches are reported, and the one with no patch is flagged');
+  const emPh = await a.page.evaluate(() => window.KF.SONGS[2].phrases.map(r => r.a + '-' + r.b).join());
+  check(emPh === '16-24' && /1 OP-frase fra OP-noten/.test(imp.report), 'the OP note (B-1 on channel 1, held) makes the OP phrase: ' + emPh);
   await a.page.evaluate(() => window.KF.setAuto(true));
   await choose(a.page, 2, 1); await a.page.keyboard.press('Enter');
   await waitResults(a.page);
@@ -152,12 +155,13 @@ async function choose(page, song, level) {
     const K = window.KF, t = performance.now(), r = [];
     K.midiIn([0x91, 1, 100], t); K.midiIn([0x91, 1, 0], t); r.push(K.PATCHSET.BASS[K.LIVE_PATCH[1]]);        /* keyswitch: FM BASS */
     K.midiIn([0x91, 9, 100], t); r.push(K.PATCHSET.BASS[K.LIVE_PATCH[1]]);                                   /* no patch 10: unchanged */
-    K.midiIn([0xC2, 2, 0], t); r.push(K.PATCHSET.PAD[K.LIVE_PATCH[2]]);                                      /* program change 3: GLASS PAD */
+    K.midiIn([0xC2, 2, 0], t); r.push(K.PATCHSET.PAD[K.LIVE_PATCH[2]]);                                      /* a program change: ignored (notes only) */
     K.midiIn([0x99, 2, 100], t); r.push(K.PATCHSET.DRUMS[K.LIVE_PATCH[9]]);                                  /* the BOOM kit */
     K.midiIn([0x90, 3, 100], t); r.push(K.voiceName());                                                       /* channel 1, TONE SONG: GLASS */
+    K.midiIn([0x90, 11, 100], t); r.push(K.voiceName());                                                      /* the OP note: no patch change */
     const sounded = K.MM.sent.length; for (const ch of [0, 1, 2, 9]) K.LIVE_PATCH[ch] = 0; return r.join();
   });
-  check(ks === 'FM BASS,FM BASS,GLASS PAD,BOOM,GLASS', 'D6 live: keyswitches and program changes move the channel\'s patch, a missing one changes nothing: ' + ks);
+  check(ks === 'FM BASS,FM BASS,SUPERSAW,BOOM,GLASS,GLASS', 'D6 live: keyswitch notes move the channel\'s patch; a missing one, a program change and the OP note change nothing: ' + ks);
 
   /* 1e. the templates download as the files in songs/ */
   const [dl] = await Promise.all([a.page.waitForEvent('download'), a.page.click('[data-tpl="1"]')]);
