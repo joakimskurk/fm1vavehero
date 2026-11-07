@@ -40,6 +40,8 @@ function emDrive() {                       /* E minor: needs a transpose, an oct
   for (let b = 0; b < 48; b++) note(9, b, b % 2 ? 38 : 36, .1, 110);  /* drums on channel 10 */
   note(6, 4, 60, 1);                                                   /* channel 7: no instrument */
   note(15, 4, 60, 1);                                                  /* channel 16: LINK's */
+  note(1, 0, 1, .1); note(1, 16, 0, .1);                              /* keyswitches on channel 2: FM BASS, then PULSE */
+  note(1, 8, 7, .1);                                                   /* ...and one with no patch (BASS has three) */
   return smf0('Em Drive', 100, ev, ppq);
 }
 
@@ -110,6 +112,23 @@ async function choose(page, song, level) {
   check(built[1].octs.join() === '39.5:1,71.5:-1' && built[1].T === 0 && built[1].ph === 6 && built[0].ph === 3,
     `the built-in MIDI files import as before: ${JSON.stringify(built.map(b => [b.title, b.octs, b.ph]))}`);
   check(['BASS', 'PAD', 'ARP', 'LEAD', 'DRUMS'].every(k => built[1].parts[k] > 0), 'NEON CARRIER has bass, pad, arp, lead and drums: ' + JSON.stringify(built[1].parts));
+  const pat = await a.page.evaluate(() => { const K = window.KF, n = K.SONGS[1], f = K.SONGS[0], at = (s, part, b) => K.PATCHSET[part][K.songPatchAt(s, part, b)];
+    return [at(n, 'BASS', 20), at(n, 'BASS', 80), at(n, 'PAD', 50), at(n, 'PLAY', 50), at(n, 'PLAY', 80), at(n, 'ARP', 80), at(f, 'PLAY', 10), at(f, 'BASS', 10)].join(); });
+  check(pat === 'PULSE,FM BASS,STRINGS,BELL EP,SYN LEAD,BELL,BELL EP,SUB', 'D6: the built-in songs switch patches with keyswitches: ' + pat);
+  const audible = await a.page.evaluate(async () => {           /* every patch and kit, alone, offline */
+    const K = window.KF, out = [];
+    for (const [part, names] of Object.entries(K.PATCHSET)) for (const name of names) {
+      const sr = 22050, ctx = new OfflineAudioContext(2, sr * 2, sr), E = K.makeEngine(ctx);
+      if (part === 'DRUMS') [36, 38, 42, 39, 45, 49].forEach((d, i) => E.drum(d, .05 + i * .25, 110, name));
+      else [57, 60, 64, 67].forEach((m, i) => E.note(name, .05 + i * .35, part === 'BASS' ? m - 24 : m, 104, { dur: .3 }));
+      const buf = await ctx.startRendering(), L = buf.getChannelData(0); let sum = 0, pk = 0;
+      for (let i = 0; i < L.length; i++) { sum += L[i] * L[i]; pk = Math.max(pk, Math.abs(L[i])); }
+      out.push({ part, name, db: Math.round(10 * Math.log10(sum / L.length + 1e-12)), peak: Math.round(pk * 100) / 100 });
+    }
+    return out;
+  });
+  const bad = audible.filter(x => x.db < -45 || x.peak >= 1);
+  check(!bad.length, `D6: all ${audible.length} patches and kits sound, none clips (${audible.map(x => x.name + ' ' + x.db + ' dB').join(', ')})` + (bad.length ? ' BAD: ' + JSON.stringify(bad) : ''));
 
   /* 1c. a song of your own: loaded through the file input, transposed to white keys, played perfectly */
   const em = path.join(OUT, 'em-drive.mid'); fs.writeFileSync(em, emDrive());
@@ -119,6 +138,7 @@ async function choose(page, song, level) {
   check(imp.title === 'EM DRIVE' && imp.T === -5, `EM DRIVE is transposed 5 up onto white keys: ${JSON.stringify({ title: imp.title, T: imp.T })}`);
   check(imp.octs >= 2 && /svarte tangenter/.test(imp.report) && /mer enn tre/.test(imp.report), `its climb gets OCT shifts (${imp.octs}), the chromatic note and the fourth chord note are reported`);
   check(/Kanal 16/.test(imp.report) && /Kanal 7/.test(imp.report), 'channels 7 and 16 are reported as not played');
+  check(/Patcher: BASS FM BASS fra takt 1, PULSE fra takt 5/.test(imp.report) && /uten patch: kanal 2, note 7/.test(imp.report), 'the keyswitches are reported, and the one with no patch is flagged');
   await a.page.evaluate(() => window.KF.setAuto(true));
   await choose(a.page, 2, 1); await a.page.keyboard.press('Enter');
   await waitResults(a.page);
@@ -128,6 +148,16 @@ async function choose(page, song, level) {
   /* 1d. live MIDI, one part a channel (a sound module for a DAW) */
   const routes = await a.page.evaluate(() => [[0x91, 40, 100], [0x81, 40, 0], [0x99, 38, 110], [0x92, 60, 90], [0x82, 60, 0], [0x96, 60, 100], [0x90, 60, 100], [0x80, 60, 0]].map(m => window.KF.midiIn(m, performance.now())));
   check(JSON.stringify(routes) === JSON.stringify(['BASS', 'BASS', 'DRUMS', 'PAD', 'PAD', null, 'PLAY', 'PLAY']), 'live MIDI: channel 2 BASS, 3 PAD, 10 DRUMS, 1 the player, 7 nothing: ' + JSON.stringify(routes));
+  const ks = await a.page.evaluate(() => {
+    const K = window.KF, t = performance.now(), r = [];
+    K.midiIn([0x91, 1, 100], t); K.midiIn([0x91, 1, 0], t); r.push(K.PATCHSET.BASS[K.LIVE_PATCH[1]]);        /* keyswitch: FM BASS */
+    K.midiIn([0x91, 9, 100], t); r.push(K.PATCHSET.BASS[K.LIVE_PATCH[1]]);                                   /* no patch 10: unchanged */
+    K.midiIn([0xC2, 2, 0], t); r.push(K.PATCHSET.PAD[K.LIVE_PATCH[2]]);                                      /* program change 3: GLASS PAD */
+    K.midiIn([0x99, 2, 100], t); r.push(K.PATCHSET.DRUMS[K.LIVE_PATCH[9]]);                                  /* the BOOM kit */
+    K.midiIn([0x90, 3, 100], t); r.push(K.voiceName());                                                       /* channel 1, TONE SONG: GLASS */
+    const sounded = K.MM.sent.length; for (const ch of [0, 1, 2, 9]) K.LIVE_PATCH[ch] = 0; return r.join();
+  });
+  check(ks === 'FM BASS,FM BASS,GLASS PAD,BOOM,GLASS', 'D6 live: keyswitches and program changes move the channel\'s patch, a missing one changes nothing: ' + ks);
 
   /* 1e. the templates download as the files in songs/ */
   const [dl] = await Promise.all([a.page.waitForEvent('download'), a.page.click('[data-tpl="1"]')]);
@@ -164,7 +194,9 @@ async function choose(page, song, level) {
   check(live.act === '0,1,9' && live.ledE4 === 2, `LIVE: channels 1, 2 and 10 light up, and the DAW's E4 on channel 1 lights the E4 key: ${JSON.stringify(live)}`);
   check(live.sent.join() === '144 60 100,128 60 0', 'the FM-1 key C4 goes out on channel 1 for the DAW to record: ' + live.sent.join(' | '));
   await a.page.evaluate(() => { window.KF.midiIn([0x91, 45, 90], performance.now()); window.KF.midiIn([0x92, 57, 80], performance.now()); window.KF.midiIn([0x90, 61, 90], performance.now()); });
-  await screen(a.page, '19-midi-live');
+  await a.page.evaluate(() => window.KF.midiIn([0x91, 1, 100], performance.now()));   /* FM BASS on channel 2, for the picture */
+  await sleep(120); await screen(a.page, '19-midi-live');
+  await a.page.evaluate(() => { window.KF.LIVE_PATCH[1] = 0; });
   await a.page.evaluate(() => { window.KF.midiIn([0x81, 45, 0], performance.now()); window.KF.midiIn([0x82, 57, 0], performance.now()); window.KF.midiIn([0x80, 61, 0], performance.now()); });
   await a.page.keyboard.press('Enter');                          /* PLAY: PREVIEW */
   const pv = await a.page.evaluate(() => {
@@ -265,12 +297,12 @@ async function choose(page, song, level) {
   const p1 = a, p2 = await open(ctx);
   for (const x of [p1, p2]) {
     await x.page.bringToFront();
-    await x.page.evaluate(() => { document.querySelector('input[name=link][value=tab]').click(); });
+    await x.page.evaluate(() => { window.KF.Link.id = 5; document.querySelector('input[name=link][value=tab]').click(); });   /* the same id on purpose */
     await x.page.keyboard.press('Escape'); await x.page.keyboard.press('Escape'); await x.page.keyboard.press('Enter');
   }
-  await sleep(2600);
+  await sleep(4200);
   const roles = await Promise.all([p1, p2].map(x => x.page.evaluate(() => ({ role: window.KF.Link.role(), linked: window.KF.Link.linked(), id: window.KF.Link.id }))));
-  check(roles[0].linked && roles[1].linked && roles[0].role !== roles[1].role, 'two windows link up as P1 and P2: ' + JSON.stringify(roles));
+  check(roles[0].linked && roles[1].linked && roles[0].role !== roles[1].role && roles[0].id !== roles[1].id, 'two windows that start with the same id draw again and link up as P1 and P2: ' + JSON.stringify(roles));
   check(await p2.page.evaluate(() => window.KF.SONGS.length) === 3, 'a song loaded in one window is kept for the next (EM DRIVE in the second window)');
   const lead = roles[0].role === 'P1' ? p1 : p2, follow = lead === p1 ? p2 : p1;
   await lead.page.evaluate(() => window.KF.setAuto(true));
