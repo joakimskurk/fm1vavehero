@@ -55,23 +55,16 @@ static void ks_pill(int32_t x, int32_t y, const char *t, int32_t on, rgb_t oncol
 }
 
 /* ---- the highway */
-static void ks_highway_bg(int32_t boost, int32_t spread)
+static void ks_highway_bg(int32_t boost, int32_t spread)   /* the lanes and their lines, row by row (kh_init's colours) */
 {
-    static const uint8_t BLACK_B[9] = {0, 1, 1, 0, 1, 1, 1, 0, 0};   /* lane lines with a black key */
     int32_t y, i;
     for (y = KH_TOPY; y < KH_HIT; y++) {
         const uint8_t *xs = kh_x[y - KH_TOPY];
-        int32_t f = kh_fade[y - KH_TOPY], near = (y - KH_TOPY) * 4096 / (KH_HIT - KH_TOPY);
-        for (i = 0; i < 8; i++) {
-            rgb_t col = i % 2 ? 0x100f23u : 0x0c0b1bu;
-            col = boost ? kmix(col, i % 2 ? 0x6a3cb0u : 0x4a2a86u, Q12(.18) + near * 901 / 4096) : kmix(col, LANE[i], Q12(.04) + near * 451 / 4096);
-            krect(xs[i], y, xs[i + 1] - xs[i], 1, kmix(K_BG, col, f));
-        }
-        for (i = 0; i <= 8; i++) {
-            int32_t edge = i == 0 || i == 8, x = xs[i] - (i == 8);
-            rgb_t col = edge ? (boost ? K_GOLD : 0x4d4b96u) : spread ? 0x2a2950u : BLACK_B[i] ? 0x2b2a58u : 0x1c1b38u;
-            krect(x, y, 1, 1, kmix(K_BG, col, f));
-        }
+        const uint16_t *lc = kh_lane[boost ? 1 : 0][y - KH_TOPY], *nc = kh_line[boost ? 1 : spread ? 2 : 0][y - KH_TOPY];
+        uint16_t *row = cv_px + (uint32_t)y * 240u;
+        int32_t x;
+        for (i = 0; i < 8; i++) { uint16_t c = lc[i]; for (x = xs[i]; x < xs[i + 1]; x++) row[x] = c; }
+        for (i = 0; i <= 8; i++) row[xs[i] - (i == 8)] = i == 0 || i == 8 ? nc[i] : (boost ? nc[i] : nc[i]);
     }
 }
 static int32_t ks_z(int32_t t96, int32_t pos) { return (t96 * 256 - pos) / 6; }   /* the depth of a time, Q12 (a beat a unit) */
@@ -293,7 +286,11 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
     int32_t pos = kg.pos, boost = kg_boosting(), i, ocn;
     uint8_t st[8] = {0};
     char s[24], *p;
-    krect(0, 0, 240, 240, K_BG);
+    /* (the canvas starts as the background: keyfall.c's draw) */
+    krect(0, 0, 240, KH_TOPY, K_BG);
+    krect(0, KH_HIT, 240, 240 - KH_HIT, K_BG);
+    krect(0, KH_TOPY, KH_NL, KH_HIT - KH_TOPY, K_BG);
+    krect(KH_NR, KH_TOPY, 240 - KH_NR, KH_HIT - KH_TOPY, K_BG);
     ks_highway_bg(boost, kg.spread);
     ks_beat_lines(pos, boost);
     for (i = 0; i < 8; i++) if (keys_lit[i]) ks_beam(i, LANE[i]);

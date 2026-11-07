@@ -52,18 +52,41 @@ static inline rgb_t kpx_get(int32_t x, int32_t y)
     uint32_t r = c >> 11, g = (c >> 5) & 63u, b = c & 31u;
     return (r << 3 | r >> 2) << 16 | (g << 2 | g >> 4) << 8 | (b << 3 | b >> 2);
 }
+/* a pixel blended in RGB565 itself (the canvas's own form: a little coarser than the reference's 8-bit mix, and
+ * much cheaper), a in 1/64 */
+static inline uint16_t kblend565(uint16_t under_sw, uint32_t c, uint32_t a)
+{
+    uint32_t u = swap16(under_sw);
+    int32_t ur = (int32_t)(u >> 11), ug = (int32_t)((u >> 5) & 63u), ub = (int32_t)(u & 31u);
+    int32_t cr = (int32_t)(c >> 11), cg = (int32_t)((c >> 5) & 63u), cb = (int32_t)(c & 31u), aa = (int32_t)a;
+    ur += ((cr - ur) * aa + 32) >> 6; ug += ((cg - ug) * aa + 32) >> 6; ub += ((cb - ub) * aa + 32) >> 6;
+    return swap16((uint32_t)ur << 11 | (uint32_t)ug << 5 | (uint32_t)ub);
+}
+static inline void kpx_text(int32_t x, int32_t y, uint32_t c565v, uint32_t v)   /* a glyph's pixel, v 1..15 */
+{
+    uint16_t *px;
+    if ((uint32_t)x >= cv_w || (uint32_t)y >= cv_h) return;
+    px = &cv_px[(uint32_t)y * cv_w + (uint32_t)x];
+    *px = v == 15u ? swap16(c565v) : kblend565(*px, c565v, v * 64u / 15u);
+}
 static inline void kpx_blend(int32_t x, int32_t y, rgb_t c, int32_t a)   /* a Q12 */
 {
+    uint16_t *px;
     if ((uint32_t)x >= cv_w || (uint32_t)y >= cv_h || a <= 0) return;
-    if (a >= 4096) { cv_px[(uint32_t)y * cv_w + (uint32_t)x] = swap16(c565(c)); return; }
-    cv_px[(uint32_t)y * cv_w + (uint32_t)x] = swap16(c565(kmix(kpx_get(x, y), c, a)));
+    px = &cv_px[(uint32_t)y * cv_w + (uint32_t)x];
+    *px = a >= 4096 ? swap16(c565(c)) : kblend565(*px, c565(c), (uint32_t)a >> 6);
 }
 static void krect(int32_t x, int32_t y, int32_t w, int32_t h, rgb_t c) { if (w > 0 && h > 0) cv_rect(x, y, w, h, c565(c)); }
 static void krect_a(int32_t x, int32_t y, int32_t w, int32_t h, rgb_t c, int32_t a)   /* blended, a Q12 */
 {
     int32_t i, j;
-    for (j = y; j < y + h; j++)
-        for (i = x; i < x + w; i++) kpx_blend(i, j, c, a);
+    uint32_t cc = c565(c), aa = (uint32_t)a >> 6;
+    if (a <= 0) return;
+    for (j = y < 0 ? 0 : y; j < y + h && j < (int32_t)cv_h; j++)
+        for (i = x < 0 ? 0 : x; i < x + w && i < (int32_t)cv_w; i++) {
+            uint16_t *px = &cv_px[(uint32_t)j * cv_w + (uint32_t)i];
+            *px = a >= 4096 ? swap16(cc) : kblend565(*px, cc, aa);
+        }
 }
 
 /* ---- the capsule: each row inset as a circle of radius min(w, h) / 2 would (x 0.92), standing ones round at the
@@ -101,7 +124,7 @@ static void kpcap(int32_t x, int32_t y, int32_t w, int32_t h, rgb_t c)
 /* ---- text: Terminus as cv_text has it, but blended onto what is under it, and at scale 1 or 2 */
 static int32_t ktext_n(const felucca_font_t *f, int32_t x, int32_t y, const char *s, uint32_t n, rgb_t col, int32_t sc)
 {
-    uint32_t k;
+    uint32_t k, cc = c565(col);
     for (k = 0; k < n && s[k]; k++) {
         uint32_t gi = glyph(f, (uint8_t)s[k]), gx, gy, w = f->bw[gi], bpr = (w + 1u) / 2u;
         const uint8_t *gd = f->data + f->off[gi];
@@ -111,8 +134,8 @@ static int32_t ktext_n(const felucca_font_t *f, int32_t x, int32_t y, const char
                     uint32_t v = gd[gy * bpr + gx / 2u];
                     v = (gx & 1u) ? (v & 15u) : (v >> 4);
                     if (v) {
-                        int32_t a = (int32_t)(v * 4096u / 15u), px = x - f->pad * sc + (int32_t)gx * sc, py = y + (int32_t)gy * sc, ii, jj;
-                        for (jj = 0; jj < sc; jj++) for (ii = 0; ii < sc; ii++) kpx_blend(px + ii, py + jj, col, a);
+                        int32_t px = x - f->pad * sc + (int32_t)gx * sc, py = y + (int32_t)gy * sc, ii, jj;
+                        for (jj = 0; jj < sc; jj++) for (ii = 0; ii < sc; ii++) kpx_text(px + ii, py + jj, cc, v);
                     }
                 }
         x += f->adv[gi] * sc;
@@ -162,6 +185,8 @@ static char *knum(char *p, uint32_t v, int32_t pad)   /* decimal, zero-padded to
 static int16_t kh_s[KH_ROWS];                    /* a row's scale at its middle (y + .5), Q12 */
 static uint8_t kh_x[KH_ROWS][9];                 /* a row's lane edges, round(X(U(b), s)) */
 static int16_t kh_fade[KH_ROWS];                 /* clamp((y - TOPY) / 26, 0, 1), Q12 */
+static uint16_t kh_lane[2][KH_ROWS][8];          /* the lanes' colours a row (normal, boost), swapped RGB565 */
+static uint16_t kh_line[3][KH_ROWS][9];          /* the lane lines' (normal, boost, SPREAD) */
 static int32_t kh_s_at(int32_t y2)               /* the scale at y2 / 2 (half pixels), Q12 */
 {
     return (y2 * 32768 - KH_HYQ) / (KH_DENQ >> 12);   /* (32-bit: y2 < 480) */
@@ -187,11 +212,24 @@ static int32_t kh_fade_at(int32_t y)             /* the fade at a row, Q12 */
 }
 static void kh_init(void)
 {
-    int32_t y, b;
+    static const uint8_t BLACK_B[9] = {0, 1, 1, 0, 1, 1, 1, 0, 0};   /* lane lines with a black key */
+    int32_t y, b, v;
     for (y = KH_TOPY; y < KH_HIT; y++) {
-        int32_t s = kh_s_at(2 * y + 1);
-        kh_s[y - KH_TOPY] = (int16_t)s;
-        kh_fade[y - KH_TOPY] = (int16_t)kh_fade_at(y);
-        for (b = 0; b <= 8; b++) kh_x[y - KH_TOPY][b] = (uint8_t)kh_round(kh_X(kh_U4(b * 256), s));
+        int32_t s = kh_s_at(2 * y + 1), r = y - KH_TOPY, f = kh_fade_at(y), near = r * 4096 / KH_ROWS;
+        kh_s[r] = (int16_t)s;
+        kh_fade[r] = (int16_t)f;
+        for (b = 0; b <= 8; b++) kh_x[r][b] = (uint8_t)kh_round(kh_X(kh_U4(b * 256), s));
+        for (b = 0; b < 8; b++)                  /* (the reference's highwayBg) */
+            for (v = 0; v < 2; v++) {
+                rgb_t col = b % 2 ? 0x100f23u : 0x0c0b1bu;
+                col = v ? kmix(col, b % 2 ? 0x6a3cb0u : 0x4a2a86u, Q12(.18) + near * 901 / 4096) : kmix(col, LANE[b], Q12(.04) + near * 451 / 4096);
+                kh_lane[v][r][b] = swap16(c565(kmix(K_BG, col, f)));
+            }
+        for (b = 0; b <= 8; b++)
+            for (v = 0; v < 3; v++) {
+                int32_t edge = b == 0 || b == 8;
+                rgb_t col = edge ? (v == 1 ? K_GOLD : 0x4d4b96u) : v == 2 ? 0x2a2950u : BLACK_B[b] ? 0x2b2a58u : 0x1c1b38u;
+                kh_line[v][r][b] = swap16(c565(kmix(K_BG, col, f)));
+            }
     }
 }
