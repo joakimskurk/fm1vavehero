@@ -51,7 +51,7 @@ LEDs light only on the SPREAD keys, that a key between two used ones does nothin
 **Decision.** A song is a standard MIDI file (format 0 or 1). Channel 1 is the play track. Channels 2 BASS, 3 PAD,
 4 ARP, 5 LEAD, 6 KEYS and 10 DRUMS (General MIDI) are the band. Channel 16 is reserved for LINK. Note 11 (B-1) on
 channel 1, held over the phrase, marks OP phrases (changed from CC 85 the same day, see D6). The import transposes the
-play track to white keys (D1), adds octave shifts and creates EASY. The built-in songs are made the same way
+play track to white keys (D1) and adds octave shifts; the file's LEVEL marker gives the song its level (D12). The built-in songs are made the same way
 (`tools/songs.py` writes `songs/*.mid`) and go through the same import. The full rule is in [songs.md](songs.md).
 
 **Why.** It should be possible to make songs entirely in a DAW, with tools that already exist. One channel per
@@ -259,3 +259,35 @@ timing of a round).
 except VaveHero's own changes (`PLATFORM.md`). Two of those changes would help every Dinghy app: `usb_retry` without
 its 25 ms busy wait, and the `FM1_NOTE_EDGE` hook. They are offered back to Dinghy rather than kept apart here.
 
+
+## D12 (2026-11-08): a song has one level, and it is fixed
+
+**Decision.** As on the Japanese arcade machines, a song's level belongs to the song: EASY, MED, HARD or EXP, one of
+them, chosen by whoever made it. The player chooses the song, not the level. A song is one chart, its play track as
+written; there is no thinned-out EASY copy any more. The level is a marker in the MIDI file, a marker or text meta
+event `LEVEL EASY`, `LEVEL MED`, `LEVEL HARD` or `LEVEL EXP` ([songs.md](songs.md)). A file without one is MED, and
+the import report says how to choose.
+
+What the level does:
+
+- **EASY:** the right note in any octave counts, and the octave shifts happen by themselves.
+- **MED, HARD, EXP:** the right note in the right octave, and the player follows the shifts with OCT− and OCT+. HARD
+  and EXP are ratings for songs with more and faster notes, more chords and more shifts; the rules are MED's.
+
+The built-in songs: FIRST LIGHT is EASY, NEON CARRIER and CHROME HORIZON are MED, ENGINE TOUR is HARD.
+
+**Why.** A level made by a program out of someone's song was a thinned copy of it: the notes on the beat, the top
+note of a chord. It played like another, weaker song. With the level fixed, the one who writes the song decides how
+it should feel to play, and the list of songs becomes a ladder from easy to hard. The level is also a promise: a MED
+song is MED wherever it is played, and two players over LINK always play the same chart.
+
+**What changed.**
+
+- KNOB 1 does nothing on SONGS, and its label there is empty. The songs screen lights the song's own level and dims
+  the other three. The reference's left and right arrows still turn KNOB 1 (MIDI MODE's MODE).
+- The best result is kept per song. Its key is the same as before, the song's hash and its level, so a result saved
+  at the level the song now has is still its result.
+- LINK no longer sends LEVEL (CC 103): both players play the song at its own level. A CC 103 from an older version is
+  ignored ([link.md](link.md)).
+- The firmware's songs carry one chart each (`firmware/gen/kf_songs.h`: `chart`, `nchart` and `level`), about 2 KB
+  less flash. `kg_start` and `song_start` take no level; the rules read it from the song.

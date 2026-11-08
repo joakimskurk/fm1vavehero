@@ -97,13 +97,13 @@ static void kg_set_judge(uint32_t j) { kg.judge = (uint8_t)j; kg.judge_ms = kg_m
 static void kg_fail_phrase(uint32_t i) { int32_t ph = kg_ph(i); if (ph >= 0) kg.ph_failed[ph] = 1; }
 static int32_t kg_round(int32_t num, int32_t den) { return (num + den / 2) / den; }
 
-static void kg_start(uint32_t idx, uint32_t level, uint32_t speed, uint32_t spread, uint32_t t0)
+static void kg_start(uint32_t idx, uint32_t speed, uint32_t spread, uint32_t t0)   /* the song's own level (D12) */
 {
     const kf_song_t *s = &KF_SONG[idx];
     uint32_t i;
-    kg.song = s; kg.idx = (uint8_t)idx; kg.level = (uint8_t)level; kg.speed = (uint8_t)speed; kg.spread = (uint8_t)spread;
-    kg.notes = s->chart[level ? 1 : 0];
-    kg.n = s->nchart[level ? 1 : 0];
+    kg.song = s; kg.idx = (uint8_t)idx; kg.level = s->level; kg.speed = (uint8_t)speed; kg.spread = (uint8_t)spread;
+    kg.notes = s->chart;
+    kg.n = s->nchart;
     if (kg.n > KG_MAXN) kg.n = KG_MAXN;
     kg.first = 0;
     for (i = 0; i < kg.n; i++) { kg.nst[i] = KN_PENDING; kg.adn[i] = 0; }

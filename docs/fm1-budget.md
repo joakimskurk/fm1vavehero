@@ -38,10 +38,10 @@ fm1-emu. None of the FM-1 apps have been measured on a real FM-1 yet. That is wh
 | Reverb (Schroeder/FDN, not convolution) | pool | about 32 KB |
 | Gated reverb and chorus | pool | about 24 KB |
 | **Total pool** | | **about 165–220 KB of 336** |
-| Scores and medals: 5 bytes per song and level, plus the song's hash | settings or one blob | under 1 KB for 40 songs with 4 levels |
+| Scores and medals: 4 bytes per song (its hash and level, and the accuracy) | settings or one blob | under 1 KB for 40 songs (one level each, D12) |
 | Your own songs | slots | 8 × 16 KB. That is about 3000 notes per slot, enough for ENGINE TOUR (2023 notes). |
 
-The play track of one song (MED, about 200 notes) takes about 2.5 KB of RAM while it is played. The band is read straight from flash.
+The play track of one song (about 200 notes) takes about 2.5 KB of RAM while it is played. The band is read straight from flash.
 
 ## Audio (CPU)
 

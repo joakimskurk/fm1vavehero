@@ -104,7 +104,7 @@
 
   <div class="facts">
     <div class="fact"><b>8</b><span>lanes, one for each white key</span></div>
-    <div class="fact"><b>4</b><span>songs, each on EASY and MED</span></div>
+    <div class="fact"><b>4</b><span>songs, each at its own level, EASY to HARD</span></div>
     <div class="fact"><b>29</b><span>patches and drum kits, all synthesised</span></div>
     <div class="fact"><b>60</b><span>frames a second at most; hits judged by the sound</span></div>
   </div>
@@ -130,14 +130,15 @@
   <h2>Playing it</h2>
   <table>
     <tr><td>Title screen</td><td>PLAY goes to the songs. FX plays the DEMO: the game playing itself.</td></tr>
-    <tr><td>SELECT</td><td>Picks the song. The last row is MIDI MODE.</td></tr>
-    <tr><td>KNOB 1–4</td><td>The level, your voice (TONE), the speed for practice, and the mix of you and the band.</td></tr>
+    <tr><td>SELECT</td><td>Picks the song. Each song has its own level, EASY, MED, HARD or EXP, fixed as on the
+      arcade machines: you pick the song, and the song is the challenge. The last row is MIDI MODE.</td></tr>
+    <tr><td>KNOB 2–4</td><td>Your voice (TONE), the speed for practice, and the mix of you and the band.</td></tr>
     <tr><td>ALGORITHM</td><td>GRIT: how dirty the sound is, from clean to pumping and crushed.</td></tr>
     <tr><td>GLO</td><td>SPREAD: the lanes on every other white key, for big fingers.</td></tr>
     <tr><td>SEQ</td><td>AUTO: the song plays itself (its result is not kept).</td></tr>
     <tr><td>In a song</td><td>The white keys play the lanes. OCT− and OCT+ follow the octave shifts, FX sets off
       OP BOOST, PLAY pauses and HOME quits.</td></tr>
-    <tr><td>Results</td><td>The best result for each song and level is kept. PLAY plays it again, HOME goes back.</td></tr>
+    <tr><td>Results</td><td>The best result for each song is kept. PLAY plays it again, HOME goes back.</td></tr>
     <tr><td>MIDI MODE</td><td>The FM-1 becomes the band's sound module for a DAW: one part on each channel, the keys
       sent out on channel 1.</td></tr>
   </table>
@@ -157,7 +158,8 @@
   <h2 id="songs">Your songs in VaveHero</h2>
   <p>A song is an ordinary MIDI file from a DAW. Channel 1 is the part you play; channels 2–6 are the band (bass,
     pad, arpeggio, lead, keys) and 10 the drums, and the audio engine plays it all in synthwave style, with several
-    patches for each part. Load the file into the <a href="play.html">browser version</a>: you get a report and can
+    patches for each part. Give it its level with a marker in the file, <code>LEVEL EASY</code>, <code>MED</code>,
+    <code>HARD</code> or <code>EXP</code> (without one it is MED). Load the file into the <a href="play.html">browser version</a>: you get a report and can
     play it right away. How it works, with templates:
     <a href="https://github.com/joakimskurk/fm1vavehero/blob/HEAD/docs/songs.md">making your own songs</a>.</p>
   <p>Then send it in: open an <a href="https://github.com/joakimskurk/fm1vavehero/issues">issue on GitHub</a> with the

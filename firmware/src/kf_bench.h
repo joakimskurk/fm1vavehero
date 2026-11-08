@@ -21,13 +21,13 @@ static void kf_bench_start(uint32_t t0)          /* bar 41 sounds at frame t0 */
         const kf_bev_t *e = &s->band[kf_seq.bi++];
         if (e->ks) kf_seq.patch[e->part] = (uint8_t)(e->ks - 1u);
     }
-    for (kf_bench_mi = 0; kf_bench_mi < s->nchart[1] && s->chart[1][kf_bench_mi].t < from; kf_bench_mi++) {}
+    for (kf_bench_mi = 0; kf_bench_mi < s->nchart && s->chart[kf_bench_mi].t < from; kf_bench_mi++) {}
 }
 static void kf_bench_post(uint32_t upto)
 {
     const kf_song_t *s = &KF_SONG[KF_BENCH_SONG];
-    const kf_cnote_t *m = s->chart[1];
-    while (kf_bench_mi < s->nchart[1] && (int32_t)(kf_seq_frame(m[kf_bench_mi].t) - upto) < 0) {
+    const kf_cnote_t *m = s->chart;
+    while (kf_bench_mi < s->nchart && (int32_t)(kf_seq_frame(m[kf_bench_mi].t) - upto) < 0) {
         uint32_t t = kf_seq_frame(m[kf_bench_mi].t);
         kf_seq_post(t + 1u);
         kf_sched_note(t, KF_P_PLAY, kf_seq_play_patch(), (uint32_t)(m[kf_bench_mi].pitch + s->transpose), 104,
@@ -35,5 +35,5 @@ static void kf_bench_post(uint32_t upto)
         kf_bench_mi++;
     }
     kf_seq_post(upto);
-    if (kf_seq.bi >= s->nband && kf_bench_mi >= s->nchart[1]) kf_bench_start(upto + 22050u);   /* the end: again */
+    if (kf_seq.bi >= s->nband && kf_bench_mi >= s->nchart) kf_bench_start(upto + 22050u);   /* the end: again */
 }

@@ -75,7 +75,7 @@ In M-VAVE's own firmware the first six black keys are **OP1–OP6**. That fits t
 | HARD | The whole octave, 8 white | Fast runs, triads, frequent shifts, sweep sections |
 | EXP | All 16 white keys, F3–G5, on a flat highway (14.5 px per lane) | Everything |
 
-The levels can be generated from one MIDI file: the notes are moved into the window, chords are thinned out, and the rhythm is quantized.
+A song has one of these levels, fixed, as on the arcade machines ([D12](DECISIONS.md)): its maker writes the song for it and marks it in the MIDI file (`LEVEL EASY` .. `LEVEL EXP`). Nothing is thinned out by a program. (The first sketch made the levels from one file by thinning; D12 replaced that.)
 
 ### Score
 

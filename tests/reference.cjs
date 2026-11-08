@@ -65,8 +65,8 @@ async function waitBeat(page, b, timeout = 90000) {
 async function waitResults(page, timeout = 90000) {
   await page.waitForFunction(() => window.KF.G.scr === 'results', null, { timeout, polling: 100 });
 }
-async function choose(page, song, level) {
-  await page.evaluate(([s, l]) => { window.KF.G.sel = s; window.KF.G.level = l; }, [song, level]);
+async function choose(page, song) {                       /* a song's level is its own (D12): no level to choose */
+  await page.evaluate(s => { window.KF.G.sel = s; }, song);
 }
 
 (async () => {
@@ -90,22 +90,23 @@ async function choose(page, song, level) {
   await a.page.keyboard.press('Enter');
   check(await a.page.evaluate(() => window.KF.G.scr) === 'songs', 'PLAY on the splash opens SONGS');
   await screen(a.page, '02-songs');
-  const charts = await a.page.evaluate(() => window.KF.SONGS.map((s, i) => [0, 1].map(l => window.KF.buildChart(s, l).notes.length)));
-  check(charts.every(c => c[0] > 10 && c[1] > c[0]), 'charts build, EASY is smaller than MED: ' + JSON.stringify(charts));
-  const blacks = await a.page.evaluate(() => window.KF.SONGS.flatMap(s => [0, 1].flatMap(l => window.KF.buildChart(s, l).notes)).filter(n => [1, 3, 6, 8, 10].includes(((n.pitch % 12) + 12) % 12)).length);
+  const charts = await a.page.evaluate(() => window.KF.SONGS.map(s => ({ title: s.title, level: window.KF.LEVELS[s.level], notes: window.KF.buildChart(s).notes.length, melody: s.melody.length })));
+  check(charts.map(c => c.title + ' ' + c.level).join() === 'FIRST LIGHT EASY,NEON CARRIER MED,ENGINE TOUR HARD,CHROME HORIZON MED' && charts.every(c => c.notes > 10 && c.notes === c.melody),
+    'D12: one chart a song, at the level its LEVEL marker gives it, the play track as written: ' + JSON.stringify(charts));
+  const blacks = await a.page.evaluate(() => window.KF.SONGS.flatMap(s => window.KF.buildChart(s).notes).filter(n => [1, 3, 6, 8, 10].includes(((n.pitch % 12) + 12) % 12)).length);
   check(blacks === 0, 'D1: no black keys in any chart');
 
   await a.page.evaluate(() => window.KF.setAuto(true));
-  await choose(a.page, 0, 1); await a.page.keyboard.press('Enter');
+  await choose(a.page, 0); await a.page.keyboard.press('Enter');
   await waitBeat(a.page, 2); await screen(a.page, '03-first-light-intro');
   await waitResults(a.page);
   let L = await a.page.evaluate(() => window.KF.G.last);
-  check(L.acc === 100 && L.counts.M === 0 && L.grade === 'S', `FIRST LIGHT MED on autoplay: ${L.acc.toFixed(1)}% ${L.grade}, ${L.counts.M} misses`);
+  check(L.acc === 100 && L.counts.M === 0 && L.grade === 'S', `FIRST LIGHT (EASY) on autoplay: ${L.acc.toFixed(1)}% ${L.grade}, ${L.counts.M} misses`);
   check(Math.abs(L.meanDt) < 5, `mean timing ${L.meanDt.toFixed(2)} ms`);
   await screen(a.page, '04-first-light-results');
 
   await a.page.keyboard.press('Escape');
-  await choose(a.page, 1, 1); await a.page.keyboard.press('Enter');
+  await choose(a.page, 1); await a.page.keyboard.press('Enter');
   let boosted = false;
   await waitBeat(a.page, 22); await screen(a.page, '05-neon-verse'); await a.page.screenshot({ path: path.join(OUT, '05b-page-play.png') });
   await waitBeat(a.page, 37.9); await screen(a.page, '06-neon-oct-band');
@@ -116,7 +117,7 @@ async function choose(page, song, level) {
   await waitBeat(a.page, 84); await screen(a.page, '09-neon-chorus');
   await waitResults(a.page);
   L = await a.page.evaluate(() => window.KF.G.last);
-  check(L.acc === 100 && L.counts.S === 2 && L.counts.M === 0, `NEON CARRIER MED on autoplay: ${L.acc.toFixed(1)}%, ${L.counts.S} shifts, ${L.counts.M} misses, full combo ${L.full}`);
+  check(L.acc === 100 && L.counts.S === 2 && L.counts.M === 0, `NEON CARRIER (MED) on autoplay: ${L.acc.toFixed(1)}%, ${L.counts.S} shifts, ${L.counts.M} misses, full combo ${L.full}`);
   await screen(a.page, '10-neon-results');
 
   /* 1b. the built-in songs went through the MIDI import: octave shifts placed by the import, OP phrases from the OP note */
@@ -153,11 +154,13 @@ async function choose(page, song, level) {
   check(/Patches: BASS FM BASS from bar 1, PULSE from bar 5/.test(imp.report) && /without a patch: channel 2, note 7/.test(imp.report), 'the keyswitches are reported, and the one with no patch is flagged');
   const emPh = await a.page.evaluate(() => window.KF.SONGS[4].phrases.map(r => r.a + '-' + r.b).join());
   check(emPh === '16-24' && /1 OP phrase from the OP note/.test(imp.report), 'the OP note (B-1 on channel 1, held) makes the OP phrase: ' + emPh);
+  const emLevel = await a.page.evaluate(() => window.KF.SONGS[4].level);
+  check(emLevel === 1 && /no LEVEL marker, so the song is MED/.test(imp.report), 'D12: a file without a LEVEL marker is MED, and the report says how to choose: level ' + emLevel);
   await a.page.evaluate(() => window.KF.setAuto(true));
-  await choose(a.page, 4, 1); await a.page.keyboard.press('Enter');
+  await choose(a.page, 4); await a.page.keyboard.press('Enter');
   await waitResults(a.page);
   L = await a.page.evaluate(() => window.KF.G.last);
-  check(L.acc === 100 && L.counts.M === 0, `EM DRIVE MED on autoplay: ${L.acc.toFixed(1)}%, ${L.counts.S} shifts`);
+  check(L.acc === 100 && L.counts.M === 0, `EM DRIVE (MED) on autoplay: ${L.acc.toFixed(1)}%, ${L.counts.S} shifts`);
 
   /* 1d. live MIDI, one part a channel (a sound module for a DAW) */
   const routes = await a.page.evaluate(() => [[0x91, 40, 100], [0x81, 40, 0], [0x99, 38, 110], [0x92, 60, 90], [0x82, 60, 0], [0x96, 60, 100], [0x90, 60, 100], [0x80, 60, 0]].map(m => window.KF.midiIn(m, performance.now())));
@@ -198,7 +201,7 @@ async function choose(page, song, level) {
   check(demo[1].title === 'CHROME HORIZON' && demo[1].warn === 0 && demo[1].T === 5 && demo[1].octs === 2, 'CHROME HORIZON (D minor) imports cleanly, its play track 5 semitones down on white keys: ' + JSON.stringify(demo[1]));
   const pair = [await open(ctx), await open(ctx)];
   await Promise.all(pair.map(async (x, i) => {
-    await x.page.evaluate(i => { window.KF.setAuto(true); window.KF.G.scr = 'songs'; window.KF.G.sel = 2 + i; window.KF.G.level = 1; }, i);
+    await x.page.evaluate(i => { window.KF.setAuto(true); window.KF.G.scr = 'songs'; window.KF.G.sel = 2 + i; }, i);
     await x.page.keyboard.press('Enter');
   }));
   await waitBeat(pair[0].page, 92); await screen(pair[0].page, '21-engine-tour'); await screen(pair[1].page, '22-chrome-horizon');
@@ -288,7 +291,7 @@ async function choose(page, song, level) {
 
   /* 2. a wrong key breaks the combo, a late press is GOOD, not PERFECT */
   await a.page.evaluate(() => { window.KF.setAuto(false); window.KF.G.scr = 'songs'; });
-  await choose(a.page, 0, 1); await a.page.keyboard.press('Enter');
+  await choose(a.page, 0); await a.page.keyboard.press('Enter');
   await waitBeat(a.page, 7.5);
   const probe = await a.page.evaluate(() => {
     const p = window.KF.play, n = p.notes[0];               /* C4 at beat 8 */
@@ -318,7 +321,7 @@ async function choose(page, song, level) {
      a key between them does nothing, and the spread key of the lane hits. */
   await a.page.evaluate(() => { document.getElementById('spread').click(); window.KF.setAuto(true); });
   check(await a.page.evaluate(() => window.KF.G.spread) === true, 'SPREAD turns on');
-  await choose(a.page, 1, 1); await a.page.keyboard.press('Enter');
+  await choose(a.page, 1); await a.page.keyboard.press('Enter');
   await waitBeat(a.page, 8);                                     /* after the intro, when the notes come */
   let ledsOk = true, seen = new Set();
   for (let i = 0; i < 40; i++) {
@@ -330,9 +333,9 @@ async function choose(page, song, level) {
   await screen(a.page, '05c-spread'); await a.page.screenshot({ path: path.join(OUT, '05d-page-spread.png') });
   await waitResults(a.page);
   L = await a.page.evaluate(() => window.KF.G.last);
-  check(L.acc === 100 && L.counts.M === 0, `NEON CARRIER MED with SPREAD on autoplay: ${L.acc.toFixed(1)}%`);
+  check(L.acc === 100 && L.counts.M === 0, `NEON CARRIER (MED) with SPREAD on autoplay: ${L.acc.toFixed(1)}%`);
   await a.page.evaluate(() => window.KF.setAuto(false));
-  await a.page.keyboard.press('Escape'); await choose(a.page, 0, 1); await a.page.keyboard.press('Enter');
+  await a.page.keyboard.press('Escape'); await choose(a.page, 0); await a.page.keyboard.press('Enter');
   await waitBeat(a.page, 7.97);
   const sp = await a.page.evaluate(() => {                       /* C4 is due at beat 8: lane 0, the F3 key with SPREAD */
     const p = window.KF.play, bms = 60000 / p.bpm, at = performance.now() - (p.beat - 8) * bms + window.KF.G.offset;
@@ -349,7 +352,7 @@ async function choose(page, song, level) {
 
   /* 3. against the bot: the protocol's receive path, and a winner */
   await a.page.evaluate(() => { document.querySelector('input[name=link][value=bot]').click(); window.KF.setAuto(true); });
-  await choose(a.page, 0, 0); await a.page.keyboard.press('Enter');
+  await choose(a.page, 0); await a.page.keyboard.press('Enter');
   await waitBeat(a.page, 30); await screen(a.page, '12-vs-bot');
   await waitResults(a.page); await sleep(300);
   const vs = await a.page.evaluate(() => ({ me: window.KF.G.last.score, bot: window.KF.Link.rival.score, done: window.KF.Link.rival.done, vs: window.KF.G.last.vs }));
@@ -371,7 +374,7 @@ async function choose(page, song, level) {
   const lead = roles[0].role === 'P1' ? p1 : p2, follow = lead === p1 ? p2 : p1;
   await lead.page.evaluate(() => window.KF.setAuto(true));
   await follow.page.evaluate(() => window.KF.setAuto(true));
-  await choose(lead.page, 1, 1); await sleep(1200);
+  await choose(lead.page, 1); await sleep(1200);
   check(await follow.page.evaluate(() => window.KF.G.sel) === 1, 'P2 follows the song P1 picks');
   await lead.page.bringToFront(); await lead.page.keyboard.press('Enter');
   await waitBeat(follow.page, 1, 5000).catch(() => {});

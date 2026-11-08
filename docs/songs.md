@@ -9,10 +9,10 @@ reference):
 
 | File | Song | What it shows |
 |---|---|---|
-| [`first-light.mid`](../songs/first-light.mid) | FIRST LIGHT, 96 BPM | The simple one: five white keys, BELL EP, SUB bass and STRINGS |
-| [`neon-carrier.mid`](../songs/neon-carrier.mid) | NEON CARRIER, 112 BPM | Octave shifts, chords and patch changes between the sections |
-| [`engine-tour.mid`](../songs/engine-tour.mid) | ENGINE TOUR, 120 BPM | **A tour of the audio engine.** The drums alone first, then bass, pad, arpeggio, lead and keys come in one by one. Each instrument goes through all four of its patches, two bars each, with the dirty one last. The drum kits and the player's voice change along the way, and at the end everything plays together on the dirty sounds. All 29 sounds are heard. |
-| [`chrome-horizon.mid`](../songs/chrome-horizon.mid) | CHROME HORIZON, 104 BPM | **A full synthwave song in D minor:** intro, verse, pre-chorus, dirty choruses with DIRT BASS, DIRT drums and FUZZ LEAD, a breakdown, and a final chorus an octave up with FUZZ as the player's voice. The play track is written in D minor, and the import moves it 5 semitones down to white keys. |
+| [`first-light.mid`](../songs/first-light.mid) | FIRST LIGHT, 96 BPM, EASY | The simple one: five white keys, BELL EP, SUB bass and STRINGS |
+| [`neon-carrier.mid`](../songs/neon-carrier.mid) | NEON CARRIER, 112 BPM, MED | Octave shifts, chords and patch changes between the sections |
+| [`engine-tour.mid`](../songs/engine-tour.mid) | ENGINE TOUR, 120 BPM, HARD | **A tour of the audio engine.** The drums alone first, then bass, pad, arpeggio, lead and keys come in one by one. Each instrument goes through all four of its patches, two bars each, with the dirty one last. The drum kits and the player's voice change along the way, and at the end everything plays together on the dirty sounds. All 29 sounds are heard. |
+| [`chrome-horizon.mid`](../songs/chrome-horizon.mid) | CHROME HORIZON, 104 BPM, MED | **A full synthwave song in D minor:** intro, verse, pre-chorus, dirty choruses with DIRT BASS, DIRT drums and FUZZ LEAD, a breakdown, and a final chorus an octave up with FUZZ as the player's voice. The play track is written in D minor, and the import moves it 5 semitones down to white keys. |
 
 Each patch in ENGINE TOUR (two bars each, the clean ones first and the dirty one last):
 
@@ -99,8 +99,17 @@ the high verse.
 - **OP phrases:** put note 11 (B-1) on channel 1 and hold it for as long as the phrase lasts. In the piano roll it is a
   line under the phrase. Flawless phrases fill the OP meter. Without OP notes the import makes phrases itself (two bars
   out of every four).
-- **EASY** is made from the same track: the notes on the beat (or every other beat above 105 BPM), and only the top
-  note in a chord.
+- **The level** is the song's own, one of EASY, MED, HARD and EXP ([D12](DECISIONS.md)), as on the arcade machines:
+  the player chooses the song, not the level. Put a marker (or a text event) in the file that says `LEVEL EASY`,
+  `LEVEL MED`, `LEVEL HARD` or `LEVEL EXP`, anywhere in any track. Without one the song is MED. The chart is the play
+  track as you wrote it, at every level: write an EASY song to be easy.
+
+  | Level | Rules | Write it with |
+  |---|---|---|
+  | EASY | The right note in any octave counts. The octave shifts happen by themselves. | Single notes on the beat, few leaps |
+  | MED | The right note in the right octave. The player follows the shifts with OCT− and OCT+. | Chords of two, hold notes, the odd shift |
+  | HARD | As MED | Faster runs, chords of three, more shifts |
+  | EXP | As MED | Everything |
 
 ## Tempo and time signature
 
@@ -118,7 +127,7 @@ and with at most 15 characters.
 
 1. Open `reference/vavehero.html`.
 2. Press **Load .mid** under *Your own songs*, or drop the file on the page.
-3. The report shows tempo, length, notes per level, transposition, octave shifts, OP phrases and everything that has
+3. The report shows tempo, length, the level, the notes, transposition, octave shifts, OP phrases and everything that has
    been removed or ignored.
 4. The song ends up at the bottom of the song list and is remembered in the browser. **Remove your own songs** empties
    the list.

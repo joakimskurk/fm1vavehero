@@ -62,6 +62,7 @@ def voicing(ch, base=52):
 
 FIRST_LIGHT = dict(
     file='first-light.mid', title='FIRST LIGHT', bpm=96,
+    level='EASY',                     # D12: the song's one level, a marker in the file (LEVEL EASY)
     chords=['C', 'G', 'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'C', 'C', 'C'],
     phrases=[(3, 4), (7, 8), (10, 11)],
     play='''
@@ -80,6 +81,7 @@ FIRST_LIGHT = dict(
 
 NEON_CARRIER = dict(
     file='neon-carrier.mid', title='NEON CARRIER', bpm=112,
+    level='MED',                     # D12: the song's one level, a marker in the file (LEVEL MED)
     chords=['Am', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'F', 'G', 'Em', 'Am', 'F', 'G', 'Em', 'Am',
             'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F G', 'C', 'C'],
     phrases=[(2, 3), (6, 7), (10, 11), (14, 15), (18, 19), (22, 23)],
@@ -243,6 +245,7 @@ def tour_play():
 
 ENGINE_TOUR = dict(
     file='engine-tour.mid', title='ENGINE TOUR', bpm=120,
+    level='HARD',                     # D12: the song's one level, a marker in the file (LEVEL HARD)
     chords=['Am', 'F', 'C', 'G'] * 12 + ['Am'],
     phrases=[(6, 7), (14, 15), (22, 23), (30, 31), (38, 39), (46, 47)],
     play=tour_play())
@@ -302,6 +305,7 @@ def arrange_engine_tour(s):
 
 CHROME_HORIZON = dict(
     file='chrome-horizon.mid', title='CHROME HORIZON', bpm=104,
+    level='MED',                     # D12: the song's one level, a marker in the file (LEVEL MED)
     chords=['Dm', 'Bb', 'F', 'C'] * 3 + ['Gm', 'Bb', 'C', 'C'] + ['Dm', 'Bb', 'F', 'C'] * 2 + ['Bb', 'F', 'C', 'Dm']
            + ['Dm', 'Bb', 'F', 'C'] * 2 + ['Dm'],
     phrases=[(6, 7), (13, 14), (18, 19), (22, 23), (26, 27), (30, 31)],
@@ -476,6 +480,8 @@ def keyswitch_events(ch, switches):
 def write_song(s, parts):
     us = round(60_000_000 / s['bpm'])
     conductor = [(0, 0, b'\xff\x51\x03' + us.to_bytes(3, 'big')), (0, 0, b'\xff\x58\x04\x04\x02\x18\x08')]
+    mark = ('LEVEL ' + s['level']).encode('ascii')                 # D12: the level, a marker meta event (docs/songs.md)
+    conductor.append((0, 0, b'\xff\x06' + vlq(len(mark)) + mark))
     tracks = [mtrk(s['title'], conductor)]
     play = note_events(CH['PLAY'], s['play'] if isinstance(s['play'], list) else melody(s['play']))
     play += note_events(CH['PLAY'], [(a * 4, OP_NOTE, (b - a + 1) * 4, 100) for a, b in s['phrases']])   # OP phrases: B-1, held

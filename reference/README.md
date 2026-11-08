@@ -6,15 +6,15 @@ as in RoboSeq and SkurkyMello.
 
 | File | Version | SHA-256 |
 |---|---|---|
-| `vavehero.html` | REF 0.1.12 (the page, its help and its import report in English; the look of D10) | `af0eff493867057e5c0474ecddd3d6a1048b8534625a46c52fddf16d8c291dbc` |
+| `vavehero.html` | REF 0.1.13 (D12: a song has one fixed level, from its file's LEVEL marker, and one chart) | `14a37cf10ef300a8f56649b7364421cbcdd6826f9c86cbea426d432da8a9413b` |
 
 A new HTML is a new reference and gets its own commit with a new SHA-256 here.
 
 ## Run
 
 Open `vavehero.html` in a browser. Chrome and Edge have WebMIDI; the others play with the computer keyboard and the
-panel. Press Enter (PLAY) on the title screen, or Space (FX) for the DEMO, choose a song with the up and down arrows,
-and the level with the left and right arrows.
+panel. Press Enter (PLAY) on the title screen, or Space (FX) for the DEMO, choose a song with the up and down arrows
+(each song has its own level, D12).
 
 Two players on one machine: open the file in two windows, choose **Two windows** in both, and give each window its own
 MIDI keyboard. P1 chooses the song and starts.

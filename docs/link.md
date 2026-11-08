@@ -51,9 +51,8 @@ of clock pulses.
 | ID | `BF 65 id` (CC 101) | Both, every second | Random 1–126. The lowest becomes P1 (the bot is 127). On a tie, the receiver draws again. |
 | SONG | `BF 66 n` (CC 102) | P1 | The song's place in P1's list, for display only |
 | SONG-ID | `BF 69 hi` `BF 6A lo` (CC 105–106) | P1 | The song's identity: a 14-bit hash of the play track and the tempo. P2 finds the song from it, not from the place in the list. |
-| LEVEL | `BF 67 n` (CC 103) | P1 | 0 EASY, 1 MED, 2 HARD, 3 EXP |
 | SPEED | `BF 68 %` (CC 104) | P1 | Tempo in percent, 50–100 |
-| START | `FA` | P1 | Both start the song now. P2 uses the last SONG-ID, LEVEL and SPEED. If P2 does not have the song, `SONG NOT HERE` is shown and P2 does not start. |
+| START | `FA` | P1 | Both start the song now. P2 uses the last SONG-ID and SPEED; the level is the song's own ([D12](DECISIONS.md)), so CC 103 (LEVEL in earlier versions) is no longer sent, and is ignored. If P2 does not have the song, `SONG NOT HERE` is shown and P2 does not start. |
 | CLOCK | `F8` | P1 | 24 pulses per beat, from START |
 | STOP | `FC` | P1 | The match is aborted, both go to SONGS |
 | SCORE | `BF 6E hi` `BF 6F mid` `BF 70 lo` (CC 110–112) | Both | Score in three 7-bit parts, up to 2,097,151. Applied when `lo` arrives. |

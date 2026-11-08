@@ -337,10 +337,10 @@ static void ks_splash(uint32_t ms, const char *version)
     ktextOut(&FONT_S, 236 - ktw(&FONT_S, version), 0, version, K_DIM, K_OUT, 1);
 }
 
-typedef struct { uint32_t sel, level, speed, spread, tone; int32_t best[8][2]; uint32_t mm_mode, ms; } ks_menu_t;   /* best: acc10, -1 none */
+typedef struct { uint32_t sel, speed, spread, tone; int32_t best[8]; uint32_t mm_mode, ms; } ks_menu_t;   /* best: acc10, -1 none */
 static void ks_songs(const ks_menu_t *m, const char *tone)
 {
-    static const char *const KN[4] = {"LEVEL", "TONE", "SPEED", "MIX"}, *const KM[4] = {"MODE", "TONE", "BPM", "MIX"};
+    static const char *const KN[4] = {"", "TONE", "SPEED", "MIX"}, *const KM[4] = {"MODE", "TONE", "BPM", "MIX"};
     uint32_t total = KF_NSONG + 1u, top, r;
     char s[40], *p;
     ks_night(m->ms);
@@ -360,7 +360,7 @@ static void ks_songs(const ks_menu_t *m, const char *tone)
         knum(s, i + 1u, 2);
         ktext(&FONT_S, 9, y, s, sel ? K_CYAN : K_MUTE);
         ktext(&FONT_S, 33, y, KF_SONG[i].title, K_TEXT);
-        best = i < 8u ? m->best[i][m->level ? 1 : 0] : -1;
+        best = i < 8u ? m->best[i] : -1;
         if (best < 0) { ktextR(&FONT_S, 236, y, "NEW", K_CYAN); continue; }
         medals = best >= 900 ? 3 : best >= 800 ? 2 : best >= 700 ? 1 : 0;
         for (k = 0; k < 3; k++) {
@@ -400,17 +400,20 @@ static void ks_songs(const ks_menu_t *m, const char *tone)
         if (so->noct) p = kput(p, "OCT");
         {
             uint32_t chords = 0, k2;
-            for (k2 = 1; k2 < so->nchart[1]; k2++) if (so->chart[1][k2].t == so->chart[1][k2 - 1].t) chords = 1;
+            for (k2 = 1; k2 < so->nchart; k2++) if (so->chart[k2].t == so->chart[k2 - 1].t) chords = 1;
             if (chords) { if (p != s) p = kput(p, " "); p = kput(p, "CHORDS"); }
         }
         if (so->transpose) { if (p != s) p = kput(p, " "); p = kput(p, so->transpose > 0 ? "T+" : "T-"); knum(p, (uint32_t)(so->transpose > 0 ? so->transpose : -so->transpose), 0); }
         ktextR(&FONT_S, 231, 168, s, K_VIOLET);
         for (i = 0; i < 4u; i++) tw += (uint32_t)ktw(&FONT_S, KS_LEVELS[i]) + 10u;
         x = 120u - (tw + 18u) / 2u;
-        for (i = 0; i < 4u; i++) { ks_pill((int32_t)x, 192, KS_LEVELS[i], i == m->level, K_AMBER, i > 1u); x += (uint32_t)ktw(&FONT_S, KS_LEVELS[i]) + 16u; }
+        for (i = 0; i < 4u; i++) {               /* the song's own level lit, the others locked (D12) */
+            ks_pill((int32_t)x, 192, KS_LEVELS[i], i == so->level, K_AMBER, i != so->level);
+            x += (uint32_t)ktw(&FONT_S, KS_LEVELS[i]) + 16u;
+        }
     }
     (void)tone;
-    ks_knobs(KN, 0);
+    ks_knobs(KN, 1u);                            /* (KNOB 1: nothing here, a song's level is its own) */
 }
 
 /* the sky over the highway, copied from flash into RAM once: from flash, every frame, it missed the flash cache */

@@ -112,13 +112,13 @@ static void stress(const char *wavp)
     wav(wavp);
 }
 
-/* a song as the reference's renderSong plays it: the band from 0.05 s, and the melody (MED's chart, heard at
+/* a song as the reference's renderSong plays it: the band from 0.05 s, and the melody (the song's chart, heard at
  * pitch + transpose) on the player's voice of channel 1's keyswitches, velocity 104, .95 of each note */
 static void song(int idx, double secs, const char *wavp, const char *jsp)
 {
     const kf_song_t *s = &KF_SONG[idx];
-    const kf_cnote_t *m = s->chart[1];
-    uint32_t f, mi = 0, n = s->nchart[1];
+    const kf_cnote_t *m = s->chart;
+    uint32_t f, mi = 0, n = s->nchart;
     kf_set_grit(70);
     kf_seq_start(s, fr(.05), 100);
     for (f = 0; f < fr(secs); f += 256u) {

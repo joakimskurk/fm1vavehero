@@ -17,6 +17,7 @@ tested on the host and in fm1-emu.
 - [x] `reference/vavehero.html`: one file, playable with the computer keyboard, the panel (mouse and touch) and WebMIDI
 - [x] The screen drawn pixel by pixel at 240 × 240 with `FONT_S` and `FONT_L`
 - [x] Two songs (FIRST LIGHT, NEON CARRIER) with EASY and MED. The levels are made from the same note chart.
+      (Changed by D12: a song has one fixed level, from a LEVEL marker in its file, and one chart.)
 - [x] Note highway in perspective with one lane per white key, chords, hold notes and octave shifts (OCT+/OCT−)
 - [x] D1: only the white keys are played. The black ones are shown but have no function (REF 0.1.2,
       [docs/DECISIONS.md](docs/DECISIONS.md)).
@@ -49,7 +50,8 @@ tested on the host and in fm1-emu.
 - [ ] Transposition per song, so the white keys follow the song's key
 - [ ] Practice mode: looping a section, “wait for the right key”, and a guide melody
 - [ ] A separate calibration screen: press in time with clicks
-- [ ] HARD level and 2–3 new songs
+- [x] D12: one fixed level per song (EASY, MED, HARD, EXP), a LEVEL marker in the MIDI file; ENGINE TOUR is HARD
+- [ ] An EXP song and 2–3 new songs
 - [ ] MIDI import: tempo changes, and a keyswitch note to override the automatic octave shifts
 - [x] Sound check: renders of the reference as the ground truth for the port, as in RoboSeq (`tools/ref_tour.cjs`, `tests/kf/parity.py`)
 

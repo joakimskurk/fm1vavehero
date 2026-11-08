@@ -6,12 +6,12 @@
  *
  *   splash     PLAY: the songs. FX: the DEMO (ENGINE TOUR from bar 41 on autoplay: the engine's worst case,
  *              which fm1-emu times in CI); HOME or PLAY ends it
- *   songs      SELECT the song (the last row: MIDI MODE), KNOB 1 the level (EASY, MED), KNOB 2 the voice (TONE:
+ *   songs      SELECT the song (the last row: MIDI MODE; each song has its one level, D12), KNOB 2 the voice (TONE:
  *              SONG or one of five), KNOB 3 the speed (50-100 %), KNOB 4 MIX, ALGORITHM GRIT (D7); PLAY starts, GLO
  *              turns SPREAD on and off (D2), SEQ AUTO (the song plays itself, its result is not kept), HOME back
  *   play       the eight keys of the layout play the lanes (C4..C5, or SPREAD's every other white key); OCT- OCT+
  *              follow the octave shifts; FX: OP BOOST when the six OPs are lit; PLAY pauses, HOME quits
- *   results    PLAY again, HOME the songs; the best result of each song and level is kept in flash
+ *   results    PLAY again, HOME the songs; the best result of each song is kept in flash
  *   MIDI MODE  LIVE (D5): the FM-1 is the song's sound module, a part a channel (D3), keyswitches on notes 0-11
  *              (D6); the keys play channel 1's voice and go out on channel 1 for the DAW to record; HOME leaves
  *
@@ -56,31 +56,32 @@ static uint32_t heard_now(void)                  /* the frame being heard now */
 /* ---- what survives a power-off: the settings and the best results */
 #define NBEST 16u
 static struct {
-    uint8_t level, speed, tone, mix, grit, spread, sel, pad;
+    uint8_t pad0, speed, tone, mix, grit, spread, sel, pad;   /* (pad0: the level the player chose once; a song's own now, D12) */
     int16_t offset, pad2;
-    uint16_t best_hash[NBEST];                   /* the song's hash | level << 14 */
+    uint16_t best_hash[NBEST];                   /* the song's hash | its level << 14 (the key as before D12: saves stay) */
     int16_t best_acc[NBEST];                     /* accuracy x 10 */
 } set;
 static void set_defaults(void)
 {
     uint32_t i;
-    set.level = 1; set.speed = 100; set.tone = 0; set.mix = 60; set.grit = 70; set.spread = 0; set.sel = 0; set.offset = 0;
+    set.pad0 = 0; set.speed = 100; set.tone = 0; set.mix = 60; set.grit = 70; set.spread = 0; set.sel = 0; set.offset = 0;
     for (i = 0; i < NBEST; i++) { set.best_hash[i] = 0xFFFFu; set.best_acc[i] = -1; }
 }
-static int32_t best_of(uint32_t song, uint32_t level)
+static uint32_t best_key(uint32_t song) { return KF_SONG[song].hash | (uint32_t)KF_SONG[song].level << 14; }
+static int32_t best_of(uint32_t song)
 {
-    uint32_t i, key = KF_SONG[song].hash | level << 14;
+    uint32_t i, key = best_key(song);
     for (i = 0; i < NBEST; i++) if (set.best_hash[i] == key) return set.best_acc[i];
     return -1;
 }
-static int32_t best_put(uint32_t song, uint32_t level, int32_t acc)   /* 1: a new best */
+static int32_t best_put(uint32_t song, int32_t acc)   /* 1: a new best */
 {
-    uint32_t i, key = KF_SONG[song].hash | level << 14, freei = NBEST;
+    uint32_t i, key = best_key(song), freei = NBEST;
     for (i = 0; i < NBEST; i++) {
         if (set.best_hash[i] == key) { if (acc > set.best_acc[i]) { set.best_acc[i] = (int16_t)acc; return 1; } return 0; }
         if (set.best_hash[i] == 0xFFFFu && freei == NBEST) freei = i;
     }
-    if (freei == NBEST) freei = (song * 2u + level) % NBEST;   /* full (songs that are gone): take a place */
+    if (freei == NBEST) freei = song % NBEST;    /* full (songs that are gone): take a place */
     set.best_hash[freei] = (uint16_t)key;
     set.best_acc[freei] = (int16_t)acc;
     return 1;
@@ -227,11 +228,11 @@ static void voices_off(void)
     uint32_t k;
     for (k = 0; k < 27u; k++) if (key_note[k]) kg_sound_off(k, 0);
 }
-static void song_start(uint32_t idx, uint32_t level, uint32_t is_demo)
+static void song_start(uint32_t idx, uint32_t is_demo)
 {
     voices_off();
     demo = is_demo;
-    kg_start(idx, level, is_demo ? 100u : set.speed, is_demo ? 0u : set.spread, kf_now + 6615u);   /* beat 0 in 150 ms */
+    kg_start(idx, is_demo ? 100u : set.speed, is_demo ? 0u : set.spread, kf_now + 6615u);   /* beat 0 in 150 ms */
     kg.auto_on = (uint8_t)(is_demo || autoplay);
     if (is_demo) kg_seek(kf_bench_beat);
     keys_sync();                                 /* (a key held from before does not count) */
@@ -419,8 +420,8 @@ static void draw(void)
     knum(num, (scr == SCR_PLAY || scr == SCR_RESULTS ? kg.idx : set.sel) + 1u, 2);
     if (scr == SCR_SPLASH) ks_splash(fm1_ms, VER);
     else if (scr == SCR_SONGS) {
-        m.sel = set.sel; m.level = set.level; m.speed = set.speed; m.spread = set.spread; m.tone = set.tone; m.mm_mode = 0; m.ms = fm1_ms;
-        for (i = 0; i < KF_NSONG && i < 8u; i++) { m.best[i][0] = best_of(i, 0); m.best[i][1] = best_of(i, 1); }
+        m.sel = set.sel; m.speed = set.speed; m.spread = set.spread; m.tone = set.tone; m.mm_mode = 0; m.ms = fm1_ms;
+        for (i = 0; i < KF_NSONG && i < 8u; i++) m.best[i] = best_of(i);
         ks_songs(&m, tone_name());
     } else if (scr == SCR_PLAY) {
         uint8_t lit[8], led[8];
@@ -470,7 +471,7 @@ static void toast_num(const char *label, uint32_t v, const char *unit)
 static void app_main(void)
 {
     uint32_t last_draw = 0;
-    if (settings_load(&set, sizeof set) || set.level > 1u || set.speed < 50u || set.speed > 100u || set.tone > 5u ||
+    if (settings_load(&set, sizeof set) || set.speed < 50u || set.speed > 100u || set.tone > 5u ||
         set.mix > 100u || set.grit > 100u || set.sel > KF_NSONG)
         set_defaults();
     offset_ms = set.offset;
@@ -491,11 +492,11 @@ static void app_main(void)
         b = fm1_input_edges(&rel);
         if (scr == SCR_SPLASH) {
             if (b & (1u << BTN_PLAY)) { scr = SCR_SONGS; redraw = 1; }
-            else if (b & (1u << BTN_FX)) song_start(KF_BENCH_SONG, 1, 1);
+            else if (b & (1u << BTN_FX)) song_start(KF_BENCH_SONG, 1);
         } else if (scr == SCR_SONGS) {
             if (b & (1u << BTN_PLAY)) {
                 if (set.sel == KF_NSONG) { scr = SCR_MIDI; mm_oct = 0; kf_set_tempo(clk_bpm_x100 ? clk_bpm_x100 : 12000u); }
-                else song_start(set.sel, set.level, 0);
+                else song_start(set.sel, 0);
                 redraw = 1;
             }
             if (b & (1u << BTN_HOME)) { scr = SCR_SPLASH; redraw = 1; }
@@ -505,8 +506,7 @@ static void app_main(void)
             if (v != (int32_t)set.grit) { set.grit = (uint8_t)v; kf_set_grit(set.grit); toast_num("GRIT ", (uint32_t)v, ""); }
             v = enc_step(ENC_SELECT, (int32_t)set.sel, 1, 0, (int32_t)KF_NSONG, &ch);
             if (v != (int32_t)set.sel) { set.sel = (uint8_t)v; redraw = 1; }
-            v = enc_step(ENC_KNOB1, (int32_t)set.level, 1, 0, 1, &ch);
-            if (v != (int32_t)set.level) { set.level = (uint8_t)v; toast(v ? "LEVEL MED" : "LEVEL EASY"); }
+            (void)fm1_enc_take(ENC_KNOB1);         /* (KNOB 1: nothing on SONGS, a song's level is its own: D12) */
             if ((e = fm1_enc_take(ENC_KNOB2)) != 0) { set.tone = (uint8_t)((set.tone + 6u + (uint32_t)(e % 6 + 6)) % 6u); toast(tone_name()); ch = 1; }
             v = enc_step(ENC_KNOB3, (int32_t)set.speed, 10, 50, 100, &ch);
             if (v != (int32_t)set.speed) { set.speed = (uint8_t)v; toast_num("SPEED ", (uint32_t)v, "%"); }
@@ -522,9 +522,9 @@ static void app_main(void)
                 }
                 kf_seq_post(kf_now + 4096u);   /* the band, 93 ms ahead of the speaker */
                 if (kg_update(heard_now())) {
-                    if (demo) song_start(KF_BENCH_SONG, 1, 1);   /* the DEMO goes round */
+                    if (demo) song_start(KF_BENCH_SONG, 1);   /* the DEMO goes round */
                     else {
-                        kg.new_best = kg.auto_on ? 0 : best_put(kg.idx, kg.level, kg.acc10);   /* (AUTO: not kept) */
+                        kg.new_best = kg.auto_on ? 0 : best_put(kg.idx, kg.acc10);   /* (AUTO: not kept) */
                         ch = 1;
                         song_stop();
                         scr = SCR_RESULTS;
@@ -533,7 +533,7 @@ static void app_main(void)
                 }
             }
         } else if (scr == SCR_RESULTS) {
-            if (b & (1u << BTN_PLAY)) song_start(kg.idx, kg.level, 0);
+            if (b & (1u << BTN_PLAY)) song_start(kg.idx, 0);
             if (b & (1u << BTN_HOME)) { scr = SCR_SONGS; redraw = 1; }
         } else if (scr == SCR_MIDI) {
             if (b & (1u << BTN_HOME)) {

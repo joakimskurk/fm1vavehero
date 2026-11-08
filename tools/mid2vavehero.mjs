@@ -2,8 +2,9 @@
 // Copyright (C) 2026 Joakim (joakimskurk)
 // The built-in songs for the firmware: songs/*.mid through the reference's own import (parseMidi, importSong,
 // buildChart, taken from reference/vavehero.html and run here), so the FM-1 plays exactly the charts the reference
-// plays (D1 white keys, the transpose, octave windows, OP phrases, EASY, the LINK hash). Out comes
-// firmware/gen/kf_songs.h: each song's charts (EASY, MED), its band, its octave shifts and phrases, in flash.
+// plays (D1 white keys, the transpose, octave windows, OP phrases, the level, the LINK hash). Out comes
+// firmware/gen/kf_songs.h: each song's one chart at its one level (D12: the LEVEL marker), its band, its octave shifts
+// and phrases, in flash.
 //   node tools/mid2vavehero.mjs            -> firmware/gen/kf_songs.h
 //   node tools/mid2vavehero.mjs --check    exit 1 if the header is not what this would write
 //   node tools/mid2vavehero.mjs --json     the imported songs as JSON on stdout (tests)
@@ -33,7 +34,7 @@ function grabBlock(head) {                              // `const NAME = {...};`
 }
 const src = [
   grabLine('clamp'), grabLine('mod12'), grabLine('pad'), grabLine('BLACK_S'), grabLine('S2P'), grabLine('WHITE_SEMI'),
-  grabBlock('const PATCHSET = '), grabLine('KS_TOP'), grabLine('patchOf'), grabBlock('const DRUMKIT = '),
+  grabLine('LEVELS'), grabBlock('const PATCHSET = '), grabLine('KS_TOP'), grabLine('patchOf'), grabBlock('const DRUMKIT = '),
   piece('const CHMAP = ', 'const SONGS = [];'),
   grabLine('octAt'), grabBlock('function buildChart('),
   'return { parseMidi, importSong, buildChart, PATCHSET };',
@@ -47,13 +48,15 @@ const T96 = b => { const v = Math.round(b * 96); if (v < 0 || v > 65535) throw n
 const songs = files.map(f => {
   const bytes = new Uint8Array(readFileSync(join(ROOT, 'songs', f)));
   const { song, report } = R.importSong(R.parseMidi(bytes), f);
-  const charts = [0, 1].map(l => R.buildChart(song, l).notes);
-  return { file: f, song, report, charts };
+  const chart = R.buildChart(song).notes;
+  if (!(song.level >= 0 && song.level <= 3)) throw new Error(`${f}: level ${song.level}`);
+  if ((song.hash | song.level << 14) === 0xFFFF) throw new Error(`${f}: its score key is the empty one (hash ${song.hash}, EXP)`);
+  return { file: f, song, report, chart };
 });
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify(songs.map(s => ({ file: s.file, title: s.song.title, bpm: s.song.bpm, end: s.song.end, transpose: s.song.transpose,
-    oct0: s.song.oct0, octs: s.song.octs, phrases: s.song.phrases, hash: s.song.hash, easyGrid: s.song.easyGrid,
-    charts: s.charts.map(c => c.map(n => ({ t: n.t, len: n.len, pitch: n.pitch, lane: n.lane, oct: n.oct, hold: n.hold, ph: n.ph }))),
+    oct0: s.song.oct0, octs: s.song.octs, phrases: s.song.phrases, hash: s.song.hash, level: s.song.level,
+    chart: s.chart.map(n => ({ t: n.t, len: n.len, pitch: n.pitch, lane: n.lane, oct: n.oct, hold: n.hold, ph: n.ph })),
     events: s.song.events.length })), null, 1));
   process.exit(0);
 }
@@ -75,10 +78,10 @@ w('    uint32_t bpm_x100;');
 w('    uint32_t fpt_q16;                           /* frames a T96, Q16 (44100 x 60 / bpm / 96) */');
 w('    uint16_t end;                               /* beats */');
 w('    int8_t transpose, oct0;                     /* the play track is heard at pitch + transpose; the first window: C(4 + oct0) */');
-w('    uint8_t easy_grid;');
+w('    uint8_t level;                              /* D12: the song\'s one level, its LEVEL marker: 0 EASY, 1 MED, 2 HARD, 3 EXP */');
 w('    uint16_t hash;                              /* the song\'s identity (LINK, the scores): 14 bits */');
-w('    const kf_cnote_t *chart[2];                 /* EASY, MED */');
-w('    uint16_t nchart[2];');
+w('    const kf_cnote_t *chart;                    /* the one chart: the play track as written */');
+w('    uint16_t nchart;');
 w('    const kf_bev_t *band;');
 w('    uint16_t nband;');
 w('    const kf_oct_t *octs;');
@@ -90,15 +93,13 @@ let total = 0;
 songs.forEach((s, i) => {
   const S = s.song;
   if (S.phrases.length > 15) throw new Error(`${s.file}: more than 15 OP phrases`);
-  s.charts.forEach((c, l) => {
-    w(`static const kf_cnote_t KF_S${i}_C${l}[${c.length}] = {`);
-    for (const n of c) {
-      if (n.lane < 0 || n.lane > 7) throw new Error(`${s.file}: lane ${n.lane}`);
-      w(`    {${T96(n.t)}, ${T96(n.len)}, ${n.pitch}, ${n.lane}, ${n.oct}, ${(n.hold ? 1 : 0) | ((n.ph + 1) << 4)}},`);
-    }
-    w('};');
-    total += c.length * 8;
-  });
+  w(`static const kf_cnote_t KF_S${i}_C[${s.chart.length}] = {`);
+  for (const n of s.chart) {
+    if (n.lane < 0 || n.lane > 7) throw new Error(`${s.file}: lane ${n.lane}`);
+    w(`    {${T96(n.t)}, ${T96(n.len)}, ${n.pitch}, ${n.lane}, ${n.oct}, ${(n.hold ? 1 : 0) | ((n.ph + 1) << 4)}},`);
+  }
+  w('};');
+  total += s.chart.length * 8;
   const band = S.events.map(e => e.ks != null
     ? `{${T96(e.beat)}, 0, ${PARTS.indexOf(e.part)}, 0, 0, ${e.ks + 1}}`
     : `{${T96(e.beat)}, ${T96(e.len)}, ${PARTS.indexOf(e.part)}, ${e.pitch}, ${e.vel}, 0}`);
@@ -119,8 +120,8 @@ w(`#define KF_NSONG ${songs.length}u`);
 w('static const kf_song_t KF_SONG[KF_NSONG] = {');
 songs.forEach((s, i) => {
   const S = s.song, fpt = Math.round(44100 * 60 / S.bpm / 96 * 65536);
-  w(`    {"${S.title}", "${s.file}", ${Math.round(S.bpm * 100)}u, ${fpt}u, ${S.end}, ${S.transpose}, ${S.oct0}, ${S.easyGrid}, ${S.hash}, ` +
-    `{KF_S${i}_C0, KF_S${i}_C1}, {${s.charts[0].length}, ${s.charts[1].length}}, KF_S${i}_B, ${s.n.band}, KF_S${i}_O, ${S.octs.length}, ${S.phrases.length}, KF_S${i}_P},`);
+  w(`    {"${S.title}", "${s.file}", ${Math.round(S.bpm * 100)}u, ${fpt}u, ${S.end}, ${S.transpose}, ${S.oct0}, ${S.level}, ${S.hash}, ` +
+    `KF_S${i}_C, ${s.chart.length}, KF_S${i}_B, ${s.n.band}, KF_S${i}_O, ${S.octs.length}, ${S.phrases.length}, KF_S${i}_P},`);
 });
 w('};');
 w(`/* ${songs.length} songs, about ${Math.round(total / 1024)} KB of notes */`);
@@ -132,6 +133,7 @@ if (process.argv.includes('--check')) {
   console.log('kf_songs.h up to date');
 } else {
   writeFileSync(dst, text);
-  for (const s of songs) console.log(`${s.song.title.padEnd(16)} ${String(s.song.bpm).padStart(6)} BPM  EASY ${String(s.charts[0].length).padStart(4)}  MED ${String(s.charts[1].length).padStart(4)}  band ${String(s.n.band).padStart(5)}  hash ${s.song.hash}  ${s.report.warn.length ? 'warn: ' + s.report.warn.join(' ') : ''}`);
+  const LV = ['EASY', 'MED', 'HARD', 'EXP'];
+  for (const s of songs) console.log(`${s.song.title.padEnd(16)} ${String(s.song.bpm).padStart(6)} BPM  ${LV[s.song.level].padEnd(4)}  chart ${String(s.chart.length).padStart(4)}  band ${String(s.n.band).padStart(5)}`);
   console.log(`firmware/gen/kf_songs.h: ${songs.length} songs, about ${Math.round(total / 1024)} KB`);
 }
