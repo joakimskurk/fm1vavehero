@@ -218,7 +218,8 @@ only where the background requires it (the score over the sky and the hit words)
 
 **Decision.** The screen is sent in parts: only the blocks of a row that changed since the last frame, as rectangles.
 The SPI clock stays at Dinghy's 12 MHz until a faster one has been tried on a real FM-1. Dinghy stays at 0.5, its
-newest version, and VaveHero's two fixes in its platform are offered back to it.
+newest version. VaveHero's two fixes in its platform stay here (`PLATFORM.md`); whether Dinghy wants them is
+for its author to say, and is talked over with him directly.
 
 **Why.** Dinghy drives the screen at 12 MHz, and a whole 240 × 240 frame is 921 600 bits: 77 ms, at most 13 frames
 per second. fm1-emu with the screen timed (`FM1_LCD_TIMED=1`) showed it: 80 ms between frames. Most of a frame stays as
@@ -257,7 +258,8 @@ timing of a round).
 
 **Dinghy.** Upstream's newest commit is `ea1b6bf`, the tag `v0.5`, and every Dinghy file here is that one,
 except VaveHero's own changes (`PLATFORM.md`). Two of those changes would help every Dinghy app: `usb_retry` without
-its 25 ms busy wait, and the `FM1_NOTE_EDGE` hook. They are offered back to Dinghy rather than kept apart here.
+its 25 ms busy wait, and the `FM1_NOTE_EDGE` hook. Nothing is sent to Dinghy from here: the project talks with its
+author directly.
 
 
 ## D12 (2026-11-08): a song has one level, and it is fixed
