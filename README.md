@@ -4,7 +4,7 @@
 
 A rhythm game in the Guitar Hero genre for the FM-1. The notes slide down a note highway, you play them on the
 white keys, and the LEDs in the keys show what is coming. Two players, each with their own FM-1, can play against
-each other. A Dinghy 0.5 app, in the same family as [RoboSeq](https://github.com/joakimskurk/fm1roboseq),
+each other. Built on [Dinghy](https://github.com/zvenson/dinghy) 0.5 by zvenson, in the same family as [RoboSeq](https://github.com/joakimskurk/fm1roboseq),
 [Star Distroyer](https://github.com/joakimskurk/fm1stardistroyer) and [SkurkyMello](https://github.com/joakimskurk/fm1mello).
 
 > **Status: browser reference 0.1 and firmware 0.1 in progress, both playable.** The firmware has the game, all four
@@ -121,6 +121,24 @@ keys and buttons are on the computer's keyboard and mouse, and a MIDI keyboard w
 | [docs/API.md](docs/API.md), [docs/RULES.md](docs/RULES.md) | Dinghy's API and the chip's rules (from Dinghy) |
 
 <p align="center"><img src="mockup/vavehero-mockup.png" width="820" alt="Mockup: FM-1 with VaveHero on the screen"></p>
+
+## Credits
+
+VaveHero stands on other people's work:
+
+- [Dinghy](https://github.com/zvenson/dinghy) by **zvenson**: the firmware platform VaveHero is built on (its USB,
+  MIDI, screen, keys, storage, update loader and boot guard), its docs and host tests, and
+  [fm1-build](https://github.com/zvenson/fm1-build), which builds the package in CI.
+- [Felucca](https://github.com/hugelton/Felucca) by **Leo Kuroshita** (@kurogedelic, Hügelton Instruments) and
+  [SLOOP](https://github.com/isod89/sloop-fm1) by **isod89**: the platform under Dinghy, and the browser installer the
+  page uses.
+- [fm1-emu](https://github.com/joakimeriksson/fm1-emu) by **joakimeriksson**: the FM-1 emulator VaveHero is tested and
+  measured in.
+- [MvaveFM1-Designer](https://github.com/Quixotic7/MvaveFM1-Designer) by **Quixotic7**: the panel's measurements.
+- The fonts: Terminus (SIL OFL 1.1) on the screen, Inter by Rasmus Andersson (SIL OFL 1.1) in the logo.
+
+Who made which file is in [LICENSING.md](LICENSING.md), and what VaveHero changed in Dinghy is in
+[PLATFORM.md](PLATFORM.md).
 
 The panel geometry is taken from the measurements in [Quixotic7/MvaveFM1-Designer](https://github.com/Quixotic7/MvaveFM1-Designer).
 The songs are original compositions. The firmware is free software under GPL-3.0 ([LICENSE](LICENSE); who made
