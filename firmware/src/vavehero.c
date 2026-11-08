@@ -389,12 +389,25 @@ static void send_changed(void)
     heal_y = (heal_y + SEND_HEAL) % 240u;
 }
 
+/* the screen is behind the sound: a frame is drawn, then goes out over SPI, the hit line's rows among the last of it.
+ * So the play is drawn where the song will be when the frame reaches the panel, by vis_lead_us: how long the last
+ * frames took from the start of the drawing until their last rows were handed to the DMA (smoothed, 40 ms at most).
+ * The judgement does not use it: a press is judged by the sound, by the frame being heard when the key moved (the
+ * player's own latency, the calibration, moves both). On the host a frame takes no time, so no lead */
+#ifdef DINGHY_HOST
+static uint32_t vis_lead_us;
+#else
+static uint32_t vis_lead_us = 8000u;
+#endif
 static void draw(void)
 {
     static const char VER[] = "v" APP_VER;
     ks_menu_t m;
     uint32_t i;
     char num[4];
+#ifndef DINGHY_HOST
+    uint32_t t_draw = 0;
+#endif
     idle_ok = 1;                                 /* (cv_begin waits for the last frame's DMA: keys and MIDI meanwhile) */
     if (scr == SCR_PLAY) {                       /* the play draws every row itself (ks_play): no clear first */
         lcd_sync();
@@ -411,6 +424,10 @@ static void draw(void)
         ks_songs(&m, tone_name());
     } else if (scr == SCR_PLAY) {
         uint8_t lit[8], led[8];
+#ifndef DINGHY_HOST
+        t_draw = fm1_micros();
+#endif
+        kg.vpos = paused || kg.done ? kg.pos : kg_pos_at(heard_now() + vis_lead_us * 441u / 10000u);
         for (i = 0; i < 8u; i++) {
             uint32_t key = KG_LAYOUT[kg.spread ? 1 : 0][i];
             lit[i] = (uint8_t)(key_note[key] != 0u);
@@ -425,6 +442,12 @@ static void draw(void)
     idle_ok = 1;
     send_changed();                              /* (the last run's DMA goes on while the loop does) */
     idle_ok = 0;
+#ifndef DINGHY_HOST
+    if (scr == SCR_PLAY) {                       /* the lead, for the next frames */
+        uint32_t d = fm1_micros() - t_draw;
+        vis_lead_us = (vis_lead_us * 7u + (d > 40000u ? 40000u : d)) / 8u;
+    }
+#endif
 }
 
 static int32_t enc_step(uint32_t enc, int32_t v, int32_t by, int32_t lo, int32_t hi, uint32_t *changed)

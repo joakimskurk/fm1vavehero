@@ -245,6 +245,16 @@ into RAM at the start, and so is the sky over the highway (11 KB of RAM, 10 KB o
 in the DEMO fell from 145 305 to 25 293. The audio interrupt's share of the cycles fell from 38.5 % to 36.6 %. The
 sound is the same, byte for byte.
 
+**What you see against what you hear.** A press is judged by the sound: the scan stamps the key, and the frame being
+heard then (`heard_now`: the audio clock, less the 512 frames between a block and the speaker, less the player's own
+latency) is held against the note. The screen does not come into it. But a frame shows the song as it was when its
+drawing started, and the hit line's rows go out among its last. Before the changes above that was 60–80 ms behind
+the sound, and a player who played by eye was judged late. Now the play is drawn ahead (`kg.vpos`, `vis_lead_us` in
+`vavehero.c`): by how long the last frames took from the start of the drawing until their last rows went to the DMA,
+smoothed. fm1-emu with the screen timed measures it at about 13 ms in the DEMO. The panel's own refresh (an ST7789
+redraws at about 60 Hz) is not in it: that, and the rest, is the calibration's (the latency setting, from the average
+timing of a round).
+
 **Dinghy.** Upstream's newest commit is `ea1b6bf`, the tag `v0.5`, and every Dinghy file here is that one,
 except VaveHero's own changes (`PLATFORM.md`). Two of those changes would help every Dinghy app: `usb_retry` without
 its 25 ms busy wait, and the `FM1_NOTE_EDGE` hook. They are offered back to Dinghy rather than kept apart here.

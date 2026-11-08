@@ -419,7 +419,7 @@ static uint8_t ks_sky_ok;
 static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, const char *num, const char *right)
 {
     const kf_song_t *so = kg.song;
-    int32_t pos = kg.pos, boost = kg_boosting(), i, ocn;
+    int32_t pos = kg.vpos, boost = kg_boosting(), i, ocn;   /* (drawn where the song will be when the frame is seen) */
     uint8_t st[8] = {0};
     char s[24], *p;
     /* (the canvas starts as the background: vavehero.c's draw) the splash's sunset over the highway's far end, the

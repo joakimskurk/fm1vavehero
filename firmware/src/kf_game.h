@@ -45,7 +45,8 @@ typedef struct {
     int32_t oct;                                 /* the player's octave (OCT- / OCT+) */
     int16_t held[27];                            /* a key's held note, -1 none */
     uint8_t key_pitch[27];                       /* the pitch a key sounds, for its release */
-    int32_t pos;                                 /* where the song is (update) */
+    int32_t pos;                                 /* where the song is (update): what is heard, what is judged */
+    int32_t vpos;                                /* where it is drawn: pos, or a little ahead of it (vavehero.c) */
     uint8_t done, auto_on, midi_used;
     struct { uint8_t lane, big; uint32_t ms; } fx[8];   /* bursts at the line: big a hit, else a hold done (green) */
     uint32_t nfx;
@@ -119,7 +120,7 @@ static void kg_start(uint32_t idx, uint32_t level, uint32_t speed, uint32_t spre
     kg.done = 0; kg.midi_used = 0; kg.nfx = 0;
     kf_seq_start(s, t0, speed);
     kg.rr = 0xFFFFFFFFu / (kf_seq.fpt >> 8);
-    kg.pos = kg_pos_at(t0);
+    kg.pos = kg.vpos = kg_pos_at(t0);
 }
 
 static void kg_hit(uint32_t i, int32_t dt, uint32_t key)
@@ -269,7 +270,7 @@ static uint32_t kg_update(uint32_t frame)        /* 1: the song is over (4 beats
 {
     const kf_song_t *s = kg.song;
     uint32_t i;
-    kg.pos = kg_pos_at(frame);
+    kg.pos = kg.vpos = kg_pos_at(frame);
     if (kg.auto_on) kg_autoplay();
     for (i = kg.first; i < kg.n; i++) {
         if ((int32_t)(frame - kg_note_frame(i)) < 0) break;
