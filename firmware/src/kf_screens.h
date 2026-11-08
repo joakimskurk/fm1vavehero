@@ -413,6 +413,9 @@ static void ks_songs(const ks_menu_t *m, const char *tone)
     ks_knobs(KN, 0);
 }
 
+/* the sky over the highway, copied from flash into RAM once: from flash, every frame, it missed the flash cache */
+static uint16_t ks_sky[240u * KF_SKY_H] __attribute__((section(".pool")));
+static uint8_t ks_sky_ok;
 static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, const char *num, const char *right)
 {
     const kf_song_t *so = kg.song;
@@ -421,7 +424,8 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
     char s[24], *p;
     /* (the canvas starts as the background: vavehero.c's draw) the splash's sunset over the highway's far end, the
      * highway on the floor, its neon horizon */
-    for (i = 0; i < (int32_t)(240u * KF_SKY_H); i++) cv_px[KF_SKY_Y * 240u + (uint32_t)i] = KF_SKY[i];
+    if (!ks_sky_ok) { for (i = 0; i < (int32_t)(240u * KF_SKY_H); i++) ks_sky[i] = KF_SKY[i]; ks_sky_ok = 1; }
+    for (i = 0; i < (int32_t)(240u * KF_SKY_H); i++) cv_px[KF_SKY_Y * 240u + (uint32_t)i] = ks_sky[i];
     ks_highway_bg(boost, kg.spread);
     kfill_rows(KH_HIT, 222, K_BG);               /* (the keys' rows; the rest is drawn whole: vavehero.c's draw does not clear) */
     ks_beat_lines(pos, boost);

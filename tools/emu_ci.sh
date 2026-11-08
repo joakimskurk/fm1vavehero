@@ -16,4 +16,4 @@ if [ ! -x "$DIR/target/release/fm1-emu" ]; then
 fi
 echo "emu_ci: fm1-emu ready"
 EMU_MAX=${EMU_MAX:-45} timeout 1200 sh tools/emu_cpu.sh build/vavehero.fwsc   # (45 %: ROADMAP's ceiling)
-FM1_EMU="$DIR/target/release/fm1-emu" timeout 1200 python3 tools/emu_timing.py build/vavehero.fwsc build/vavehero.dis --ci   # (each audio block, each frame)
+FM1_EMU="$DIR/target/release/fm1-emu" FM1_LCD_TIMED=1 timeout 1500 python3 tools/emu_timing.py build/vavehero.fwsc build/vavehero.dis --ci   # (each audio block, each frame, the screen at its own speed)

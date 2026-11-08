@@ -213,3 +213,39 @@ past the last stop. The edge and the outline are now violet instead of almost bl
 only where the background requires it (the score over the sky and the hit words). Callgrind on the same script
 (`-Os`) gives this: the game screen costs about 7 % less per frame in the DEMO (ENGINE TOUR from bar 41) and about
 15 % less over all of `tests/kf/game.txt`. The title screen costs about 35 % less. The sky uses 9.6 KB of flash.
+
+## D11 (2026-11-08): the screen gets only what changed; Dinghy stays at 0.5
+
+**Decision.** The screen is sent in parts: only the blocks of a row that changed since the last frame, as rectangles.
+The SPI clock stays at Dinghy's 12 MHz until a faster one has been tried on a real FM-1. Dinghy stays at 0.5, its
+newest version, and VaveHero's two fixes in its platform are offered back to it.
+
+**Why.** Dinghy drives the screen at 12 MHz, and a whole 240 × 240 frame is 921 600 bits: 77 ms, at most 13 frames
+per second. fm1-emu with the screen timed (`FM1_LCD_TIMED=1`) showed it: 80 ms between frames. Most of a frame stays as
+it was, though: the lanes, the sky, the strips. In the DEMO about a third of the rows change a frame, and in them
+about a third of the width.
+
+- **How:** each row has 8 blocks of 30 px with a hash each (FNV-1a), in `vavehero.c`'s `send_changed`. A row's
+  changed blocks make its span, and rows with the same span make one rectangle. A rectangle narrower than the screen is
+  copied into one of two staging buffers before its DMA, so the next one is filled while the last one goes out.
+- **The heal band:** 4 rows a frame go out whole as well, walking round the screen. Whatever else the screen shows
+  (the update screen's text, a hash that matched by chance) is gone within a few seconds.
+- **Checked:** on the host the panel shows exactly the canvas after every one of 7 200 frames (the game, the results
+  and two random scripts). All screenshots are the same pixel for pixel.
+- **Measured in fm1-emu with the screen timed:** the DEMO went from 12 to 60 frames per second (16.0 ms between frames
+  at the median), and MIDI MODE keeps its 30. CI runs the timing guard (`tools/emu_timing.py`) with the screen timed.
+
+**The clock.** `LCD_BAUD` can be lowered: 2 is 20 MHz, 1 is 30 MHz. The panel is an ST7789 class, which is usually
+specified up to about 60 MHz. Neither Dinghy nor the FM-1's own firmware says what this board takes, and a wrong
+clock gives a broken picture. So the speed is tried on hardware before it changes.
+
+**Also from the timed and strict runs** (fm1-live with `FM1_STRICT=1`: measured cycles per instruction and the flash
+cache's misses). The tables the audio interrupt reads every frame, the sine table and the drive curves, are copied
+into RAM at the start, and so is the sky over the highway (11 KB of RAM, 10 KB of the pool). The flash cache's misses
+in the DEMO fell from 145 305 to 25 293. The audio interrupt's share of the cycles fell from 38.5 % to 36.6 %. The
+sound is the same, byte for byte.
+
+**Dinghy.** Upstream's newest commit is `ea1b6bf`, the tag `v0.5`, and every Dinghy file here is that one,
+except VaveHero's own changes (`PLATFORM.md`). Two of those changes would help every Dinghy app: `usb_retry` without
+its 25 ms busy wait, and the `FM1_NOTE_EDGE` hook. They are offered back to Dinghy rather than kept apart here.
+

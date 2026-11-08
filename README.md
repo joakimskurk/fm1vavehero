@@ -73,8 +73,8 @@ The key LEDs show what is coming: lit when the note is at the line, glowing when
 
 **Measured in fm1-emu:** the heaviest spot in the songs, bars 41–44 of ENGINE TOUR, played by the DEMO with the game
 running, uses 30.8 % of the chip for audio, and 33.6 % with the platform's interrupts. The heaviest audio block uses
-42 % of its time budget, and a frame is drawn in 3.1 ms (median) of the 16.7 ms it has at 60 frames per second
-(`tools/emu_timing.py`). All 25 patches and 4 drum kits are within 1.5 dB of the reference, and the full songs within
+42 % of its time budget. With the screen's SPI timed as on an FM-1 (12 MHz), the play holds 60 frames per second,
+because only what changed is sent (D11, measured with `tools/emu_timing.py`). All 25 patches and 4 drum kits are within 1.5 dB of the reference, and the full songs within
 0.8 dB. More in [docs/fm1-budget.md](docs/fm1-budget.md).
 
 ```sh
@@ -98,7 +98,7 @@ keys and buttons are on the computer's keyboard and mouse, and a MIDI keyboard w
 | [docs/songs.md](docs/songs.md) | Make your own songs: the channels, the rules and the export |
 | [docs/link.md](docs/link.md) | LINK: the layers from browser to USB-C, and the protocol |
 | [docs/fm1-budget.md](docs/fm1-budget.md) | Does it all fit on the FM-1? Memory, CPU, graphics, songs and score |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | The decisions D1–D10 |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | The decisions D1–D11 |
 | [songs/](songs/) | The four built-in songs as MIDI files, which are also templates. ENGINE TOUR shows all 29 sounds, CHROME HORIZON is a full song in D minor (`python3 tools/songs.py` makes them). |
 | [ROADMAP.md](ROADMAP.md) | The phases, with checkboxes |
 | [reference/](reference/) | The browser reference, the ground truth before the port |

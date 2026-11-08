@@ -20,8 +20,11 @@ Two runs:
     python3 tools/emu_timing.py build/vavehero.fwsc build/vavehero.dis [--ci] [--only demo|flood]
     FM1_EMU   the fm1-emu binary (default: ~/fm1-emu/target/release/fm1-emu)
 
---ci fails (exit 1) when an audio block takes more than 75 % of its time, or when a frame comes later than MAX_GAP_MS
-after the one before it (outside a song's start): a skipped frame, the main loop away."""
+--ci fails (exit 1) when an audio block takes more than 75 % of its time, when more than 5 % of the frames come later
+than LATE_MS after the one before, or one later than HARD_MS (outside a song's start).
+
+CI runs it with FM1_LCD_TIMED=1: the screen's transfers take their time at the SPI clock (12 MHz), as on an FM-1,
+not at once. The frame rate is then what an FM-1 would show."""
 import os
 import re
 import statistics
@@ -32,7 +35,11 @@ import tempfile
 RATE = 240e6                        # fm1-emu: instructions a second (tools/emu_cpu.sh)
 BLOCK = 256 / 44100 * RATE          # an audio block's time, in instructions
 AUDIO_MAX = 75.0                    # % of a block's time
-MAX_GAP_MS = {"demo": 25.0, "flood": 45.0}   # between frames: the play draws at 60 fps (16.7 ms), MIDI MODE at 30
+# between frames: the play draws at up to 60 fps (16.7 ms), MIDI MODE at 30 (33.3 ms). A frame now and then may come
+# late; most must not (LATE_MS, at most LATE_SHARE of them), and none very late (HARD_MS)
+LATE_MS = {"demo": 25.0, "flood": 45.0}
+LATE_SHARE = 0.05
+HARD_MS = {"demo": 50.0, "flood": 70.0}
 SKIP_MS = 300.0                     # after a song_start: its loading, left out
 
 
@@ -131,15 +138,18 @@ def report(name, hits, at, start_ms, ci):
     print(f"emu_timing {name}: frames {len(f)}: draw median {ms(statistics.median(dr)):.1f} ms, max {ms(max(dr)):.1f} ms "
           f"(with the interrupts in it); gaps median {statistics.median(g for _, g in gaps):.1f} ms, "
           f"max {max(g for _, g in gaps):.1f} ms")
-    long = [(s, g) for s, g in gaps if g > MAX_GAP_MS[name]]
+    long = [(s, g) for s, g in gaps if g > LATE_MS[name]]
+    worst = max(g for _, g in gaps)
     for s, g in long[:8]:
         print(f"emu_timing {name}:   a frame {g:.1f} ms after the one before, at {ms(s):.0f} ms")
-    ok = 100 * bmax / BLOCK <= AUDIO_MAX and not long
+    print(f"emu_timing {name}: {len(long)} of {len(gaps)} frames later than {LATE_MS[name]:.0f} ms")
+    ok = 100 * bmax / BLOCK <= AUDIO_MAX and len(long) <= LATE_SHARE * len(gaps) and worst <= HARD_MS[name]
     if ci and os.environ.get("GITHUB_ACTIONS"):
         print(f"::notice title=fm1-emu {name}::audio blocks max {100 * bmax / BLOCK:.0f} % of their time; "
               f"frame gaps max {max(g for _, g in gaps):.1f} ms")
     if not ok:
-        print(f"emu_timing {name}: FAIL (audio blocks at most {AUDIO_MAX:.0f} %, frames at most {MAX_GAP_MS[name]:.0f} ms apart)")
+        print(f"emu_timing {name}: FAIL (audio blocks at most {AUDIO_MAX:.0f} %; at most {100 * LATE_SHARE:.0f} % of the frames "
+              f"later than {LATE_MS[name]:.0f} ms, none later than {HARD_MS[name]:.0f} ms)")
     return ok
 
 

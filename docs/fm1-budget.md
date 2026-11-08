@@ -150,13 +150,17 @@ most within 0.3 dB. Every fourth bar of the first 30 seconds of all four songs i
 
 ## Graphics
 
-- A full screen is 240 × 240 × 2 bytes = 115 KB over SPI. DMA sends 240 × 64 pixels in about 3 ms, so the whole
-  screen takes about 11 ms. Meanwhile the processor can do other work (`LCD_IDLE`).
+- A full screen is 240 × 240 × 2 bytes = 115 KB over SPI. **Dinghy drives the SPI at 12 MHz** (`lcd.c`, `LCD_BAUD 4`:
+  60 MHz / 5), so a whole screen takes **77 ms**: at most 13 frames per second. (This page used to say 11 ms; that was
+  wrong by a factor of 7. fm1-emu with `FM1_LCD_TIMED=1` showed it: 80 ms between frames, 12 fps.) The processor does
+  other work meanwhile (`LCD_IDLE`). So VaveHero sends only what changed (D11): in the DEMO about 3 500 pixels a
+  frame instead of 57 600, and the play holds 60 frames per second with the screen timed.
 - The highway is rows of spans (about 150 rows × 17 spans), plus 20–40 capsules and text. That is about 150 000–300 000
   instructions per frame. **At 30 frames per second that is 2–4 % of the chip.**
 - Only the highway (rows 40–222) has to be drawn every frame. The top bar and the knob row are drawn only when they change. That is
   about 85 KB per frame, so 30 frames per second uses about a third of the SPI time, but little CPU.
-- Target: 30 frames per second, 60 if possible.
+- Target: 30 frames per second, 60 if possible. **Measured with the screen timed (D11):** the DEMO 60 fps (16.0 ms
+  between frames at the median, 2 of 305 frames over 25 ms, the longest 27 ms), MIDI MODE its 30 fps.
 - **Calculated (firmware 0.1):** the play screen in ENGINE TOUR's heaviest bars costs about 0.69 million
   instructions per frame on the chip (callgrind × 0.8), that is about 9 % of the chip at 30 frames per second.
   The highway colours are blended once at startup, and text is blended in RGB565. The whole screen is one canvas of 113 KB.

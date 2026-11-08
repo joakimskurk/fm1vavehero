@@ -332,6 +332,63 @@ static void draw_midi_mode(void)
     ks_knobs(KM, 5u);
 }
 
+/* the screen goes out over SPI at 12 MHz (lcd.c, LCD_BAUD 4): a whole frame is 921 600 bits, 77 ms. So only what
+ * changed since the last frame goes out. Each row is 8 blocks of 30 px with a hash each; a row's changed blocks make
+ * its span, rows with the same span one rectangle, and a rectangle narrower than the screen is copied out first (two
+ * staging buffers: one is filled while the other goes out). In the play about a third of the rows change a frame,
+ * and of them about a third of the width. A band of SEND_HEAL rows goes out whole besides, walking round the screen,
+ * so whatever else the screen may show (the update screen's text, a hash that matched by chance) is gone within a few
+ * seconds. Keys and MIDI are read while each part goes out (LCD_IDLE) */
+#define SEND_HEAL 4u
+#define SEND_BW 30u                              /* a block: 30 px, 8 a row */
+#define SEND_NB (240u / SEND_BW)
+#define SEND_STAGE (240u * 24u)                  /* px a staging buffer */
+static uint32_t blk_hash[240][SEND_NB], heal_y;
+static uint16_t send_stage[2][SEND_STAGE] __attribute__((section(".pool")));
+static void send_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+{
+    static uint32_t which;
+    if (w == 240u) {                             /* whole rows: straight from the canvas */
+        lcd_blit(0, y, 240u, h, cv_px + y * 240u);
+        return;
+    }
+    while (h) {
+        uint32_t n = SEND_STAGE / w, r, i;
+        uint16_t *s = send_stage[which];         /* (the other one may still be going out) */
+        if (n > h) n = h;
+        for (r = 0; r < n; r++) {
+            const uint16_t *src = cv_px + (y + r) * 240u + x;
+            for (i = 0; i < w; i++) s[r * w + i] = src[i];
+        }
+        lcd_blit(x, y, w, n, s);
+        which ^= 1u;
+        y += n;
+        h -= n;
+    }
+}
+static void send_changed(void)
+{
+    uint32_t y, b, y0 = 0, lo0 = SEND_NB, hi0 = 0;
+    for (y = 0; y <= 240u; y++) {
+        uint32_t lo = SEND_NB, hi = 0;
+        if (y < 240u) {
+            uint32_t heal = (y + 240u - heal_y) % 240u < SEND_HEAL;
+            const uint16_t *r = cv_px + y * 240u;
+            for (b = 0; b < SEND_NB; b++) {
+                uint32_t h = 2166136261u, i;
+                for (i = 0; i < SEND_BW; i++) h = (h ^ r[b * SEND_BW + i]) * 16777619u;   /* (FNV-1a) */
+                if (h != blk_hash[y][b] || heal) { if (lo == SEND_NB) lo = b; hi = b; }
+                blk_hash[y][b] = h;
+            }
+        }
+        if (lo != lo0 || hi != hi0) {            /* the span changes: the rectangle above ends */
+            if (lo0 != SEND_NB) send_rect(lo0 * SEND_BW, y0, (hi0 - lo0 + 1u) * SEND_BW, y - y0);
+            lo0 = lo; hi0 = hi; y0 = y;
+        }
+    }
+    heal_y = (heal_y + SEND_HEAL) % 240u;
+}
+
 static void draw(void)
 {
     static const char VER[] = "v" APP_VER;
@@ -365,7 +422,9 @@ static void draw(void)
     else draw_midi_mode();
     if (toast_ms && fm1_ms - toast_ms < 900u) ks_toast(toast_s);
     else toast_ms = 0;
-    cv_blit(0, 0);                               /* (the DMA goes on while the loop does) */
+    idle_ok = 1;
+    send_changed();                              /* (the last run's DMA goes on while the loop does) */
+    idle_ok = 0;
 }
 
 static int32_t enc_step(uint32_t enc, int32_t v, int32_t by, int32_t lo, int32_t hi, uint32_t *changed)

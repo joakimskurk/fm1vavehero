@@ -23,6 +23,10 @@
 #pragma once
 #include <stdint.h>
 #include "kf_tables.h"
+/* the tables the audio interrupt reads every frame, in RAM (copied in kf_init): read from flash they miss the flash
+ * cache (fm1-live with FM1_STRICT: KF_SINE and KF_DRIVE were a quarter of the misses). The same numbers */
+static int16_t kf_sine[4096];
+static int16_t kf_drive[KF_NDRIVE][257];
 
 #ifndef KF_POOL
 #define KF_POOL __attribute__((section(".pool")))   /* the big lines (zeroed at boot: platform.c's pool) */
@@ -436,7 +440,7 @@ static void kf_voice_tick(kf_voice_t *v)
         int32_t c = 0, f;
         if (p->vib) {
             int32_t depth = v->t >= 620 ? p->vib : p->vib * v->t / 620;
-            c = (depth * KF_SINE[((uint32_t)v->t * KF_VIB_STEP) >> 20]) >> 15;
+            c = (depth * kf_sine[((uint32_t)v->t * KF_VIB_STEP) >> 20]) >> 15;
         }
         if (v->det && v->t < 483) c += v->det * (483 - v->t) / 483;
         f = 65536 + ((c * 9693) >> 16);          /* 2^(c / 1200), c in cents Q8 */
@@ -470,9 +474,9 @@ static void kf_voice_tick(kf_voice_t *v)
             v->mi[o] += (int32_t)(((int64_t)(v->mtgt[o] - v->mi[o]) * p->c_mdec[o]) >> 24);
 #define KF_FM_STEP()                                                                     \
             uint32_t ci = cph >> 20;                                                     \
-            int32_t fr = (int32_t)((cph >> 4) & 0xFFFFu), a = KF_SINE[ci], b = KF_SINE[(ci + 1u) & 4095u]; \
+            int32_t fr = (int32_t)((cph >> 4) & 0xFFFFu), a = kf_sine[ci], b = kf_sine[(ci + 1u) & 4095u]; \
             s = a + (int32_t)(((int64_t)(b - a) * fr) >> 16);   /* the carrier, interpolated */ \
-            cph += cinc + (uint32_t)(((int64_t)KF_SINE[m0 >> 20] * x0 + (int64_t)KF_SINE[m1 >> 20] * x1) >> 15); \
+            cph += cinc + (uint32_t)(((int64_t)kf_sine[m0 >> 20] * x0 + (int64_t)kf_sine[m1 >> 20] * x1) >> 15); \
             m0 += i0; m1 += i1
         if (dr < 0)                              /* (with the drive or without: the patch decides, not the frame) */
             for (i = 0; i < KF_TICK; i++) {
@@ -481,7 +485,7 @@ static void kf_voice_tick(kf_voice_t *v)
                 env += envd;
             }
         else {
-            const int16_t *T = KF_DRIVE[dr];
+            const int16_t *T = kf_drive[dr];
             for (i = 0; i < KF_TICK; i++) {
                 KF_FM_STEP();
                 {
@@ -605,7 +609,7 @@ static void kf_voice_tick(kf_voice_t *v)
                 env += envd;
             }
         else {
-            const int16_t *T = KF_DRIVE[dr];
+            const int16_t *T = kf_drive[dr];
             if (!cr)
                 for (i = 0; i < KF_TICK; i++) {
                     KF_SVF_STEP();
@@ -665,7 +669,7 @@ static void kf_layer_tick(kf_layer_rt_t *L, int32_t *dry, int32_t *gate, int32_t
         uint32_t ph = L->ph, inc = L->inc;
         for (i = 0; i < (int32_t)KF_TICK; i++) {
             int32_t s, y;
-            if (d->wav == 3u) s = KF_SINE[ph >> 20];
+            if (d->wav == 3u) s = kf_sine[ph >> 20];
             else { int32_t q = (int32_t)(ph + 0x40000000u - 0x80000000u); s = 32768 - (int32_t)((uint32_t)(q ^ (q >> 31)) >> 15); }
             y = (int32_t)(((int64_t)s * g) >> 24);
             dry[i] += y;
@@ -809,8 +813,8 @@ static void kf_render(int32_t *out, uint32_t n)
                 int32_t c = C[i], t1, t2;
                 kf_cho[kf_cho_w & (KF_CHO_N - 1u)] = (int16_t)kf_sat16(c);
                 {
-                    int32_t d1 = 124186 + ((24832 * KF_SINE[kf_cho_ph[0] >> 20]) >> 15);   /* 11 ms +- 2.2 ms, Q8 frames */
-                    int32_t d2 = 191923 + ((34995 * KF_SINE[kf_cho_ph[1] >> 20]) >> 15);   /* 17 ms +- 3.1 ms */
+                    int32_t d1 = 124186 + ((24832 * kf_sine[kf_cho_ph[0] >> 20]) >> 15);   /* 11 ms +- 2.2 ms, Q8 frames */
+                    int32_t d2 = 191923 + ((34995 * kf_sine[kf_cho_ph[1] >> 20]) >> 15);   /* 17 ms +- 3.1 ms */
                     uint32_t p1 = kf_cho_w - (uint32_t)(d1 >> 8), p2 = kf_cho_w - (uint32_t)(d2 >> 8);
                     int32_t a1 = kf_cho[p1 & (KF_CHO_N - 1u)], b1 = kf_cho[(p1 - 1u) & (KF_CHO_N - 1u)];
                     int32_t a2 = kf_cho[p2 & (KF_CHO_N - 1u)], b2 = kf_cho[(p2 - 1u) & (KF_CHO_N - 1u)];
@@ -827,7 +831,7 @@ static void kf_render(int32_t *out, uint32_t n)
                 int32_t x = (D[i] * 23593) >> 15;        /* .72 */
                 const kf_kit_t *K = &KF_KIT[kf_kit];
                 if (K->drive >= 0) {
-                    x = kf_lut(KF_DRIVE[K->drive], x);
+                    x = kf_lut(kf_drive[K->drive], x);
                     if (K->crush) x += ((((((x * 8) + 16384) >> 15) * 4096) * K->crush) >> 15);   /* round(x 8) / 8 */
                     x = (x * K->level) >> 15;
                 }
@@ -913,6 +917,8 @@ static void kf_init(void)
 {
     static const uint32_t RT_MS = 2200u, GT_MS = 4000u;   /* the hall's and the gate's decay times (-60 dB) */
     uint32_t i;
+    for (i = 0; i < 4096u; i++) kf_sine[i] = KF_SINE[i];   /* (the RAM copies) */
+    for (i = 0; i < KF_NDRIVE * 257u; i++) kf_drive[i / 257u][i % 257u] = KF_DRIVE[i / 257u][i % 257u];
     for (i = 0; i < 4u; i++) {                   /* g = 10^(-3 L / (fs RT)) = 2^(-3 L log2(10) / (fs RT)), 32-bit only */
         uint32_t e = 3u * KF_RV_LEN[i] * 217706u / (KF_FS * RT_MS / 1000u);   /* Q16 (217706 = log2(10) 2^16) */
         kf_rv_g[i] = (int32_t)(kf_exp2_q16(-(int32_t)e) >> 1);
