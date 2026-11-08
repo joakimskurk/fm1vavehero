@@ -100,9 +100,14 @@ the high verse.
   line under the phrase. Flawless phrases fill the OP meter. Without OP notes the import makes phrases itself (two bars
   out of every four).
 - **The level** is the song's own, one of EASY, MED, HARD and EXP ([D12](DECISIONS.md)), as on the arcade machines:
-  the player chooses the song, not the level. Put a marker (or a text event) in the file that says `LEVEL EASY`,
-  `LEVEL MED`, `LEVEL HARD` or `LEVEL EXP`, anywhere in any track. Without one the song is MED. The chart is the play
-  track as you wrote it, at every level: write an EASY song to be easy.
+  the player chooses the song, not the level. The import counts it from the notes over time ([D13](DECISIONS.md)):
+  notes a second at the song's tempo, every chord note counted, over the whole song and over its busiest four bars.
+  The rating is 0.3 × the whole + 0.7 × the busiest, to one decimal: under 1.6 EASY, under 2.7 MED, under 3.8 HARD, from 3.8 EXP.
+  The report shows the rating and the notes a second bar by bar. The chart is the play track as you wrote it, so
+  write an EASY song to be easy.
+- **To set the level yourself,** put a marker (or a text event) in the file that says `LEVEL EASY`, `LEVEL MED`,
+  `LEVEL HARD` or `LEVEL EXP`, anywhere in any track. It overrides the count, and the report says what the notes alone
+  would have given.
 
   | Level | Rules | Write it with |
   |---|---|---|

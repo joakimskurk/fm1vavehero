@@ -276,6 +276,8 @@ What the level does:
 
 The built-in songs: FIRST LIGHT is EASY, NEON CARRIER and CHROME HORIZON are MED, ENGINE TOUR is HARD.
 
+(Changed the same day by D13: the level is counted from the notes over time, and a marker only overrides that.)
+
 **Why.** A level made by a program out of someone's song was a thinned copy of it: the notes on the beat, the top
 note of a chord. It played like another, weaker song. With the level fixed, the one who writes the song decides how
 it should feel to play, and the list of songs becomes a ladder from easy to hard. The level is also a promise: a MED
@@ -291,3 +293,34 @@ song is MED wherever it is played, and two players over LINK always play the sam
   ignored ([link.md](link.md)).
 - The firmware's songs carry one chart each (`firmware/gen/kf_songs.h`: `chart`, `nchart` and `level`), about 2 KB
   less flash. `kg_start` and `song_start` take no level; the rules read it from the song.
+
+## D13 (2026-11-08): the level is counted from the notes over time
+
+**Decision.** A song's level (D12) is counted from how many notes come how fast: notes a second at the song's own
+tempo, every note of a chord counted. Two numbers: over the whole song, from its first note to the end of its last,
+and over its busiest four bars (16 beats from any note on). The rating is 0.3 × the whole + 0.7 × the busiest, to one decimal.
+
+| Rating | Level |
+|---|---|
+| under 1.6 | EASY |
+| 1.6 to 2.7 | MED |
+| 2.7 to 3.8 | HARD |
+| 3.8 and up | EXP |
+
+A `LEVEL` marker in the file (D12) still sets the level, for a song that is harder or easier than its notes a second
+say. The import report gives the rating and both numbers, shows the notes a second bar by bar with the busiest four
+bars marked, and says when a marker overrides them.
+
+The built-in songs carry no marker any more. Their notes give them the levels they had: FIRST LIGHT 1.4 EASY, CHROME
+HORIZON 1.8 MED, NEON CARRIER 2.5 MED, ENGINE TOUR 2.9 HARD.
+
+**Why.** The level should say what the song asks of the hands, and the same way for every song, whoever made it.
+Notes over time is what the hands feel. The busiest stretch counts most, because that is where a song is lost; the
+whole song keeps one hard fill from making a calm song HARD. A song maker gets a level without having to choose one,
+and sees why it came out that way.
+
+**Not counted (yet):** the octave shifts, the chords' shapes, the jumps between lanes. Notes a second came first
+because they are easy to understand and to check. If playtests show songs at the wrong level, the next things to
+count are those.
+
+**SPEED** (the practice tempo) does not change a song's level: the level is the song's at its own tempo.

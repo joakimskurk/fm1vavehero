@@ -11,11 +11,12 @@ let failures = 0;
 const check = (ok, what) => { console.log((ok ? 'ok   ' : 'FAIL ') + what); if (!ok) failures++; };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 /* a test song as a DAW might write it: format 0, running status, note-on velocity 0 as note-off */
-function smf0(title, bpm, events, ppq = 96) {
+function smf0(title, bpm, events, ppq = 96, mark = null) {   /* mark: a marker meta event's text */
   events.sort((x, y) => x[0] - y[0] || (x[1][2] === 0 ? -1 : 1) - (y[1][2] === 0 ? -1 : 1));
   const vlq = n => { const o = [n & 127]; while ((n >>= 7)) o.unshift((n & 127) | 128); return o; };
   const us = Math.round(60e6 / bpm), name = [...Buffer.from(title)];
   const body = [0, 0xFF, 0x51, 3, (us >> 16) & 255, (us >> 8) & 255, us & 255, 0, 0xFF, 0x03, name.length, ...name];
+  if (mark) body.push(0, 0xFF, 0x06, Buffer.from(mark).length, ...Buffer.from(mark));
   let last = 0, run = 0;
   for (const [tick, bytes] of events) {
     body.push(...vlq(tick - last)); last = tick;
@@ -25,7 +26,7 @@ function smf0(title, bpm, events, ppq = 96) {
   const n = body.length;
   return Buffer.from([...Buffer.from('MThd'), 0, 0, 0, 6, 0, 0, 0, 1, ppq >> 8, ppq & 255, ...Buffer.from('MTrk'), (n >>> 24) & 255, (n >> 16) & 255, (n >> 8) & 255, n & 255, ...body]);
 }
-function emDrive() {                       /* E minor: needs a transpose, an octave climb, a chromatic note, a big chord */
+function emDrive(mark) {                   /* E minor: needs a transpose, an octave climb, a chromatic note, a big chord */
   const ppq = 96, ev = [], note = (ch, beat, pitch, len, vel = 100) => {
     ev.push([Math.round(beat * ppq), [0x90 | ch, pitch, vel]], [Math.round((beat + len) * ppq), [0x90 | ch, pitch, 0]]);
   };
@@ -43,7 +44,7 @@ function emDrive() {                       /* E minor: needs a transpose, an oct
   note(1, 0, 1, .1); note(1, 16, 0, .1);                              /* keyswitches on channel 2: FM BASS, then PULSE */
   note(1, 8, 7, .1);                                                   /* ...and one with no patch (BASS has three) */
   note(0, 16, 11, 8);                                                  /* the OP note, held over bars 5-6 */
-  return smf0('Em Drive', 100, ev, ppq);
+  return smf0('Em Drive', 100, ev, ppq, mark);
 }
 
 async function open(ctx) {
@@ -92,7 +93,12 @@ async function choose(page, song) {                       /* a song's level is i
   await screen(a.page, '02-songs');
   const charts = await a.page.evaluate(() => window.KF.SONGS.map(s => ({ title: s.title, level: window.KF.LEVELS[s.level], notes: window.KF.buildChart(s).notes.length, melody: s.melody.length })));
   check(charts.map(c => c.title + ' ' + c.level).join() === 'FIRST LIGHT EASY,NEON CARRIER MED,ENGINE TOUR HARD,CHROME HORIZON MED' && charts.every(c => c.notes > 10 && c.notes === c.melody),
-    'D12: one chart a song, at the level its LEVEL marker gives it, the play track as written: ' + JSON.stringify(charts));
+    'D12: one chart a song, at its own level, the play track as written: ' + JSON.stringify(charts));
+  const rates = await a.page.evaluate(() => window.KF.SONGS.map(s => ({ t: s.title, r: +s.rate.rating.toFixed(2), l: s.rate.level, own: s.level })));
+  check(rates.every(x => x.l === x.own), 'D13: the built-in songs have no LEVEL marker, their levels are counted from their notes over time: ' + JSON.stringify(rates));
+  const unit = await a.page.evaluate(() => [[2, 1], [1, 1], [.25, .2]].map(([step, len]) =>   /* 120 BPM, 32 beats: 1, 2, 8 notes a second */
+    window.KF.noteRate(Array.from({ length: 32 / step }, (_, i) => ({ t: 4 + i * step, len, pitch: 60 })), 120)).map(r => [+r.avg.toFixed(2), +r.peak.toFixed(2), r.level]));
+  check(JSON.stringify(unit) === '[[1.03,1,0],[2,2,1],[8.01,8,3]]', 'D13: a note every second beat at 120 BPM is EASY, one a beat MED, four a beat EXP: ' + JSON.stringify(unit));
   const blacks = await a.page.evaluate(() => window.KF.SONGS.flatMap(s => window.KF.buildChart(s).notes).filter(n => [1, 3, 6, 8, 10].includes(((n.pitch % 12) + 12) % 12)).length);
   check(blacks === 0, 'D1: no black keys in any chart');
 
@@ -154,8 +160,12 @@ async function choose(page, song) {                       /* a song's level is i
   check(/Patches: BASS FM BASS from bar 1, PULSE from bar 5/.test(imp.report) && /without a patch: channel 2, note 7/.test(imp.report), 'the keyswitches are reported, and the one with no patch is flagged');
   const emPh = await a.page.evaluate(() => window.KF.SONGS[4].phrases.map(r => r.a + '-' + r.b).join());
   check(emPh === '16-24' && /1 OP phrase from the OP note/.test(imp.report), 'the OP note (B-1 on channel 1, held) makes the OP phrase: ' + emPh);
-  const emLevel = await a.page.evaluate(() => window.KF.SONGS[4].level);
-  check(emLevel === 1 && /no LEVEL marker, so the song is MED/.test(imp.report), 'D12: a file without a LEVEL marker is MED, and the report says how to choose: level ' + emLevel);
+  const emLevel = await a.page.evaluate(() => { const s = window.KF.SONGS[4]; return { level: s.level, rate: s.rate.level, bars: s.rate.bars.length, graph: !!document.querySelector('#report .rate svg rect') }; });
+  check(emLevel.level === emLevel.rate && /from the notes over time \([0-9.]+: [0-9.]+ notes a second over the song, [0-9.]+ in its busiest four bars/.test(imp.report) && emLevel.graph,
+    'D13: a file without a LEVEL marker gets the level its notes over time give it, and the report shows them bar by bar: ' + JSON.stringify(emLevel));
+  const over = await a.page.evaluate(b64 => { const K = window.KF, u8 = Uint8Array.from(atob(b64), c => c.charCodeAt(0)), r = K.importSong(K.parseMidi(u8), 'em-exp.mid');
+    return { level: r.song.level, rate: r.song.rate.level, info: r.report.info.join(' | ') }; }, emDrive('LEVEL EXP').toString('base64'));
+  check(over.level === 3 && over.rate === emLevel.rate && /Level: EXP, from the LEVEL marker\. The notes over time alone say/.test(over.info), 'D13: a LEVEL marker overrides the notes: ' + JSON.stringify({ level: over.level, rate: over.rate }));
   await a.page.evaluate(() => window.KF.setAuto(true));
   await choose(a.page, 4); await a.page.keyboard.press('Enter');
   await waitResults(a.page);
@@ -387,6 +397,32 @@ async function choose(page, song) {                       /* a song's level is i
   await lead.page.keyboard.press('Escape');
   await sleep(400);
   check(await follow.page.evaluate(() => window.KF.G.scr) === 'songs', 'STOP from P1 brings P2 back to SONGS');
+
+  /* 5. the panel's knobs and SEQ, as on the FM-1: everything the firmware does can be done on the page, with a mouse
+     or a finger (a tap is a step, a drag turns, so does the wheel) */
+  const k = await open(ctx), kp = k.page;
+  await kp.evaluate(() => { window.KF.G.scr = 'songs'; window.KF.G.sel = 0; window.KF.setAuto(false); window.KF.setGrit(70); window.KF.setMaster(100); });
+  await sleep(200);
+  const pan = await kp.$('#panel'), pb = await pan.boundingBox(), ps = pb.width / 760, at = (x, y) => [pb.x + x * ps, pb.y + y * ps];
+  const st = () => kp.evaluate(() => { const G = window.KF.G; return { sel: G.sel, tone: G.tone, speed: G.speed, mix: G.mix, grit: G.grit, master: G.master, auto: G.auto }; });
+  const s0 = await st();
+  await kp.mouse.click(...at(150, 42));                                    /* SELECT, its right half: a step on */
+  await kp.mouse.click(...at(510, 42));                                    /* KNOB 2: TONE */
+  await kp.mouse.move(...at(590, 42)); await kp.mouse.down(); await kp.mouse.move(...at(590, 72), { steps: 6 }); await kp.mouse.up();   /* KNOB 3 dragged down: SPEED */
+  await kp.mouse.click(...at(670, 42));                                    /* KNOB 4, its left half: MIX down */
+  await kp.mouse.move(...at(232, 42)); await kp.mouse.wheel(0, -100);      /* ALGORITHM, the wheel up: GRIT */
+  await kp.mouse.move(...at(56, 42)); await kp.mouse.wheel(0, 100);        /* MASTER, the wheel down */
+  await kp.mouse.click(...at(464, 114));                                   /* SEQ: AUTO */
+  await sleep(150);
+  const s1 = await st();
+  check(s1.sel === s0.sel + 1 && s1.tone === (s0.tone + 1) % 6 && s1.speed === s0.speed - 20 && s1.mix === s0.mix - 10 && s1.grit === s0.grit + 10 &&
+    s1.master === s0.master - 5 && s1.auto === !s0.auto, 'the panel: SELECT, KNOB 2-4, ALGORITHM, MASTER and SEQ turn and press: ' + JSON.stringify([s0, s1]));
+  await kp.mouse.click(...at(410, 42));
+  check((await st()).sel === s1.sel, 'KNOB 1 does nothing in the song list (a song\'s level is its own)');
+  await screen(kp, '16-panel-songs'); await pan.screenshot({ path: path.join(OUT, '16b-panel.png') });
+  await kp.evaluate(() => { window.KF.setAuto(false); window.KF.setMaster(100); });
+  check(k.errors.length === 0, 'no page errors with the knobs' + (k.errors.length ? ': ' + k.errors.join(' | ') : ''));
+
   check(p1.errors.length === 0 && p2.errors.length === 0, 'no page errors in either window' + (p1.errors.concat(p2.errors).length ? ': ' + p1.errors.concat(p2.errors).join(' | ') : ''));
 
   await browser.close();

@@ -7,7 +7,8 @@
  *   splash     PLAY: the songs. FX: the DEMO (ENGINE TOUR from bar 41 on autoplay: the engine's worst case,
  *              which fm1-emu times in CI); HOME or PLAY ends it
  *   songs      SELECT the song (the last row: MIDI MODE; each song has its one level, D12), KNOB 2 the voice (TONE:
- *              SONG or one of five), KNOB 3 the speed (50-100 %), KNOB 4 MIX, ALGORITHM GRIT (D7); PLAY starts, GLO
+ *              SONG or one of five), KNOB 3 the speed (50-100 %), KNOB 4 MIX, ALGORITHM GRIT (D7, everywhere but
+ *              in a song, as MIX); PLAY starts, GLO
  *              turns SPREAD on and off (D2), SEQ AUTO (the song plays itself, its result is not kept), HOME back
  *   play       the eight keys of the layout play the lanes (C4..C5, or SPREAD's every other white key); OCT- OCT+
  *              follow the octave shifts; FX: OP BOOST when the six OPs are lit; PLAY pauses, HOME quits
@@ -303,6 +304,7 @@ static void leds(void)
     fm1_led_key(BTN_PLAY, play == 2 || (scr == SCR_SPLASH && (fm1_ms / 500u) % 2u == 0u));
     fm1_led_key(BTN_FX, fx == 2);
     fm1_led_key(BTN_GLO, set.spread != 0u);
+    fm1_led_key(BTN_SEQ, autoplay != 0u);           /* AUTO (as the reference's panel) */
 }
 
 /* ---- MIDI MODE LIVE's screen: the channels, their patches, the clock */
@@ -502,8 +504,6 @@ static void app_main(void)
             if (b & (1u << BTN_HOME)) { scr = SCR_SPLASH; redraw = 1; }
             if (b & (1u << BTN_GLO)) { set.spread ^= 1u; toast(set.spread ? "SPREAD ON" : "SPREAD OFF"); ch = 1; }
             if (b & (1u << BTN_SEQ)) { autoplay ^= 1u; toast(autoplay ? "AUTO ON" : "AUTO OFF"); }
-            v = enc_step(ENC_ALGORITHM, (int32_t)set.grit, 10, 0, 100, &ch);
-            if (v != (int32_t)set.grit) { set.grit = (uint8_t)v; kf_set_grit(set.grit); toast_num("GRIT ", (uint32_t)v, ""); }
             v = enc_step(ENC_SELECT, (int32_t)set.sel, 1, 0, (int32_t)KF_NSONG, &ch);
             if (v != (int32_t)set.sel) { set.sel = (uint8_t)v; redraw = 1; }
             (void)fm1_enc_take(ENC_KNOB1);         /* (KNOB 1: nothing on SONGS, a song's level is its own: D12) */
@@ -546,9 +546,11 @@ static void app_main(void)
             if (b & (1u << BTN_OCT_UP) && mm_oct < 2) mm_oct++;
             if ((e = fm1_enc_take(ENC_KNOB2)) != 0) { set.tone = (uint8_t)((set.tone + 6u + (uint32_t)(e % 6 + 6)) % 6u); toast(tone_name()); ch = 1; }
         }
-        if (scr != SCR_PLAY) {                   /* KNOB 4: MIX, everywhere but in a song */
+        if (scr != SCR_PLAY) {                   /* KNOB 4: MIX, and ALGORITHM: GRIT (D7), everywhere but in a song */
             v = enc_step(ENC_KNOB4, (int32_t)set.mix, 10, 0, 100, &ch);
             if (v != (int32_t)set.mix) { set.mix = (uint8_t)v; kf_set_mix(set.mix); toast_num("MIX ", (uint32_t)v, ""); }
+            v = enc_step(ENC_ALGORITHM, (int32_t)set.grit, 10, 0, 100, &ch);
+            if (v != (int32_t)set.grit) { set.grit = (uint8_t)v; kf_set_grit(set.grit); toast_num("GRIT ", (uint32_t)v, ""); }
         }
         if (ch) { dirty_set = 1; t_set = now_ms; }
 

@@ -72,7 +72,7 @@ from Dinghy). It plays like the reference: same rules, same note chart, same scr
 | | |
 |---|---|
 | The title screen | An 80s video game cover: the chrome logo, a striped sun and mountains. The game's own highway is the road into the sunset and plays itself on a neon floor. PLAY goes to the songs. FX starts the DEMO, ENGINE TOUR from bar 41 on autoplay. |
-| The songs | SELECT chooses the song. Each song has its own level, EASY, MED, HARD or EXP, as on the arcade machines ([D12](docs/DECISIONS.md)). KNOB 2 chooses the voice (TONE), KNOB 3 the speed and KNOB 4 MIX. ALGORITHM controls GRIT. GLO turns SPREAD on and off, and SEQ turns AUTO on and off (the song plays itself, and the result is not saved). PLAY starts. |
+| The songs | SELECT chooses the song. Each song has its own level, EASY, MED, HARD or EXP, as on the arcade machines, counted from its notes over time ([D12, D13](docs/DECISIONS.md)). KNOB 2 chooses the voice (TONE), KNOB 3 the speed and KNOB 4 MIX. ALGORITHM controls GRIT (on every screen but a song's). GLO turns SPREAD on and off, and SEQ turns AUTO on and off (the song plays itself, and the result is not saved). PLAY starts. |
 | During a song | The eight keys in the layout play the lanes. OCT− and OCT+ follow the octave shifts, FX triggers OP BOOST, PLAY pauses and HOME quits. |
 | The results | The best result per song is saved in flash. PLAY plays again, HOME goes to the songs. |
 | MIDI MODE | LIVE: the FM-1 is a sound module for the song, one part per channel, with keyswitch notes. The keys are sent out on channel 1. PREVIEW comes later. |

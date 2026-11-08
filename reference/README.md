@@ -6,7 +6,7 @@ as in RoboSeq and SkurkyMello.
 
 | File | Version | SHA-256 |
 |---|---|---|
-| `vavehero.html` | REF 0.1.13 (D12: a song has one fixed level, from its file's LEVEL marker, and one chart) | `14a37cf10ef300a8f56649b7364421cbcdd6826f9c86cbea426d432da8a9413b` |
+| `vavehero.html` | REF 0.1.14 (D13: the level counted from the notes over time, the import report's graph; the panel's knobs, MASTER, SELECT, ALGORITHM, KNOB 1–4, and SEQ) | `6643b5714b6272e542a4d8c19b08ff5c991f44f3846a211012cb8e815b25315b` |
 
 A new HTML is a new reference and gets its own commit with a new SHA-256 here.
 
@@ -14,7 +14,9 @@ A new HTML is a new reference and gets its own commit with a new SHA-256 here.
 
 Open `vavehero.html` in a browser. Chrome and Edge have WebMIDI; the others play with the computer keyboard and the
 panel. Press Enter (PLAY) on the title screen, or Space (FX) for the DEMO, choose a song with the up and down arrows
-(each song has its own level, D12).
+(each song has its own level, counted from its notes: D12, D13). The panel under the screen has the FM-1's knobs as
+well as its keys and buttons: MASTER, SELECT, ALGORITHM and KNOB 1–4. Drag a knob, turn it with the mouse wheel, or tap
+its left or right half; the page's help lists the computer keys for each.
 
 Two players on one machine: open the file in two windows, choose **Two windows** in both, and give each window its own
 MIDI keyboard. P1 chooses the song and starts.

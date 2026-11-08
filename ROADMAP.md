@@ -50,7 +50,10 @@ tested on the host and in fm1-emu.
 - [ ] Transposition per song, so the white keys follow the song's key
 - [ ] Practice mode: looping a section, “wait for the right key”, and a guide melody
 - [ ] A separate calibration screen: press in time with clicks
-- [x] D12: one fixed level per song (EASY, MED, HARD, EXP), a LEVEL marker in the MIDI file; ENGINE TOUR is HARD
+- [x] D12: one fixed level per song (EASY, MED, HARD, EXP); ENGINE TOUR is HARD
+- [x] D13: the level counted from the notes over time (notes a second, the whole song and its busiest four bars); a LEVEL marker overrides it
+- [x] The reference's panel has every control the firmware uses: MASTER, SELECT, ALGORITHM, KNOB 1–4 (drag, wheel or tap) and SEQ
+- [ ] The level: count octave shifts, chord shapes and lane jumps too, if playtests ask for it
 - [ ] An EXP song and 2–3 new songs
 - [ ] MIDI import: tempo changes, and a keyswitch note to override the automatic octave shifts
 - [x] Sound check: renders of the reference as the ground truth for the port, as in RoboSeq (`tools/ref_tour.cjs`, `tests/kf/parity.py`)
