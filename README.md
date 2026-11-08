@@ -9,7 +9,10 @@ each other. A Dinghy 0.5 app, in the same family as [RoboSeq](https://github.com
 
 > **Status: browser reference 0.1 and firmware 0.1 in progress, both playable.** The firmware has the game, all four
 > songs, the audio engine and MIDI MODE LIVE. It is tested on the host and measured in fm1-emu, but not yet tried on a
-> real FM-1. The plan is in [ROADMAP.md](ROADMAP.md).
+> real FM-1: the [page](https://joakimskurk.github.io/fm1vavehero/) asks you to tick that you know before it installs.
+> **Testers wanted:** if you have an FM-1 and know how to get it back (hold OCT− while switching on: the USB rescue;
+> M-UPGRADE for the official firmware), try it and tell us how it went in an
+> [issue](https://github.com/joakimskurk/fm1vavehero/issues). The plan is in [ROADMAP.md](ROADMAP.md).
 >
 > **This is an early version.** More songs will come, and song submissions are very welcome: see
 > [Make your own songs](#make-your-own-songs).

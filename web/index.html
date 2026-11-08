@@ -80,6 +80,10 @@
   .warn { margin: 22px 0 0; padding: 12px 16px; border: 2px solid #e0443a; border-radius: 4px; background: #3b1410;
           color: #ffdcd5; font-size: 15px; line-height: 1.5; }
   .warn b { color: #ff6f61; }
+  .testers { margin: 10px 0 0; padding: 10px 16px; border-left: 3px solid var(--amber); background: var(--panel); }
+  .testers b { color: var(--amber); }
+  .ack { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 14px; cursor: pointer; }
+  .ack input { width: 18px; height: 18px; margin: 3px 0 0; flex: none; accent-color: var(--neon); }
   .coffee { margin: 20px 0 0; text-align: center; }
   .coffee a { display: inline-block; padding: 10px 18px; border-radius: 8px; background: #ffdd00; color: #1b1309;
               font-weight: 700; text-decoration: none; }
@@ -100,6 +104,10 @@
 
   <p class="warn" role="note"><b>⚠ Not yet tried on a real FM-1.</b> VaveHero is built and tested on every change,
     in CI and in the FM-1 emulator, but it has not been tried on an actual device. Install it at your own risk.</p>
+  <p class="testers" role="note"><b>Testers wanted.</b> Have an FM-1, and know how to get it back (below the Install
+    button)? Be the first to try VaveHero on one, and tell us how it went in an
+    <a href="https://github.com/joakimskurk/fm1vavehero/issues/new?title=Tried+on+an+FM-1">issue on GitHub</a>: what
+    worked, what did not, and what the screen showed.</p>
 
   <div class="hero">
     <img src="screens/splash.gif" width="320" height="320" alt="The title screen: the chrome logo VAVEHERO over a striped sun and mountains, and the game's own highway as the road into the sunset, its notes coming towards you">
@@ -127,8 +135,10 @@
     <ol>
       <li>Open this page in <b>Chrome or Edge</b> on a computer (they can talk to the FM-1 over USB MIDI).</li>
       <li>Connect the FM-1 <b>directly</b> to the computer with a USB data cable, and switch it on.</li>
-      <li>Close other apps that use MIDI, press <b>Install</b> and allow MIDI when the browser asks.</li>
+      <li>Close other apps that use MIDI, tick the box, press <b>Install</b> and allow MIDI when the browser asks.</li>
     </ol>
+    <label class="ack"><input type="checkbox" id="ack"><span>I understand that VaveHero has not been tried on a real
+      FM-1 yet, and I install it at my own risk.</span></label>
     <button id="go" disabled>Install</button>
     <progress id="bar" max="100" value="0"></progress>
     <p id="status">Loading the firmware…</p>
@@ -227,7 +237,8 @@ const TEXT = {
 const say = (k, arg = "", cls = "") => { const s = $("status"); s.textContent = (TEXT[k] ?? k) + arg; s.className = cls; };
 const log = (t) => { $("log").textContent += t + "\n"; };
 let image = null, writing = false;
-const lock = (on) => { writing = on; $("go").disabled = on || !image; };
+const lock = (on) => { writing = on; $("go").disabled = on || !image || !$("ack").checked; };   /* (not tried on an FM-1: the box first) */
+$("ack").addEventListener("change", () => lock(writing));
 window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault(); e.returnValue = TEXT.leave; } });
 $("dl").href = meta.pkg;
 $("dl").setAttribute("download", meta.pkg.split("/").pop());
@@ -259,7 +270,7 @@ const step = (k, a) => {
   if (["start", "verify", "loader", "write", "reboot"].includes(k)) say(k);
 };
 $("go").addEventListener("click", async () => {
-  if (writing) return;
+  if (writing || !$("ack").checked) return;
   lock(true);
   let midi;
   try { midi = await navigator.requestMIDIAccess({ sysex: true }); }
