@@ -103,6 +103,7 @@ keys and buttons are on the computer's keyboard and mouse, and a MIDI keyboard w
 | [ROADMAP.md](ROADMAP.md) | The phases, with checkboxes |
 | [reference/](reference/) | The browser reference, the ground truth before the port |
 | [mockup/](mockup/) | The first mockup: the device and four screens (`node mockup/render.cjs` makes the PNGs) |
+| [web/](web/) | The site: a page with the installer in the browser (Web MIDI, Chrome or Edge) and the game in the browser. CI publishes it to GitHub Pages from the default branch (`web/make_site.py`) |
 | [tests/reference.cjs](tests/reference.cjs) | Plays the reference in Chromium and checks score, LINK and the bot |
 | [firmware/](firmware/) | The firmware: Dinghy 0.5 and the app `src/vavehero.c` |
 | [PLATFORM.md](PLATFORM.md) | Which Dinghy, and what has been changed from it |

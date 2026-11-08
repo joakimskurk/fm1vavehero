@@ -14,7 +14,8 @@ complete source under the same licence too.
 | The update loader's screen: `firmware/loader/ldr_screen.c`, `tests/ldr_screen_test.c` | Copyright (C) 2026 zvenson (from OberVave, the Firmware Hub's look); the idea, a loader that draws, its 5 x 7 letters and the order of things from [Skiff](https://github.com/illuminus5/skiff) by illuminus5, GPL-3.0 |
 | From OberVave: the storage (blobs, slots), `LCD_IDLE`, the SMK-37 wiring of `platform.c`, `store.h`, the pad event queue in `smk_input.h`, `tests/smk_flash_test.c`, `tests/run_tests.sh`, the CI workflow | Copyright (C) 2026 zvenson |
 | The wiring `platform.c`, the host mode `tests/`, the docs in `docs/` (`API.md`, `RULES.md`, `MAKE-IT-YOURS.md`, `SMK37.md`, `DINGHY_README.md`) | zvenson |
-| VaveHero: the app `firmware/src/vavehero.c` (from Dinghy's `dinghy.c` by zvenson) and its `kf_*` files, `reference/`, `mockup/`, `songs/`, `tools/songs.py`, `tests/reference.cjs`, `tests/run_vavehero.sh`, the project docs | Copyright (C) 2026 Joakim (joakimskurk) |
+| The browser installer's protocol: `web/fm1pkg.js`, `web/fm1ota.js` (unchanged, from [SLOOP](https://github.com/isod89/sloop-fm1) by way of FM-1 Clock); the install flow of `web/index.html` and the shape of `web/make_site.py`, after SLOOP's `web/index_pkg.html` and `web/make_site.py` | Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments (Felucca), with the changes of SLOOP (isod89) |
+| VaveHero: the app `firmware/src/vavehero.c` (from Dinghy's `dinghy.c` by zvenson) and its `kf_*` files, `reference/`, `mockup/`, `songs/`, `tools/songs.py`, `tests/reference.cjs`, `tests/run_vavehero.sh`, the page `web/index.html` and `web/make_site.py` (but for what is SLOOP's in them, above), the project docs | Copyright (C) 2026 Joakim (joakimskurk) |
 
 ## Third-party material
 
