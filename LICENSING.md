@@ -15,7 +15,7 @@ complete source under the same licence too.
 | From OberVave: the storage (blobs, slots), `LCD_IDLE`, the SMK-37 wiring of `platform.c`, `store.h`, the pad event queue in `smk_input.h`, `tests/smk_flash_test.c`, `tests/run_tests.sh`, the CI workflow | Copyright (C) 2026 zvenson |
 | The wiring `platform.c`, the host mode `tests/`, the docs in `docs/` (`API.md`, `RULES.md`, `MAKE-IT-YOURS.md`, `SMK37.md`, `DINGHY_README.md`) | zvenson |
 | The browser installer's protocol: `web/fm1pkg.js`, `web/fm1ota.js` (unchanged, from [SLOOP](https://github.com/isod89/sloop-fm1) by way of FM-1 Clock); the install flow of `web/index.html` and the shape of `web/make_site.py`, after SLOOP's `web/index_pkg.html` and `web/make_site.py` | Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments (Felucca), with the changes of SLOOP (isod89) |
-| VaveHero: the app `firmware/src/vavehero.c` (from Dinghy's `dinghy.c` by zvenson) and its `kf_*` files, `reference/`, `mockup/`, `songs/`, `tools/songs.py`, `tests/reference.cjs`, `tests/run_vavehero.sh`, the page `web/index.html` and `web/make_site.py` (but for what is SLOOP's in them, above), the project docs | Copyright (C) 2026 Joakim (joakimskurk) |
+| VaveHero: the app `firmware/src/vavehero.c` (from Dinghy's `dinghy.c` by zvenson) and its `kf_*` files, `reference/`, `mockup/`, `songs/`, `tools/songs.py`, `tests/reference.cjs`, `tests/run_vavehero.sh`, the page `web/index.html`, `web/make_site.py` (but for what is SLOOP's in them, above) and the link preview `web/make_og.py`, `web/og.png`, the project docs | Copyright (C) 2026 Joakim (joakimskurk) |
 
 ## Third-party material
 
@@ -23,6 +23,7 @@ complete source under the same licence too.
 | --- | --- | --- |
 | Terminus font 8x16 (ter-u16n), rendered into `firmware/gen/felucca_font.h` | SIL OFL 1.1 | `assets/fonts/Terminus-LICENSE.txt` |
 | Inter Display Black Italic (Rasmus Andersson): the VAVEHERO logo's letters, drawn by `tools/gen_splash.py` into `firmware/gen/kf_splash.h`, `assets/vavehero-logo.png` and the reference (the font itself is not in this tree) | SIL OFL 1.1 | <https://rsms.me/inter> |
+| Inter (Rasmus Andersson): the words of the link preview `web/og.png`, set by `web/make_og.py` (the font itself is not in this tree) | SIL OFL 1.1 | <https://rsms.me/inter> |
 | JieLi AC79 SDK: `uboot.boot`, `cfg_tool.bin`, `eq_cfg_hw.bin` are read from your SDK checkout at build time and placed in the package; no SDK files are in this tree | Apache-2.0 | <https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK> |
 
 ## The logo

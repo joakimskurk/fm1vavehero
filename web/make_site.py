@@ -7,7 +7,7 @@
   firmware/vavehero-VER.fwsc    the package the page installs (its SHA-256 in the page: a damaged download is
                                 never offered)
   play.html                     the reference (reference/vavehero.html): the game in the browser, no FM-1 needed
-  screens/                      the pictures (assets/vavehero-logo.png, docs/screens)
+  screens/                      the pictures (assets/vavehero-logo.png, docs/screens, the link preview web/og.png)
   .nojekyll                     (served as it is)
 
   python3 web/make_site.py build/vavehero.fwsc VERSION OUT_DIR
@@ -28,7 +28,8 @@ ROOT = HERE.parent
 BLOCKS, BLK, KEEP = 20, 0x30, 0x2F
 PICTURES = {"assets/vavehero-logo.png": "logo.png", "docs/screens/splash.gif": "splash.gif",
             "docs/screens/fw-play.png": "play.png", "docs/screens/fw-songs.png": "songs.png",
-            "docs/screens/fw-results.png": "results.png", "docs/screens/fw-midi.png": "midi.png"}
+            "docs/screens/fw-results.png": "results.png", "docs/screens/fw-midi.png": "midi.png",
+            "web/og.png": "og.png"}                     # the link preview (web/make_og.py)
 
 
 def product_of(raw):

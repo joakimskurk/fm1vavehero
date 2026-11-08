@@ -53,8 +53,8 @@ run "a song on AUTO to its results, again, back to the songs" sh tests/run_host.
 run "the results' screen is there" test -s build/host/vavehero-42000.png
 run "the sound file is there and not empty" test -s "$OUT/vavehero.wav"
 if [ -f build/vavehero.fwsc ]; then                 # (CI builds the package before the tests)
-    run "the site (web/make_site.py): the page with the installer, the package, the game in the browser" sh -c \
-        "python3 web/make_site.py build/vavehero.fwsc test build/site-test >/dev/null && test -s build/site-test/index.html && test -s build/site-test/play.html && ! grep -q '/\*META\*/\|/\*LIB\*/' build/site-test/index.html"
+    run "the site (web/make_site.py): the page with the installer, the package, the game in the browser, the link preview" sh -c \
+        "python3 web/make_site.py build/vavehero.fwsc test build/site-test >/dev/null && test -s build/site-test/index.html && test -s build/site-test/play.html && test -s build/site-test/screens/og.png && grep -q 'property=.og:image. content=.https://.*/screens/og.png' build/site-test/index.html && ! grep -q '/\*META\*/\|/\*LIB\*/' build/site-test/index.html"
 fi
 
 # the sanitizers: the whole app, through every script and two random ones (tests/kf/fuzz.py: buttons, encoders, keys,
