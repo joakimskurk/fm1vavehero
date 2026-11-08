@@ -61,6 +61,9 @@
           font-weight: 700; text-decoration: none; letter-spacing: .04em; }
   .play:hover { background: #8aecff; }
   ul.links { padding-left: 20px; }
+  .early { margin: 0 0 22px; padding: 12px 16px; border-left: 3px solid var(--cyan); background: var(--panel);
+           font-size: 15px; line-height: 1.5; }
+  .early b { color: var(--cyan); }
   .warn { margin: 22px 0 0; padding: 12px 16px; border: 2px solid #e0443a; border-radius: 4px; background: #3b1410;
           color: #ffdcd5; font-size: 15px; line-height: 1.5; }
   .warn b { color: #ff6f61; }
@@ -94,6 +97,10 @@
     own keys while its LEDs show what is coming. A synthwave band plays along: bass, pads, arpeggios and drums, every
     sound synthesised on the FM-1 itself. Play a phrase without a slip and the six
     operators fill up; press FX for OP BOOST.</p>
+
+  <p class="early" role="note"><b>An early version.</b> Four songs for now, and more will come. Song submissions
+    are very welcome: make one in your DAW as an ordinary MIDI file, try it in the
+    <a href="play.html">browser version</a>, and send it in (<a href="#songs">how</a>).</p>
 
   <div class="facts">
     <div class="fact"><b>8</b><span>lanes, one for each white key</span></div>
@@ -146,6 +153,17 @@
     MIDI keyboard as its keys. It is the reference the firmware is measured against: the same rules, songs and sound.
     You can load your own songs into it as MIDI files.</p>
   <a class="play" href="play.html">Play VaveHero in the browser</a>
+
+  <h2 id="songs">Your songs in VaveHero</h2>
+  <p>A song is an ordinary MIDI file from a DAW. Channel 1 is the part you play; channels 2–6 are the band (bass,
+    pad, arpeggio, lead, keys) and 10 the drums, and the audio engine plays it all in synthwave style, with several
+    patches for each part. Load the file into the <a href="play.html">browser version</a>: you get a report and can
+    play it right away. How it works, with templates:
+    <a href="https://github.com/joakimskurk/fm1vavehero/blob/HEAD/docs/songs.md">making your own songs</a>.</p>
+  <p>Then send it in: open an <a href="https://github.com/joakimskurk/fm1vavehero/issues">issue on GitHub</a> with the
+    MIDI file attached, or a pull request that adds it to <code>songs/</code>. Say who made it and that it may be
+    shared under the project's licence (GPL-3.0). Covers of other people's songs cannot be taken; songs of your own
+    can. Submissions are very welcome.</p>
 
   <h2>More</h2>
   <ul class="links">

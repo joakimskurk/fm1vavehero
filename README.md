@@ -10,6 +10,9 @@ each other. A Dinghy 0.5 app, in the same family as [RoboSeq](https://github.com
 > **Status: browser reference 0.1 and firmware 0.1 in progress, both playable.** The firmware has the game, all four
 > songs, the audio engine and MIDI MODE LIVE. It is tested on the host and measured in fm1-emu, but not yet tried on a
 > real FM-1. The plan is in [ROADMAP.md](ROADMAP.md).
+>
+> **This is an early version.** More songs will come, and song submissions are very welcome: see
+> [Make your own songs](#make-your-own-songs).
 
 <p align="center"><img src="docs/screens/splash.gif" width="360" alt="The title screen: the chrome logo VAVEHERO over a striped sun and mountains, and the game's highway as the road into the sunset, with the notes on their way towards you"></p>
 
@@ -28,6 +31,11 @@ instrument has several patches you select with keyswitch notes (notes 0–11) on
 dirty patches (DIRT BASS, FUZZ LEAD, DIRT drums and more) give the dirty French sound. Load the file into the
 reference, and you get a report and can play it right away. Connect the DAW with WebMIDI, and you hear the song
 through the audio engine while you make it. It is all in [docs/songs.md](docs/songs.md), and the templates are in [songs/](songs/).
+
+**Send it in.** Submissions are very welcome: VaveHero has four songs for now, and more will come. Open an
+[issue](https://github.com/joakimskurk/fm1vavehero/issues) with the MIDI file attached, or a pull request that adds it
+to `songs/`. Say who made it and that it may be shared under the project's licence (GPL-3.0). Covers of other people's
+songs cannot be taken; songs of your own can.
 
 **MIDI MODE** (at the bottom of the song list) connects the DAW straight to the FM-1 over USB-C. LIVE turns the FM-1
 into a sound module with a screen for the channels, and the keys are sent out to the DAW for recording. PREVIEW delays
