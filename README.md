@@ -2,11 +2,11 @@
 
 # VaveHero for M-VAVE FM-1
 
-I've always loved rhythm games, so this had to happen. Countless hours with rhythm game apps, in Japanese arcades
-and with Clone Hero, and then a little synth with keys, LEDs and a screen that almost asked for one.
+I've always loved rhythm games. Countless hours with the apps, in Japanese arcades and with Clone Hero, so this had
+to happen.
 
-VaveHero is that game for the FM-1. Notes come down a neon highway, you play them on the white keys while the key
-LEDs show what is coming, and a synthwave band plays along. As on the arcade machines, every song has its own level.
+VaveHero takes this to the FM-1. Notes come down a neon highway, you play them on the white keys while the key LEDs
+show what is coming, and a synthwave band plays along.
 
 > **An early version** with four songs, and more are coming. It is tested in CI and in an FM-1 emulator, but **not
 > yet tried on a real FM-1**: install it at your own risk. **Testers wanted:** have an FM-1? Tell us how it went in
