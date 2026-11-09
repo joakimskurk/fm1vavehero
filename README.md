@@ -5,6 +5,8 @@
 A rhythm game for the FM-1. Notes come down a neon highway, you play them on the white keys, and a synthwave band
 plays along. The key LEDs show what is coming.
 
+*I've always loved rhythm games, so this had to happen.*
+
 > **An early version** with four songs, and more are coming. It is tested in CI and in an FM-1 emulator, but **not
 > yet tried on a real FM-1**: install it at your own risk. **Testers wanted:** have an FM-1? Tell us how it went in
 > an [issue](https://github.com/joakimskurk/fm1vavehero/issues).
