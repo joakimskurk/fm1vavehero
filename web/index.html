@@ -43,7 +43,7 @@
   .hero img { display: block; width: 320px; max-width: 100%; height: auto; border: 1px solid var(--line);
               image-rendering: pixelated; }
   .lead { font-size: 18px; margin: 0 0 22px; }
-  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0 0 8px; }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 8px; }
   .fact { background: var(--panel); border-top: 3px solid var(--neon); padding: 10px 12px 12px; }
   .fact b { display: block; font-size: 26px; line-height: 1.1; color: var(--amber); }
   .fact span { display: block; color: var(--dim); font-size: 13px; line-height: 1.35; margin-top: 4px; }
@@ -68,7 +68,7 @@
   td:first-child { white-space: nowrap; font-weight: 700; color: var(--cyan); padding-right: 16px; }
   code { background: var(--panel); padding: 1px 5px; font-size: 14px; }
   .small { color: var(--dim); font-size: 14px; }
-  .shots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0 0; }
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0 0; }
   .shots img { width: 100%; height: auto; border: 1px solid var(--line); image-rendering: pixelated; }
   .play { display: inline-block; margin: 6px 0 0; padding: 12px 20px; background: var(--cyan); color: #06121a;
           font-weight: 700; text-decoration: none; letter-spacing: .04em; }
@@ -91,7 +91,6 @@
   footer { margin-top: 48px; border-top: 1px solid var(--line); padding-top: 16px; color: var(--dim); font-size: 13px; }
   footer p { margin: 0 0 8px; }
   @media (max-width: 560px) {
-    .facts, .shots { grid-template-columns: repeat(2, 1fr); }
     .hero img { width: 100%; }
     td:first-child { white-space: normal; }
   }
@@ -100,42 +99,36 @@
 <body>
 <main>
   <h1><img src="screens/logo.png" width="960" height="200" alt="VaveHero"></h1>
-  <p class="tag">A rhythm game firmware for the M-VAVE FM-1.</p>
+  <p class="tag">A rhythm game for the M-VAVE FM-1.</p>
 
-  <p class="warn" role="note"><b>⚠ Not yet tried on a real FM-1.</b> VaveHero is built and tested on every change,
-    in CI and in the FM-1 emulator, but it has not been tried on an actual device. Install it at your own risk.</p>
-  <p class="testers" role="note"><b>Testers wanted.</b> Have an FM-1, and know how to get it back (below the Install
-    button)? Be the first to try VaveHero on one, and tell us how it went in an
-    <a href="https://github.com/joakimskurk/fm1vavehero/issues/new?title=Tried+on+an+FM-1">issue on GitHub</a>: what
-    worked, what did not, and what the screen showed.</p>
+  <p class="warn" role="note"><b>⚠ Not yet tried on a real FM-1.</b> It is tested in CI and in an FM-1 emulator
+    only. Install it at your own risk.</p>
+  <p class="testers" role="note"><b>Testers wanted.</b> Have an FM-1? Try it and tell us how it went in an
+    <a href="https://github.com/joakimskurk/fm1vavehero/issues/new?title=Tried+on+an+FM-1">issue on GitHub</a>.</p>
 
   <div class="hero">
-    <img src="screens/splash.gif" width="320" height="320" alt="The title screen: the chrome logo VAVEHERO over a striped sun and mountains, and the game's own highway as the road into the sunset, its notes coming towards you">
-    <img src="screens/play.png" width="320" height="320" alt="A song on the FM-1's screen: the notes coming down eight lanes on a neon floor under a sunset, the hit line, the keys below, the score and the combo">
+    <img src="screens/splash.gif" width="320" height="320" alt="The title screen: the chrome logo VAVEHERO over a striped sun and mountains, and the game's highway as the road into the sunset">
+    <img src="screens/play.png" width="320" height="320" alt="A song on the FM-1's screen: notes coming down eight lanes on a neon floor, the hit line, the score and the combo">
   </div>
 
-  <p class="lead">The notes come down a neon highway in eight lanes, one for each white key from C4 to C5, and you play
-    them on the FM-1's own keys while its LEDs show what is coming. A synthwave band plays along: bass, pads, arpeggios and drums, every
-    sound synthesised on the FM-1 itself. Play a phrase without a slip and the six
-    operators fill up; press FX for OP BOOST.</p>
+  <p class="lead">Notes come down a neon highway. Play them on the FM-1's white keys while a synthwave band plays
+    along, every sound made on the FM-1 itself.</p>
 
-  <p class="early" role="note"><b>An early version.</b> Four songs for now, and more will come. Song submissions
-    are very welcome: make one in your DAW as an ordinary MIDI file, try it in the
-    <a href="play.html">browser version</a>, and send it in (<a href="#songs">how</a>).</p>
+  <p class="early" role="note"><b>An early version</b> with four songs. More are coming, and your own songs are
+    welcome (<a href="#songs">how</a>).</p>
 
   <div class="facts">
-    <div class="fact"><b>8</b><span>lanes, on the eight white keys from C4 to C5</span></div>
-    <div class="fact"><b>4</b><span>songs so far, each at its own level, EASY to HARD</span></div>
-    <div class="fact"><b>29</b><span>sounds and drum kits, synthesised on the FM-1 itself</span></div>
-    <div class="fact"><b>±35 ms</b><span>for a PERFECT, timed by what you hear</span></div>
+    <div class="fact"><b>8</b><span>lanes, on the white keys C4–C5</span></div>
+    <div class="fact"><b>4</b><span>songs, EASY to HARD</span></div>
+    <div class="fact"><b>29</b><span>synth sounds and drum kits</span></div>
   </div>
 
   <h2 id="install">Install</h2>
   <div class="box">
     <ol>
-      <li>Open this page in <b>Chrome or Edge</b> on a computer (they can talk to the FM-1 over USB MIDI).</li>
-      <li>Connect the FM-1 <b>directly</b> to the computer with a USB data cable, and switch it on.</li>
-      <li>Close other apps that use MIDI, tick the box, press <b>Install</b> and allow MIDI when the browser asks.</li>
+      <li>Open this page in <b>Chrome or Edge</b> on a computer.</li>
+      <li>Connect the FM-1 <b>directly</b> with a USB data cable, and switch it on.</li>
+      <li>Close other MIDI apps, tick the box and press <b>Install</b>.</li>
     </ol>
     <label class="ack"><input type="checkbox" id="ack"><span>I understand that VaveHero has not been tried on a real
       FM-1 yet, and I install it at my own risk.</span></label>
@@ -145,71 +138,52 @@
     <p class="pkg" id="pkg"></p>
     <details><summary>Log</summary><pre id="log"></pre></details>
   </div>
-  <p class="small">Do not unplug the cable while it writes (about a minute). If an install is cut off, the FM-1
-    stays in update mode: replug it and press Install again, and it finishes. If the FM-1 does not start at all, hold
-    <b>OCT−</b> while switching it on: it starts in the USB rescue, where an installer always works. To go back to
-    the official firmware, use M-VAVE's own updater M-UPGRADE. Installing firmware is at your own risk.</p>
+  <p class="small">It takes about a minute: do not unplug the cable. If it stops, replug and press Install again.
+    If the FM-1 will not start, hold <b>OCT−</b> while switching it on, and install again. To go back to the official
+    firmware, use M-VAVE's updater M-UPGRADE.</p>
 
   <h2>Playing it</h2>
   <table>
-    <tr><td>Title screen</td><td>PLAY goes to the songs. FX plays the DEMO: the game playing itself.</td></tr>
-    <tr><td>SELECT</td><td>Picks the song. Each song has its own level, EASY, MED, HARD or EXP, fixed as on the
-      arcade machines and counted from how many notes come how fast: you pick the song, and the song is the challenge. The last row is MIDI MODE.</td></tr>
-    <tr><td>KNOB 2–4</td><td>Your voice (TONE), the speed for practice, and the mix of you and the band.</td></tr>
-    <tr><td>ALGORITHM</td><td>GRIT: how dirty the sound is, from clean to pumping and crushed.</td></tr>
-    <tr><td>GLO</td><td>SPREAD: the lanes on every other white key, for big fingers.</td></tr>
-    <tr><td>SEQ</td><td>AUTO: the song plays itself (its result is not kept).</td></tr>
-    <tr><td>In a song</td><td>The white keys C4–C5 play the lanes (with SPREAD, every other white key from F3 to F5). OCT− and OCT+ follow the octave shifts, FX sets off
-      OP BOOST, PLAY pauses and HOME quits.</td></tr>
-    <tr><td>Results</td><td>The best result for each song is kept. PLAY plays it again, HOME goes back.</td></tr>
-    <tr><td>MIDI MODE</td><td>The FM-1 becomes the band's sound module for a DAW: one part on each channel, the keys
-      sent out on channel 1.</td></tr>
+    <tr><td>PLAY</td><td>Start a song, or pause it. On the title screen, FX plays a demo.</td></tr>
+    <tr><td>SELECT</td><td>Pick a song. Each song has its own level.</td></tr>
+    <tr><td>In a song</td><td>Play the notes on the white keys. OCT− and OCT+ when the song changes octave, FX for
+      OP BOOST, HOME to quit.</td></tr>
+    <tr><td>KNOB 2–4</td><td>Your sound, the speed for practice, and the mix.</td></tr>
+    <tr><td>ALGORITHM</td><td>GRIT: how dirty the sound is.</td></tr>
+    <tr><td>GLO</td><td>SPREAD: every other white key, for big fingers.</td></tr>
+    <tr><td>SEQ</td><td>AUTO: the song plays itself.</td></tr>
+    <tr><td>MIDI MODE</td><td>The last song in the list: the FM-1 as a sound module for your DAW.</td></tr>
   </table>
   <div class="shots">
-    <img src="screens/songs.png" width="240" height="240" alt="The song list in the night sky">
-    <img src="screens/play.png" width="240" height="240" alt="A song in play">
-    <img src="screens/results.png" width="240" height="240" alt="The results: the grade in chrome, the accuracy and the hits">
-    <img src="screens/midi.png" width="240" height="240" alt="MIDI MODE: the seven parts on their channels">
+    <img src="screens/songs.png" width="240" height="240" alt="The song list">
+    <img src="screens/results.png" width="240" height="240" alt="The results">
+    <img src="screens/midi.png" width="240" height="240" alt="MIDI MODE">
   </div>
 
   <h2>Play it in the browser</h2>
-  <p>No FM-1? The game also runs in the browser, with the FM-1's panel on the screen (its keys, buttons and knobs, which
-    you can click, drag or touch) and the computer's keyboard or a MIDI keyboard as its keys. It is the reference the firmware is measured against: the same rules, songs and sound.
-    You can load your own songs into it as MIDI files.</p>
+  <p>No FM-1? Play it in the browser, with the computer keyboard or a MIDI keyboard.</p>
   <a class="play" href="play.html">Play VaveHero in the browser</a>
 
   <h2 id="songs">Your songs in VaveHero</h2>
-  <p>A song is an ordinary MIDI file from a DAW. Channel 1 is the part you play; channels 2–6 are the band (bass,
-    pad, arpeggio, lead, keys) and 10 the drums, and the audio engine plays it all in synthwave style, with several
-    patches for each part. Its level is counted from its notes over time: how many notes a second, over the whole song
-    and in its busiest four bars (a marker <code>LEVEL EASY</code>, <code>MED</code>, <code>HARD</code> or
-    <code>EXP</code> in the file sets it yourself). Load the file into the <a href="play.html">browser version</a>: you get a report and can
-    play it right away. How it works, with templates:
+  <p>A song is an ordinary MIDI file: channel 1 is the part you play, the other channels are the band. Try yours in
+    the <a href="play.html">browser version</a>, then send it in an
+    <a href="https://github.com/joakimskurk/fm1vavehero/issues">issue on GitHub</a>. Your own songs only, not covers,
+    and say that it may be shared under the GPL-3.0. How to make one:
     <a href="https://github.com/joakimskurk/fm1vavehero/blob/HEAD/docs/songs.md">making your own songs</a>.</p>
-  <p>Then send it in: open an <a href="https://github.com/joakimskurk/fm1vavehero/issues">issue on GitHub</a> with the
-    MIDI file attached, or a pull request that adds it to <code>songs/</code>. Say who made it and that it may be
-    shared under the project's licence (GPL-3.0). Covers of other people's songs cannot be taken; songs of your own
-    can. Submissions are very welcome.</p>
 
   <h2>More</h2>
   <ul class="links">
-    <li><a href="https://github.com/joakimskurk/fm1vavehero">The source on GitHub</a>, with everything about how it is made:
-      <a href="https://github.com/joakimskurk/fm1vavehero/blob/HEAD/docs/songs.md">making your own songs</a>,
-      <a href="https://github.com/joakimskurk/fm1vavehero/blob/HEAD/docs/DECISIONS.md">the decisions</a>,
-      <a href="https://github.com/joakimskurk/fm1vavehero/blob/HEAD/docs/fm1-budget.md">what fits on the FM-1</a>.</li>
-    <li><a id="dl" href="#">Download the firmware file</a> (<code>.fwsc</code>), to install it another way
-      (<code>tools/fm1_install.py</code>).</li>
-    <li>Try the firmware itself without an FM-1: open the file in <a href="https://joakimeriksson.github.io/fm1-emu/" target="_blank" rel="noopener">fm1-emu</a>,
-      the FM-1 emulator, in the browser.</li>
+    <li><a href="https://github.com/joakimskurk/fm1vavehero">The source on GitHub</a></li>
+    <li><a id="dl" href="#">Download the firmware file</a> (<code>.fwsc</code>)</li>
+    <li>Try the firmware without an FM-1 in <a href="https://joakimeriksson.github.io/fm1-emu/" target="_blank" rel="noopener">fm1-emu</a>,
+      an FM-1 emulator in the browser</li>
   </ul>
 
   <footer>
-    <p>VaveHero is free software under the GPL-3.0, with no warranty. It runs on
-      <a href="https://github.com/zvenson/dinghy">Dinghy</a> (zvenson), built on
-      <a href="https://github.com/hugelton/Felucca">Felucca</a> by Leo Kuroshita (Hügelton Instruments) and the platform of
-      <a href="https://github.com/isod89/sloop-fm1">SLOOP</a> (isod89), whose installer this page uses. The logo's letters
-      are Inter Display (Rasmus Andersson, SIL Open Font License).</p>
-    <p>"M-VAVE" and "FM-1" belong to their owners; this is a fan project, not an official M-VAVE product.</p>
+    <p>Free software (GPL-3.0), with no warranty. Built on <a href="https://github.com/zvenson/dinghy">Dinghy</a>
+      (zvenson), <a href="https://github.com/hugelton/Felucca">Felucca</a> (Leo Kuroshita, Hügelton Instruments) and
+      <a href="https://github.com/isod89/sloop-fm1">SLOOP</a> (isod89).</p>
+    <p>A fan project, not an official M-VAVE product.</p>
     <p class="coffee"><a href="https://buymeacoffee.com/skurk" target="_blank" rel="noopener">☕ Buy me a coffee</a></p>
   </footer>
 </main>
