@@ -338,8 +338,10 @@ the solo, as an OP phrase is marked with note 11. In a solo:
   track, so the white keys stay in the key the song was written in.
 - **Nothing is judged:** no score, no WRONG, the combo kept. A note at a solo's edge is judged as ever, even when it is
   pressed a little early, inside the solo.
-- The play track's notes inside a solo are not in the chart (the import report says how many), and an octave shift
-  that would fall inside one is moved to its end.
+- The play track's notes inside a solo are not in the chart (the import report says how many). An octave shift
+  inside a solo is not judged: it happens by itself, marked AUTO. OCT− and OCT+ move the solo's octave freely, and
+  when the solo ends the octave is the song's again.
+- The song lasts at least to its last solo's end, and a solo is part of the song's identity (LINK, below).
 
 CHROME HORIZON has one, over its breakdown (bars 25–28).
 
@@ -354,3 +356,21 @@ at the start goes as soon as the first note comes onto the highway.
 looked for them from the window's first note, which has passed a short note before its release comes, so the key
 stayed lit and its voice on. It now has its own first note to let go of. `tests/kf/kf_game_test.c` checks that no key is
 left sounding after a song on autoplay.
+
+**Checked afterwards** (two reviews, one of the firmware and one of the reference, each with its own test programs):
+
+- A jump of two octaves into the phrase after a solo put its second shift after the phrase's first note, and the
+  song would not start. Every shift now lands before the note it is for, a jump of several octaves too.
+- A shift inside a solo could give a MISS. It now happens by itself (above).
+- AUTO's and the DEMO's results were kept as best results in the reference; on the FM-1 they never were. Now neither
+  keeps them.
+- A solo at the end of a song was cut off: the song's end now counts its solos.
+- The LEVEL marker as some DAWs write it (a NUL at its end, `LEVEL_HARD`) is understood.
+- The song's identity now covers its level and its solos, so two players over LINK always play the same game. LINK's
+  protocol is version 2: no CC 103.
+- The firmware: a MIDI note held across an octave shift kept sounding (its note-off went to another key); a MIDI
+  note just after a shift was judged in the player's octave rather than the song's; pausing during a hold and letting
+  go gave the full hold; an autoplay note's release could cut the next note on the same key; the SEQ LED was off in
+  the DEMO; turns of a knob that a screen did not read were applied on the next screen. All fixed, with tests where
+  the rules can show it.
+- KNOB 2 (TONE) and KNOB 4 (MIX) work during a song on the FM-1 too, as in the reference, and KNOB 3 shows the speed.

@@ -26,6 +26,16 @@ function smf0(title, bpm, events, ppq = 96, mark = null) {   /* mark: a marker m
   const n = body.length;
   return Buffer.from([...Buffer.from('MThd'), 0, 0, 0, 6, 0, 0, 0, 1, ppq >> 8, ppq & 255, ...Buffer.from('MTrk'), (n >>> 24) & 255, (n >> 16) & 255, (n >> 8) & 255, n & 255, ...body]);
 }
+function soloEdge() {                       /* D14 at its edges: a FREE SOLO up to a tick before the next phrase, two octaves up */
+  const ppq = 96, ev = [], note = (ch, beat, pitch, len, vel = 100) => {
+    ev.push([Math.round(beat * ppq), [0x90 | ch, pitch, vel]], [Math.round((beat + len) * ppq), [0x90 | ch, pitch, 0]]);
+  };
+  for (let b = 4; b < 16; b++) note(0, b, [60, 62, 64, 65][b % 4], .9);       /* C4 .. F4 */
+  note(0, 16, 10, 16 - 1 / 96);                                         /* the SOLO note (A#-1), to a tick before beat 32 */
+  for (let b = 32; b < 40; b++) note(0, b, [86, 88, 89, 91][b % 4], .9);      /* D6 .. G6: two octaves up */
+  for (let b = 0; b < 40; b++) note(9, b, b % 2 ? 38 : 36, .1, 110);
+  return smf0('Solo Edge', 120, ev, ppq);
+}
 function emDrive(mark) {                   /* E minor: needs a transpose, an octave climb, a chromatic note, a big chord */
   const ppq = 96, ev = [], note = (ch, beat, pitch, len, vel = 100) => {
     ev.push([Math.round(beat * ppq), [0x90 | ch, pitch, vel]], [Math.round((beat + len) * ppq), [0x90 | ch, pitch, 0]]);
@@ -116,6 +126,8 @@ async function choose(page, song) {                       /* a song's level is i
   await waitResults(a.page);
   let L = await a.page.evaluate(() => window.KF.G.last);
   check(L.acc === 100 && L.counts.M === 0 && L.grade === 'S', `FIRST LIGHT (EASY) on autoplay: ${L.acc.toFixed(1)}% ${L.grade}, ${L.counts.M} misses`);
+  const kept = await a.page.evaluate(() => { const s = window.KF.SONGS[0]; return { newBest: window.KF.G.last.newBest, stored: localStorage.getItem(`vavehero.best.${s.hash}.${s.level}`) }; });
+  check(kept.newBest === false && kept.stored === null, 'AUTO\'s result is not kept (as on the FM-1): ' + JSON.stringify(kept));
   check(Math.abs(L.meanDt) < 5, `mean timing ${L.meanDt.toFixed(2)} ms`);
   await screen(a.page, '04-first-light-results');
 
@@ -174,6 +186,27 @@ async function choose(page, song) {                       /* a song's level is i
   const over = await a.page.evaluate(b64 => { const K = window.KF, u8 = Uint8Array.from(atob(b64), c => c.charCodeAt(0)), r = K.importSong(K.parseMidi(u8), 'em-exp.mid');
     return { level: r.song.level, rate: r.song.rate.level, info: r.report.info.join(' | ') }; }, emDrive('LEVEL EXP').toString('base64'));
   check(over.level === 3 && over.rate === emLevel.rate && /Level: EXP, from the LEVEL marker\. The notes over time alone say/.test(over.info), 'D13: a LEVEL marker overrides the notes: ' + JSON.stringify({ level: over.level, rate: over.rate }));
+  const marks = await a.page.evaluate(list => list.map(b64 => { const K = window.KF; return K.importSong(K.parseMidi(Uint8Array.from(atob(b64), c => c.charCodeAt(0))), 'm.mid').song.level; }),
+    ['LEVEL HARD\u0000', 'LEVEL_HARD', 'level: easy'].map(m => emDrive(m).toString('base64')));
+  check(JSON.stringify(marks) === '[2,2,0]', 'the LEVEL marker as DAWs write it: with a NUL at its end, LEVEL_HARD, "level: easy": ' + JSON.stringify(marks));
+  const edge = await a.page.evaluate(b64 => {
+    const K = window.KF, u8 = Uint8Array.from(atob(b64), c => c.charCodeAt(0)), r = K.importSong(K.parseMidi(u8), 'solo-edge.mid');
+    let chart = 'ok'; try { K.buildChart(r.song); } catch (e) { chart = String(e); }
+    return { octs: r.song.octs.map(e => e.t), solos: r.song.solos.map(x => x.a + '-' + x.b.toFixed(2)), end: r.song.end, chart, hash: r.song.hash, plain: K.SONGS.some(s => s.hash === r.song.hash) };
+  }, soloEdge().toString('base64'));
+  check(edge.chart === 'ok' && edge.octs.length === 2 && edge.octs.every(t => t >= 16 && t < 32), 'D14: two octave shifts into the next phrase fall before its first note, inside the solo (they come by themselves there): ' + JSON.stringify(edge));
+  const solo2 = await a.page.evaluate(b64 => {                    /* the solo's two shifts, played (from beat 28, as the DEMO seeks) */
+    const K = window.KF; K.setAuto(false);
+    const res = K.addSong(Uint8Array.from(atob(b64), c => c.charCodeAt(0)), 'solo-edge.mid', false); K.G.scr = 'songs'; K.G.sel = res.index;
+    K.startSong(res.index, 100, false); const p = K.play; p.start -= 28 * 60 / p.bpm;
+    for (const n of p.notes) if (n.t < 28) n.state = 'done';
+    return res.index;
+  }, soloEdge().toString('base64'));
+  await waitBeat(a.page, 32.6);
+  const sh = await a.page.evaluate(() => ({ octs: window.KF.play.octs.map(e => e.state).join(), oct: window.KF.G.oct, missS: window.KF.play.counts.M }));
+  check(sh.octs === 'auto,auto' && sh.oct === 2, 'D14: the shifts inside the FREE SOLO happen by themselves, no MISS, the octave the song\'s after it: ' + JSON.stringify(sh));
+  await a.page.keyboard.press('Escape');
+  await a.page.evaluate(i => { window.KF.SONGS.splice(i, 1); }, solo2);
   await a.page.evaluate(() => window.KF.setAuto(true));
   await choose(a.page, 4); await a.page.keyboard.press('Enter');
   await waitResults(a.page);

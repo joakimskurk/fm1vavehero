@@ -92,6 +92,7 @@ static int32_t best_put(uint32_t song, int32_t acc)   /* 1: a new best */
 static uint32_t tone_patch(void) { return set.tone ? KF_PART_FIRST[KF_P_PLAY] + set.tone - 1u : kf_seq_play_patch(); }
 static const char *tone_name(void) { return set.tone ? KF_PATCH[KF_PART_FIRST[KF_P_PLAY] + set.tone - 1u].name : "SONG"; }
 static uint8_t key_note[27];                     /* the pitch each key sounds (for its release) */
+static uint8_t midi_key[128];                    /* in a song: the key + 1 a MIDI note went to (0 none), for its note-off */
 static void kg_sound_on(uint32_t key, uint32_t pitch, int32_t detune, uint32_t bright)
 {
     if (key >= 27u) return;
@@ -118,7 +119,7 @@ static const char *const PART_NAME7[7] = {"PLAY", "BASS", "PAD", "ARP", "LEAD", 
 static const int8_t CH_PART[16] = {0, 1, 2, 3, 4, 5, -1, -1, -1, 6, -1, -1, -1, -1, -1, -1};
 static uint8_t live_patch[7];
 static uint32_t idle_ok, midi_seen, clk_n, clk_t0, clk_bpm_x100, ch_act[16];
-static void kg_press(uint32_t key, uint32_t frame);
+static void kg_press_oct(uint32_t key, uint32_t frame, int32_t oct);
 static void midi_in(void)
 {
     uint8_t st, d1, d2;
@@ -137,10 +138,14 @@ static void midi_in(void)
         if (st == 0xFCu) { if (scr == SCR_MIDI) { kf_ev_t e = {0, KF_EV_ALLOFF, 0, 0, 0, 0, 0, 0}; kf_post(&e); } continue; }
         if (!on && !off) continue;
         if (scr == SCR_PLAY && ch == 0u && !paused && !demo) {   /* a MIDI keyboard plays the game: notes as FM-1 keys */
-            int32_t key = (int32_t)d1 - 53 - 12 * kg_oct_at(kg.pos);
+            int32_t oct = kg_oct_at(kg.pos), key = (int32_t)d1 - 53 - 12 * oct;   /* (in the song's octave, as the reference) */
             if (d1 < 12u) continue;
             kg.midi_used = 1;
-            if (key >= 0 && key < 27) { if (on) kg_press((uint32_t)key, heard_now()); else kg_release((uint32_t)key, heard_now()); }
+            if (on) { if (key >= 0 && key < 27) { midi_key[d1 & 127u] = (uint8_t)(key + 1); kg_press_oct((uint32_t)key, heard_now(), oct); } }
+            else if (midi_key[d1 & 127u]) {      /* (the key its note-on went to: a shift between them does not strand it) */
+                kg_release(midi_key[d1 & 127u] - 1u, heard_now());
+                midi_key[d1 & 127u] = 0;
+            }
             continue;
         }
         if (scr != SCR_MIDI) continue;
@@ -231,6 +236,8 @@ static void voices_off(void)
 }
 static void song_start(uint32_t idx, uint32_t is_demo)
 {
+    uint32_t k;
+    for (k = 0; k < 128u; k++) midi_key[k] = 0;
     voices_off();
     demo = is_demo;
     kg_start(idx, is_demo ? 100u : set.speed, is_demo ? 0u : set.spread, kf_now + 6615u);   /* beat 0 in 150 ms */
@@ -251,6 +258,8 @@ static void song_pause(void)
 {
     if (!paused) {
         kf_ev_t e = {0, KF_EV_ALLOFF, 0, 0, 0, 0, 0, 0};
+        uint32_t k, now = heard_now();
+        for (k = 0; k < 27u; k++) if (kg.held[k] >= 0 || key_note[k]) kg_release(k, now);   /* (let go now, as the reference: a hold ends where it was) */
         voices_off();
         kf_sched_clear();
         kf_post(&e);
@@ -306,7 +315,7 @@ static void leds(void)
     fm1_led_key(BTN_PLAY, play == 2 || (scr == SCR_SPLASH && (fm1_ms / 500u) % 2u == 0u));
     fm1_led_key(BTN_FX, fx == 2);
     fm1_led_key(BTN_GLO, set.spread != 0u);
-    fm1_led_key(BTN_SEQ, autoplay != 0u);           /* AUTO (as the reference's panel) */
+    fm1_led_key(BTN_SEQ, autoplay != 0u || (scr == SCR_PLAY && demo));   /* AUTO, and the DEMO (as the reference's panel) */
 }
 
 /* ---- MIDI MODE LIVE's screen: the channels, their patches, the clock */
@@ -486,7 +495,7 @@ static void app_main(void)
     scr = SCR_SPLASH;
 
     for (;;) {
-        uint32_t b, rel, now_ms, ch = 0;
+        uint32_t b, rel, now_ms, ch = 0, k;
         int32_t e, v;
         platform_poll();
         keys_in();
@@ -548,11 +557,19 @@ static void app_main(void)
             if (b & (1u << BTN_OCT_UP) && mm_oct < 2) mm_oct++;
             if ((e = fm1_enc_take(ENC_KNOB2)) != 0) { set.tone = (uint8_t)((set.tone + 6u + (uint32_t)(e % 6 + 6)) % 6u); toast(tone_name()); ch = 1; }
         }
-        if (scr != SCR_PLAY) {                   /* KNOB 4: MIX, and ALGORITHM: GRIT (D7), everywhere but in a song */
-            v = enc_step(ENC_KNOB4, (int32_t)set.mix, 10, 0, 100, &ch);
-            if (v != (int32_t)set.mix) { set.mix = (uint8_t)v; kf_set_mix(set.mix); toast_num("MIX ", (uint32_t)v, ""); }
+        if (scr == SCR_PLAY) {                   /* in a song, as the reference: KNOB 2 TONE; KNOB 3 shows the speed */
+            if ((e = fm1_enc_take(ENC_KNOB2)) != 0) { set.tone = (uint8_t)((set.tone + 6u + (uint32_t)(e % 6 + 6)) % 6u); toast(tone_name()); ch = 1; }
+            if (fm1_enc_take(ENC_KNOB3) != 0) toast_num("SPEED ", kg.speed, "%");
+        }
+        v = enc_step(ENC_KNOB4, (int32_t)set.mix, 10, 0, 100, &ch);   /* KNOB 4: MIX, everywhere */
+        if (v != (int32_t)set.mix) { set.mix = (uint8_t)v; kf_set_mix(set.mix); toast_num("MIX ", (uint32_t)v, ""); }
+        if (scr != SCR_PLAY) {                   /* ALGORITHM: GRIT (D7), everywhere but in a song */
             v = enc_step(ENC_ALGORITHM, (int32_t)set.grit, 10, 0, 100, &ch);
             if (v != (int32_t)set.grit) { set.grit = (uint8_t)v; kf_set_grit(set.grit); toast_num("GRIT ", (uint32_t)v, ""); }
+        }
+        {                                        /* turns no screen took are dropped, not kept for the next screen */
+            static const uint8_t APP_ENC[7] = {ENC_SELECT, ENC_ALGORITHM, ENC_PRESETS, ENC_KNOB1, ENC_KNOB2, ENC_KNOB3, ENC_KNOB4};
+            for (k = 0; k < 7u; k++) (void)fm1_enc_take(APP_ENC[k]);
         }
         if (ch) { dirty_set = 1; t_set = now_ms; }
 

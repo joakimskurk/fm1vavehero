@@ -485,7 +485,8 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
     }
     for (i = 0; i < (int32_t)so->noct && i < (int32_t)KG_MAXO; i++) {
         int32_t z = ks_z(so->octs[i].t, pos);
-        if (kg.ost[i] == KO_PENDING && z >= -410 && z <= KH_ZTOP_Q12) ks_oct_band(z < 0 ? 0 : z, so->octs[i].dir, kg.level == 0 || kg.midi_used);
+        if (kg.ost[i] == KO_PENDING && z >= -410 && z <= KH_ZTOP_Q12)
+            ks_oct_band(z < 0 ? 0 : z, so->octs[i].dir, kg.level == 0 || kg.midi_used || kg_solo_at((int32_t)so->octs[i].t * 256) >= 0);
     }
     solo = kg_solo_at(pos);
     line = solo >= 0 ? K_NEON : boost ? K_GOLD : K_CYAN;   /* (the hit line in neon in a FREE SOLO) */
@@ -551,7 +552,7 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
     }
     {                                            /* the title until the first note comes onto the highway; the count */
         int32_t first = kg.n ? (int32_t)kg.notes[0].t * 256 : 0x7FFFFFFF, left = first - pos;   /* to it beside the highway */
-        if (pos < 4 * KG_BEAT && pos < first - KH_ZTOP_Q12 * 6) {
+        if (solo < 0 && pos < 4 * KG_BEAT && pos < first - KH_ZTOP_Q12 * 6) {
             p = kput(s, KS_LEVELS[kg.level]);
             if (kg.speed != 100u) { p = kput(p, " "); p = knum(p, kg.speed, 0); kput(p, "%"); }
             { uint32_t n = 0; while (so->title[n]) n++; ks_banner(n > 14u ? num : so->title, s, K_CYAN, 92); }

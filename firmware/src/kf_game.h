@@ -47,7 +47,8 @@ typedef struct {
     uint8_t key_pitch[27];                       /* the pitch a key sounds, for its release */
     int32_t pos;                                 /* where the song is (update): what is heard, what is judged */
     int32_t vpos;                                /* where it is drawn: pos, or a little ahead of it (vavehero.c) */
-    uint8_t done, auto_on, midi_used;
+    uint8_t done, auto_on, midi_used, in_solo;
+    int16_t akey[27];                            /* autoplay: the note a key last played (its release is that note's) */
     struct { uint8_t lane, big; uint32_t ms; } fx[8];   /* bursts at the line: big a hit, else a hold done (green) */
     uint32_t nfx;
     /* the result */
@@ -105,7 +106,8 @@ static void kg_start(uint32_t idx, uint32_t speed, uint32_t spread, uint32_t t0)
     kg.notes = s->chart;
     kg.n = s->nchart;
     if (kg.n > KG_MAXN) kg.n = KG_MAXN;
-    kg.first = 0; kg.afirst = 0;
+    kg.first = 0; kg.afirst = 0; kg.in_solo = 0;
+    for (i = 0; i < 27u; i++) kg.akey[i] = -1;
     for (i = 0; i < kg.n; i++) { kg.nst[i] = KN_PENDING; kg.adn[i] = 0; }
     for (i = 0; i < KG_MAXO; i++) kg.ost[i] = KO_PENDING;
     for (i = 0; i < 16u; i++) { kg.ph_total[i] = 0; kg.ph_hit[i] = 0; kg.ph_failed[i] = 0; }
@@ -183,21 +185,22 @@ static int32_t kg_judgeable(uint32_t frame)       /* a note still to play within
     return 0;
 }
 
-/* a key (0 = F3 .. 26 = G5) at a frame as heard: only the eight keys of the layout do anything (D1, D2). In a FREE
- * SOLO (D14) every key plays, at its own pitch in the song's key, and nothing is judged (a note at its edge is, as ever) */
-static void kg_press(uint32_t key, uint32_t frame)
+/* a key (0 = F3 .. 26 = G5) at a frame as heard, in an octave (the player's kg.oct; a MIDI keyboard: the song's at the
+ * time, as its notes were mapped to keys): only the eight keys of the layout do anything (D1, D2). In a FREE SOLO (D14)
+ * every key plays, at its own pitch in the song's key, and nothing is judged (a note at its edge is, as ever) */
+static void kg_press_oct(uint32_t key, uint32_t frame, int32_t oct)
 {
     int32_t lane = -1, s, pitch, near = -1, best = -1, best_dt = 0, near_dt = 0;
     uint32_t i;
     if (kg.done || key >= 27u) return;
     if (kg_solo_at(kg_pos_at(frame)) >= 0 && !kg_judgeable(frame)) {
-        kg_sound_on(key, (uint32_t)(53 + (int32_t)key + 12 * kg.oct + kg.song->transpose), 0, kg_bright());
+        kg_sound_on(key, (uint32_t)(53 + (int32_t)key + 12 * oct + kg.song->transpose), 0, kg_bright());
         return;
     }
     for (i = 0; i < 8u; i++) if (KG_LAYOUT[kg.spread ? 1 : 0][i] == key) lane = (int32_t)i;
     if (lane < 0) return;
     s = KG_WHITE_SEMI[lane];
-    pitch = 60 + s + 12 * kg.oct;
+    pitch = 60 + s + 12 * oct;
     for (i = kg.first; i < kg.n; i++) {          /* judgePress */
         int32_t dt = (int32_t)(frame - kg_note_frame(i)), ok, ns;
         if (dt < -KG_WIN_GOOD) break;
@@ -217,6 +220,7 @@ static void kg_press(uint32_t key, uint32_t frame)
         kg_sound_on(key, (uint32_t)(pitch + kg.song->transpose), kg_rand() & 1u ? 28 : -28, 1434);   /* bright .35 */
     } else kg_sound_on(key, (uint32_t)(pitch + kg.song->transpose), 0, kg_bright());
 }
+static void kg_press(uint32_t key, uint32_t frame) { kg_press_oct(key, frame, kg.oct); }
 static void kg_release(uint32_t key, uint32_t frame)
 {
     int32_t i;
@@ -242,6 +246,7 @@ static void kg_oct_press(int32_t dir, uint32_t frame)
     for (i = 0; i < s->noct && i < KG_MAXO; i++) {
         int32_t dt = (int32_t)(frame - kf_seq_frame(s->octs[i].t));
         if (kg.ost[i] != KO_PENDING || s->octs[i].dir != dir || dt > KG_WIN_SHIFT || dt < -KG_WIN_SHIFT) continue;
+        if (kg_solo_at((int32_t)s->octs[i].t * 256) >= 0) continue;   /* (in a FREE SOLO a shift is not judged: it happens by itself) */
         kg.ost[i] = KO_HIT;
         kg.cnt[4]++;
         kg.combo++;
@@ -280,7 +285,7 @@ static void kg_autoplay(void)
         const kf_cnote_t *n = &kg.notes[i];
         uint32_t key = KG_LAYOUT[kg.spread ? 1 : 0][n->lane];
         if ((int32_t)n->t * 256 > kg.pos) break;
-        if (kg.nst[i] == KN_PENDING && !kg.adn[i]) { kg.adn[i] = 1; kg_press(key, kg_note_frame(i)); }
+        if (kg.nst[i] == KN_PENDING && !kg.adn[i]) { kg.adn[i] = 1; kg.akey[key] = (int16_t)i; kg_press(key, kg_note_frame(i)); }
     }
     /* (from autoplay's own first, not kg.first: a short note's release comes after the window has passed it, and from
      * kg.first it was never let go: its key stayed lit and its voice on) */
@@ -289,7 +294,11 @@ static void kg_autoplay(void)
         const kf_cnote_t *n = &kg.notes[i];
         uint32_t up = n->t + ((n->flags & 1u) ? n->len : (n->len < 48u ? n->len : 48u)) * 95u / 100u;
         if ((int32_t)n->t * 256 > kg.pos) break;
-        if (kg.adn[i] == 1u && kg.pos >= (int32_t)up * 256) { kg.adn[i] = 2; kg_release(KG_LAYOUT[kg.spread ? 1 : 0][n->lane], kf_seq_frame(up)); }
+        if (kg.adn[i] == 1u && kg.pos >= (int32_t)up * 256) {
+            uint32_t key = KG_LAYOUT[kg.spread ? 1 : 0][n->lane];
+            kg.adn[i] = 2;
+            if (kg.akey[key] == (int16_t)i) { kg.akey[key] = -1; kg_release(key, kf_seq_frame(up)); }   /* (not the next note's on the same key) */
+        }
     }
     if (kg.ops >= 6 && !kg_boosting()) kg_boost();
 }
@@ -301,6 +310,11 @@ static uint32_t kg_update(uint32_t frame)        /* 1: the song is over (4 beats
     uint32_t i;
     kg.pos = kg.vpos = kg_pos_at(frame);
     if (kg.auto_on) kg_autoplay();
+    {                                            /* a FREE SOLO's end: the song's octave again (OCT moved the solo's) */
+        uint8_t in = (uint8_t)(kg_solo_at(kg.pos) >= 0);
+        if (kg.in_solo && !in) kg.oct = kg_oct_at(kg.pos);
+        kg.in_solo = in;
+    }
     for (i = kg.first; i < kg.n; i++) {
         if ((int32_t)(frame - kg_note_frame(i)) < 0) break;
         if (kg.nst[i] == KN_PENDING && (int32_t)(frame - kg_note_frame(i)) > KG_WIN_GOOD) kg_miss(i);
@@ -310,7 +324,7 @@ static uint32_t kg_update(uint32_t frame)        /* 1: the song is over (4 beats
     for (i = 0; i < s->noct && i < KG_MAXO; i++) {
         if (kg.ost[i] != KO_PENDING || (int32_t)(frame - kf_seq_frame(s->octs[i].t)) <= KG_WIN_SHIFT) continue;
         kg.oct = kg_oct_at((int32_t)s->octs[i].t * 256 + 26);
-        if (kg.level == 0 || kg.midi_used) { kg.ost[i] = KO_AUTO; kg.cnt[4]++; }
+        if (kg.level == 0 || kg.midi_used || kg_solo_at((int32_t)s->octs[i].t * 256) >= 0) { kg.ost[i] = KO_AUTO; kg.cnt[4]++; }   /* (in a FREE SOLO too) */
         else { kg.ost[i] = KO_MISSED; kg.cnt[3]++; kg.combo = 0; kg_set_judge(KJ_MISS); }
     }
     for (i = kg.first; i < kg.n; i++)

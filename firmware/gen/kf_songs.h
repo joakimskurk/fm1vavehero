@@ -4937,9 +4937,9 @@ static const kf_phrase_t KF_S3_F[1] = {{9216, 10752}};
 
 #define KF_NSONG 4u
 static const kf_song_t KF_SONG[KF_NSONG] = {
-    {"FIRST LIGHT", "first-light.mid", 9600u, 18816000u, 60, 0, 0, 0, 11449, KF_S0_C, 38, KF_S0_B, 362, KF_S0_O, 0, 3, KF_S0_P, KF_S0_F, 0},
-    {"NEON CARRIER", "neon-carrier.mid", 11200u, 16128000u, 112, 0, 0, 1, 1608, KF_S1_C, 110, KF_S1_B, 989, KF_S1_O, 2, 6, KF_S1_P, KF_S1_F, 0},
-    {"ENGINE TOUR", "engine-tour.mid", 12000u, 15052800u, 196, 0, 0, 2, 2313, KF_S2_C, 188, KF_S2_B, 1829, KF_S2_O, 2, 6, KF_S2_P, KF_S2_F, 0},
-    {"CHROME HORIZON", "chrome-horizon.mid", 10400u, 17368615u, 148, 5, 0, 1, 7704, KF_S3_C, 105, KF_S3_B, 1255, KF_S3_O, 2, 6, KF_S3_P, KF_S3_F, 1},
+    {"FIRST LIGHT", "first-light.mid", 9600u, 18816000u, 60, 0, 0, 0, 2235, KF_S0_C, 38, KF_S0_B, 362, KF_S0_O, 0, 3, KF_S0_P, KF_S0_F, 0},
+    {"NEON CARRIER", "neon-carrier.mid", 11200u, 16128000u, 112, 0, 0, 1, 15467, KF_S1_C, 110, KF_S1_B, 989, KF_S1_O, 2, 6, KF_S1_P, KF_S1_F, 0},
+    {"ENGINE TOUR", "engine-tour.mid", 12000u, 15052800u, 196, 0, 0, 2, 4342, KF_S2_C, 188, KF_S2_B, 1829, KF_S2_O, 2, 6, KF_S2_P, KF_S2_F, 0},
+    {"CHROME HORIZON", "chrome-horizon.mid", 10400u, 17368615u, 148, 5, 0, 1, 10879, KF_S3_C, 105, KF_S3_B, 1255, KF_S3_O, 2, 6, KF_S3_P, KF_S3_F, 1},
 };
 /* 4 songs, about 38 KB of notes */

@@ -127,6 +127,34 @@ int main(void)
         }
     }
 
+    /* a MIDI keyboard's note just after an OCT shift, 80 ms early: judged in the octave it was mapped to a key in (the
+     * song's), not in the player's, which follows only 220 ms after the shift: GOOD, not WRONG */
+    {
+        const kf_song_t *so = &KF_SONG[1];
+        uint32_t j, f = 0, at;
+        int32_t oct;
+        kf_init();
+        kg_start(1, 100, 0, 44100);
+        kg.midi_used = 1;
+        for (j = 0; j < kg.n && kg.notes[j].t <= so->octs[0].t; j++) {}
+        at = kg_note_frame(j) - 3528u;
+        for (; f + 256u < at; f += 256u) { kg_ms = f / 44; kg_update(f); }
+        oct = kg_oct_at(kg.pos);
+        kg_press_oct((uint32_t)(kg.notes[j].pitch - 53 - 12 * oct), at, oct);
+        check(oct != kg.oct && kg.nst[j] != KN_PENDING && kg.judge == KJ_GOOD, "MIDI just after a shift: judged in the song's octave (GOOD), not the player's (WRONG)");
+    }
+    /* autoplay: a note's release does not cut the next note on the same key (a quarter that overlaps a hold a little) */
+    {
+        static const kf_cnote_t N2[2] = {{96 * 8, 96 * 21 / 20, 60, 0, 0, 0}, {96 * 8 + 24, 192, 60, 0, 0, 1}};
+        uint32_t f;
+        kf_init();
+        kg_start(1, 100, 0, 44100);
+        kg.notes = N2; kg.n = 2; kg.nst[0] = kg.nst[1] = KN_PENDING; kg.adn[0] = kg.adn[1] = 0;
+        kg.auto_on = 1;
+        for (f = 44100; f < 44100u * 8u; f += 256u) { kg_ms = f / 44; kg_update(f); }
+        check(kg.nst[0] == KN_HIT && kg.nst[1] == KN_DONE, "autoplay: the first note's release does not break the hold after it on the same key");
+    }
+
     /* a hold let go at half: find one */
     for (s = 0; s < KF_NSONG; s++) {
         const kf_song_t *so = &KF_SONG[s];

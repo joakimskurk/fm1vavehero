@@ -100,7 +100,8 @@ the high verse.
   line under the phrase. Flawless phrases fill the OP meter. Without OP notes the import makes phrases itself (two bars
   out of every four).
 - **FREE SOLO** ([D14](DECISIONS.md)): put note 10 (A#-1) on channel 1 and hold it over the solo. There the highway
-  lights up, every key plays (the black ones too, in the song's key) and nothing is judged. Notes of the play track
+  lights up, every key plays (the black ones too, in the song's key) and nothing is judged; OCT− and OCT+ move the
+  solo's octave. Notes of the play track
   inside a solo are left out of the chart, so leave those bars empty on channel 1. CHROME HORIZON has one over its
   breakdown.
 

@@ -38,7 +38,7 @@ The feasibility study for L3 must answer this:
 If the feasibility study answers no, L2 becomes the standard connection. It works regardless. Some FM-1 versions also
 have Bluetooth MIDI, which may become a later layer (L4), but Dinghy has no Bluetooth.
 
-## Protocol, version 1
+## Protocol, version 2
 
 A Dinghy app receives only channel messages, and of the system messages only clock, start, continue and stop (`0xF8`,
 `0xFA`, `0xFB`, `0xFC`). SysEx belongs to the platform's updater, and Song Position Pointer (`0xF2`) is discarded. So
@@ -47,10 +47,10 @@ of clock pulses.
 
 | Message | Bytes | From | Meaning |
 |---|---|---|---|
-| HELLO | `BF 64 v` (CC 100) | Both, every second | Protocol version, currently 1 |
+| HELLO | `BF 64 v` (CC 100) | Both, every second | Protocol version, currently 2 (version 1 had LEVEL, CC 103) |
 | ID | `BF 65 id` (CC 101) | Both, every second | Random 1–126. The lowest becomes P1 (the bot is 127). On a tie, the receiver draws again. |
 | SONG | `BF 66 n` (CC 102) | P1 | The song's place in P1's list, for display only |
-| SONG-ID | `BF 69 hi` `BF 6A lo` (CC 105–106) | P1 | The song's identity: a 14-bit hash of the play track and the tempo. P2 finds the song from it, not from the place in the list. |
+| SONG-ID | `BF 69 hi` `BF 6A lo` (CC 105–106) | P1 | The song's identity: a 14-bit hash of the play track, the tempo, the level and the FREE SOLOs (D14). P2 finds the song from it, not from the place in the list. |
 | SPEED | `BF 68 %` (CC 104) | P1 | Tempo in percent, 50–100 |
 | START | `FA` | P1 | Both start the song now. P2 uses the last SONG-ID and SPEED; the level is the song's own ([D12](DECISIONS.md)), so CC 103 (LEVEL in earlier versions) is no longer sent, and is ignored. If P2 does not have the song, `SONG NOT HERE` is shown and P2 does not start. |
 | CLOCK | `F8` | P1 | 24 pulses per beat, from START |

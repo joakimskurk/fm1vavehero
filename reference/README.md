@@ -6,7 +6,7 @@ as in RoboSeq and SkurkyMello.
 
 | File | Version | SHA-256 |
 |---|---|---|
-| `vavehero.html` | REF 0.1.15 (D14: FREE SOLO, note 10 on channel 1; the count to the first note beside the highway) | `46458ae4d397d8d77ed030f74f27269b276a898c9c6468e38436d590a83b551a` |
+| `vavehero.html` | REF 0.1.16 (the review's fixes: shifts before their note, shifts in a FREE SOLO by themselves, AUTO not kept, a solo at the end kept, LINK protocol 2) | `a0d2f821e94f75854516d710f6d7bb862d66a22edb6a1c9edb33fc878500104f` |
 
 A new HTML is a new reference and gets its own commit with a new SHA-256 here.
 
