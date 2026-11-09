@@ -2,7 +2,7 @@
 
 # VaveHero for M-VAVE FM-1
 
-I've always loved rhythm games. Countless hours with the apps, in Japanese arcades and with Clone Hero, so this had
+I've always loved rhythm games. Countless hours with apps, in Japanese arcades and with Clone Hero, so this had
 to happen.
 
 VaveHero takes this to the FM-1. Notes come down a neon highway, you play them on the white keys while the key LEDs
