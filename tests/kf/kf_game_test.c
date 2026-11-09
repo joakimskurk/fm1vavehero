@@ -3,7 +3,8 @@
 /* VaveHero's rules on the host (firmware/src/kf_game.h), as tests/reference.cjs checks the reference's: every song
  * on autoplay at its own level (D12), normal and SPREAD: 100 %, no miss, a full combo, every OCT shift, OP BOOST where
  * the song has phrases; a press 80 ms late is GOOD; a wrong key breaks the combo; a key outside the layout does nothing
- * (D1, D2); EASY takes the right note in any octave, MED does not; a hold let go at half is broken. */
+ * (D1, D2); EASY takes the right note in any octave, MED does not; in a FREE SOLO every key plays and nothing is judged
+ * (D14); a hold let go at half is broken. */
 #include <stdio.h>
 #include <string.h>
 #define KF_POOL
@@ -13,15 +14,17 @@
 static int fails;
 static void check(int ok, const char *what) { printf("%s %s\n", ok ? "ok  " : "FAIL", what); if (!ok) fails++; }
 static uint32_t sounds;
-static void kg_sound_on(uint32_t key, uint32_t pitch, int32_t detune, uint32_t bright) { (void)key; (void)pitch; (void)detune; (void)bright; sounds++; }
-static void kg_sound_off(uint32_t key, uint32_t pitch) { (void)key; (void)pitch; }
+static uint8_t sounding[27];                      /* a key's voice on: autoplay must let go of every key it presses */
+static void kg_sound_on(uint32_t key, uint32_t pitch, int32_t detune, uint32_t bright) { (void)pitch; (void)detune; (void)bright; sounds++; if (key < 27u) sounding[key] = 1; }
+static void kg_sound_off(uint32_t key, uint32_t pitch) { (void)pitch; if (key < 27u) sounding[key] = 0; }
 
 static const char *const LV[4] = {"EASY", "MED", "HARD", "EXP"};
 
 static void run_song(uint32_t idx, uint32_t spread)
 {
-    uint32_t f, boosts = 0, was = 0;
+    uint32_t f, boosts = 0, was = 0, k, left = 0;
     char what[200];
+    memset(sounding, 0, sizeof sounding);
     kf_init();
     kg_start(idx, 100, spread, 44100);
     kg.auto_on = 1;
@@ -35,6 +38,9 @@ static void run_song(uint32_t idx, uint32_t spread)
              kg.song->title, LV[kg.level & 3u], spread ? " SPREAD" : "", kg.acc10 / 10, kg.acc10 % 10, kg.grade,
              kg.max_combo, kg.total, kg.cnt[4], kg.song->noct, boosts, kg.score);
     check(kg.done && kg.acc10 == 1000 && kg.cnt[3] == 0 && kg.full && kg.cnt[4] == kg.song->noct && (boosts > 0 || !kg.song->nphrase), what);
+    for (k = 0; k < 27u; k++) left += sounding[k];
+    snprintf(what, sizeof what, "%-15s autoplay lets go of every key it pressed (%u left sounding)", kg.song->title, left);
+    check(left == 0, what);
 }
 
 int main(void)
@@ -91,6 +97,36 @@ int main(void)
         kg_press(0, n2);                          /* F3: white, outside the layout */
         check(kg.score == sc && kg.combo == cb, "a black key, or a white one outside the layout, does nothing (D1)");
     }
+    /* FREE SOLO (D14): CHROME HORIZON's, over its breakdown. Every key sounds and nothing is judged; the note at its end
+     * is judged as ever, even pressed early, inside the solo */
+    {
+        const kf_song_t *so = &KF_SONG[3];
+        check(so->nsolo == 1 && so->solos[0].a == 96 * 96 && so->solos[0].b == 112 * 96, "D14: CHROME HORIZON has its FREE SOLO, bars 25-28");
+        if (so->nsolo) {
+            uint32_t f, s0, at;
+            int32_t sc, cb, j;
+            kf_init();
+            kg_start(3, 100, 0, 44100);
+            kg.auto_on = 1;
+            for (f = 0; kg.pos < (int32_t)so->solos[0].a * 256 + KG_BEAT; f += 256u) { kg_ms = f / 44; kg_update(f); }
+            kg.auto_on = 0;
+            sc = kg.score; cb = kg.combo; s0 = sounds;
+            check(kg_solo_at(kg.pos) == 0 && cb > 0, "the song reaches its solo with a combo");
+            kg_press(8, f); kg_release(8, f + 2000u);       /* C#4: a black key */
+            kg_press(0, f); kg_release(0, f + 2000u);       /* F3: a white key outside the layout */
+            kg_press(KG_LAYOUT[0][3], f); kg_release(KG_LAYOUT[0][3], f + 2000u);
+            check(sounds == s0 + 3u && kg.score == sc && kg.combo == cb && kg.judge != KJ_WRONG,
+                  "in a FREE SOLO every key sounds, black ones too, and nothing is judged: no score, no WRONG, the combo kept");
+            for (j = (int32_t)kg.first; j < (int32_t)kg.n && kg.notes[j].t < so->solos[0].b; j++) {}
+            at = kg_note_frame((uint32_t)j) - 2000u;        /* the note at the solo's end, 45 ms early: inside the solo */
+            for (; f + 256u < at; f += 256u) { kg_ms = f / 44; kg_update(f); }
+            kg.oct = kg.notes[j].oct;
+            check(kg_solo_at(kg_pos_at(at)) == 0, "(the early press is inside the solo)");
+            kg_press(KG_LAYOUT[0][kg.notes[j].lane], at);
+            check(kg.nst[j] != KN_PENDING && kg.judge == KJ_GREAT, "the note at a FREE SOLO's end is judged, pressed early inside the solo: GREAT");
+        }
+    }
+
     /* a hold let go at half: find one */
     for (s = 0; s < KF_NSONG; s++) {
         const kf_song_t *so = &KF_SONG[s];

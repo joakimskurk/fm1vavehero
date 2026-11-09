@@ -185,6 +185,26 @@ static void ks_oct_band(int32_t z, int32_t dir, int32_t auto_)
             krect(x + i, yy, 1, 1, K_VIOLET);
         }
 }
+static void ks_solo_band(int32_t za, int32_t zb)   /* a FREE SOLO (D14): its stretch of the highway lit, its ends in neon */
+{
+    int32_t yf, yn, y, k;
+    if (zb < 0 || za > KH_ZTOP_Q12) return;
+    yf = kh_round(kh_Yq(zb > KH_ZTOP_Q12 ? KH_ZTOP_Q12 : zb));
+    yn = kh_round(kh_Yq(za < 0 ? 0 : za));
+    if (yn > KH_HIT - 1) yn = KH_HIT - 1;
+    for (y = yf; y <= yn; y++) {
+        int32_t s = kh_s_at(2 * y + 1), xl = kh_round(kh_X(KH_NL * 16, s)), xr = kh_round(kh_X(KH_NR * 16, s));
+        krect_a(xl, y, xr - xl, 1, K_NEON, Q12(.24) * kh_fade_at(y) >> 12);
+    }
+    for (k = 0; k < 2; k++) {
+        int32_t z = k ? zb : za, s, xl, xr;
+        if (z < 0 || z > KH_ZTOP_Q12) continue;
+        y = kh_round(kh_Yq(z));
+        s = kh_s_at(2 * y + 1); xl = kh_round(kh_X(KH_NL * 16, s)); xr = kh_round(kh_X(KH_NR * 16, s));
+        krect(xl, y - 1, xr - xl, 2, kmix(kh_floor_at(y), K_NEON, kh_fade_at(y)));
+        if (!k) ktextC(&FONT_S, KH_CX, y - 18, "FREE SOLO", kmix(kh_floor_at(y), 0xffe0f6u, kh_fade_at(y)));
+    }
+}
 static void ks_beam(int32_t lane, rgb_t col)
 {
     int32_t y;
@@ -422,7 +442,8 @@ static uint8_t ks_sky_ok;
 static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, const char *num, const char *right)
 {
     const kf_song_t *so = kg.song;
-    int32_t pos = kg.vpos, boost = kg_boosting(), i, ocn;   /* (drawn where the song will be when the frame is seen) */
+    int32_t pos = kg.vpos, boost = kg_boosting(), i, ocn, solo;   /* (drawn where the song will be when the frame is seen) */
+    rgb_t line;
     uint8_t st[8] = {0};
     char s[24], *p;
     /* (the canvas starts as the background: vavehero.c's draw) the splash's sunset over the highway's far end, the
@@ -431,6 +452,7 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
     for (i = 0; i < (int32_t)(240u * KF_SKY_H); i++) cv_px[KF_SKY_Y * 240u + (uint32_t)i] = ks_sky[i];
     ks_highway_bg(boost, kg.spread);
     kfill_rows(KH_HIT, 222, K_BG);               /* (the keys' rows; the rest is drawn whole: vavehero.c's draw does not clear) */
+    for (i = 0; i < (int32_t)so->nsolo; i++) ks_solo_band(ks_z(so->solos[i].a, pos), ks_z(so->solos[i].b, pos));
     ks_beat_lines(pos, boost);
     krect(0, KH_TOPY, 240, 1, K_NEON);
     krect(0, KH_TOPY + 1, 240, 1, kmix(K_FLOOR0, K_NEON, Q12(.45)));
@@ -465,8 +487,10 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
         int32_t z = ks_z(so->octs[i].t, pos);
         if (kg.ost[i] == KO_PENDING && z >= -410 && z <= KH_ZTOP_Q12) ks_oct_band(z < 0 ? 0 : z, so->octs[i].dir, kg.level == 0 || kg.midi_used);
     }
-    krect(KH_NL, KH_HIT - 2, KH_NR - KH_NL, 1, kmix(K_BG, boost ? K_GOLD : K_CYAN, Q12(.4)));
-    krect(KH_NL, KH_HIT - 1, KH_NR - KH_NL, 2, boost ? K_GOLD : K_CYAN);
+    solo = kg_solo_at(pos);
+    line = solo >= 0 ? K_NEON : boost ? K_GOLD : K_CYAN;   /* (the hit line in neon in a FREE SOLO) */
+    krect(KH_NL, KH_HIT - 2, KH_NR - KH_NL, 1, kmix(K_BG, line, Q12(.4)));
+    krect(KH_NL, KH_HIT - 1, KH_NR - KH_NL, 2, line);
     for (i = 0; i < 8 && i < (int32_t)kg.nfx; i++) {
         uint32_t k = (kg.nfx - 1u - (uint32_t)i) % 8u, age = ms - kg.fx[k].ms;
         if (age < 260u) ks_burst(KH_NL + KH_LW * kg.fx[k].lane + 15, KH_HIT - 1, kg.fx[k].big ? LANE[kg.fx[k].lane] : K_GREEN, (int32_t)(age * 4096u / 260u), kg.fx[k].big);
@@ -477,6 +501,7 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
         if ((int32_t)n->t * 256 > pos + KG_BEAT) break;
         if (kg.nst[i] == KN_PENDING && (int32_t)n->t * 256 >= pos - KG_BEAT / 10 && !st[n->lane]) st[n->lane] = 1;
     }
+    if (solo >= 0) for (i = 0; i < 8; i++) if (!st[i]) st[i] = 1;
     ks_keys(st, led, kg.spread);
     if (kg.judge && ms - kg.judge_ms < 450u) {
         const char *jt = KJ_TEXT[kg.judge];
@@ -516,18 +541,25 @@ static void ks_play(uint32_t ms, const uint8_t *keys_lit, const uint8_t *led, co
             krect(56, 43, 128, 1, K_GOLD); krect(56, 74, 128, 1, K_GOLD);
             ktextOut(&FONT_L, KH_CX - (ktw(&FONT_L, "OP BOOST") >> 1), 42, "OP BOOST", K_GOLD, K_OUT, 1);
         }
+        if (solo >= 0 && pos - (int32_t)so->solos[solo].a * 256 < 2 * KG_BEAT &&   /* a FREE SOLO begins (no note behind it) */
+            (int32_t)so->solos[solo].b * 256 - pos > KH_ZTOP_Q12 * 6 + KG_BEAT)
+            ks_banner("FREE SOLO", "EVERY KEY IS YOURS", K_NEON, 92);
     }
     {
         static const char *const KN[4] = {"SWEEP", "TONE", "SPEED", "MIX"};
         ks_knobs(KN, 1u);
     }
-    if (pos < 4 * KG_BEAT) {
-        p = kput(s, KS_LEVELS[kg.level]);
-        if (kg.speed != 100u) { p = kput(p, " "); p = knum(p, kg.speed, 0); kput(p, "%"); }
-        { uint32_t n = 0; while (so->title[n]) n++; ks_banner(n > 14u ? num : so->title, s, K_CYAN, 92); }
-    } else if (pos < 8 * KG_BEAT) {
-        knum(s, (uint32_t)(8 - pos / KG_BEAT), 0);
-        ks_banner(s, 0, K_AMBER, 99);
+    {                                            /* the title until the first note comes onto the highway; the count */
+        int32_t first = kg.n ? (int32_t)kg.notes[0].t * 256 : 0x7FFFFFFF, left = first - pos;   /* to it beside the highway */
+        if (pos < 4 * KG_BEAT && pos < first - KH_ZTOP_Q12 * 6) {
+            p = kput(s, KS_LEVELS[kg.level]);
+            if (kg.speed != 100u) { p = kput(p, " "); p = knum(p, kg.speed, 0); kput(p, "%"); }
+            { uint32_t n = 0; while (so->title[n]) n++; ks_banner(n > 14u ? num : so->title, s, K_CYAN, 92); }
+        }
+        if (!kg.done && kg.n && left > 0 && left <= 4 * KG_BEAT) {
+            knum(s, (uint32_t)((left + KG_BEAT - 1) / KG_BEAT), 0);
+            ktext_chrome(&FONT_L, 222 - (ktw(&FONT_L, s) >> 1), 100, s, 1);
+        }
     }
     if (kg.done) ks_banner(kg.full ? "FULL COMBO" : "CLEAR", 0, kg.full ? K_GOLD : K_GREEN, 99);
 }

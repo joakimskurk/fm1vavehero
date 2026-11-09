@@ -25,6 +25,7 @@ CHORD = {'C': [0, 4, 7], 'G': [7, 11, 14], 'Am': [9, 12, 16], 'F': [5, 9, 12], '
 ROOT = {'C': 0, 'G': 7, 'Am': 9, 'F': 5, 'Em': 4, 'Dm': 2, 'Bb': 10, 'Gm': 7}
 KICK, SNARE, CLAP, HAT, OHAT, CRASH, TOM_LO, TOM_MID, TOM_HI = 36, 38, 39, 42, 46, 49, 45, 48, 50
 OP_NOTE = 11                                                            # B-1 on channel 1, held over an OP phrase
+SOLO_NOTE = 10                                                          # A#-1 on channel 1, held over a FREE SOLO (D14)
 
 
 def pitch(name):
@@ -304,7 +305,8 @@ CHROME_HORIZON = dict(
     file='chrome-horizon.mid', title='CHROME HORIZON', bpm=104,
     chords=['Dm', 'Bb', 'F', 'C'] * 3 + ['Gm', 'Bb', 'C', 'C'] + ['Dm', 'Bb', 'F', 'C'] * 2 + ['Bb', 'F', 'C', 'Dm']
            + ['Dm', 'Bb', 'F', 'C'] * 2 + ['Dm'],
-    phrases=[(6, 7), (13, 14), (18, 19), (22, 23), (26, 27), (30, 31)],
+    phrases=[(6, 7), (13, 14), (18, 19), (22, 23), (28, 29), (30, 31)],
+    solos=[(24, 27)],                 # D14: a FREE SOLO over the breakdown, bars 25-28: the player's own
     play='''
 4: A4 0 1 | D5 1 1 | C5 2 .5 | A4 2.5 .5 | F4 3 1
 5: A#4 0 1.5 | A4 1.5 .5 | G4 2 2
@@ -326,10 +328,6 @@ CHROME_HORIZON = dict(
 21: D5+F5 0 2 | A#4 2 1 | D5 3 1
 22: C5 0 1 | A4 1 1 | C5 2 1 | E5 3 1
 23: C5+E5 0 3
-24: D5 0 2 | F5 2 2
-25: C5 0 2 | A4 2 2
-26: G4 0 2 | E5 2 2
-27: F5 0 1 | E5 1 1 | D5 2 2
 28: D5 0 1.5 | A4 1.5 .5 | D5 2 1 | E5 3 1
 29: F5 0 1.5 | E5 1.5 .5 | D5 2 2
 30: C5 0 1 | A4 1 .5 | C5 1.5 .5 | F5 2 1 | E5 3 1
@@ -482,6 +480,7 @@ def write_song(s, parts):
     tracks = [mtrk(s['title'], conductor)]
     play = note_events(CH['PLAY'], s['play'] if isinstance(s['play'], list) else melody(s['play']))
     play += note_events(CH['PLAY'], [(a * 4, OP_NOTE, (b - a + 1) * 4, 100) for a, b in s['phrases']])   # OP phrases: B-1, held
+    play += note_events(CH['PLAY'], [(a * 4, SOLO_NOTE, (b - a + 1) * 4, 100) for a, b in s.get('solos', [])])   # FREE SOLO: A#-1, held
     ks = parts.get('KS', {})
     tracks.append(mtrk('PLAY', play + keyswitch_events(CH['PLAY'], ks.get('PLAY', []))))
     for name in ('BASS', 'PAD', 'ARP', 'LEAD', 'KEYS', 'DRUMS'):

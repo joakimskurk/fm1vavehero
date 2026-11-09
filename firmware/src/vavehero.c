@@ -147,8 +147,8 @@ static void midi_in(void)
         part = CH_PART[ch];
         if (part < 0) continue;
         midi_seen = fm1_ms | 1u;
-        if (d1 < 12u) {                          /* a keyswitch (D6); on channel 1, note 11 is the OP note */
-            if (on && d1 < KF_PART_COUNT[part] && !(ch == 0u && d1 == 11u)) live_patch[part] = d1;
+        if (d1 < 12u) {                          /* a keyswitch (D6); on channel 1, note 11 is the OP note, 10 the SOLO note */
+            if (on && d1 < KF_PART_COUNT[part] && !(ch == 0u && (d1 == 11u || d1 == 10u))) live_patch[part] = d1;
             continue;
         }
         ch_act[ch] = fm1_ms | 1u;
@@ -292,6 +292,8 @@ static void leds(void)
             v = d <= KG_BEAT / 2 ? 2 : 1;
             if (s->octs[i].dir > 0) { if (v > oct_p) oct_p = v; } else if (v > oct_m) oct_m = v;
         }
+        if (kg_solo_at(pos) >= 0)                /* a FREE SOLO (D14): every key is open, the ones that sound lit */
+            for (k = 0; k < 27u; k++) L[k] = key_note[k] ? 2u : L[k] ? L[k] : 1u;
         play = pos >= 0 && (pos / (KG_BEAT / 4)) % 4 == 0 ? 2 : 0;
         fx = kg_boosting() ? 2 : kg.ops >= 6 ? ((fm1_ms / 125u) % 2u ? 2 : 0) : 0;
     } else if (scr == SCR_SONGS) {

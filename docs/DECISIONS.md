@@ -326,3 +326,31 @@ because they are easy to understand and to check. If playtests show songs at the
 count are those.
 
 **SPEED** (the practice tempo) does not change a song's level: the level is the song's at its own tempo.
+
+## D14 (2026-11-09): FREE SOLO, and the count beside the highway
+
+**Decision.** A song can have FREE SOLO sections. Its maker marks one with note 10 (A#-1) on channel 1, held over
+the solo, as an OP phrase is marked with note 11. In a solo:
+
+- The stretch of the highway lights up in neon, with FREE SOLO at its start, so it is seen coming. When it reaches the
+  line, the hit line turns neon, every key LED glows, and a banner says FREE SOLO, EVERY KEY IS YOURS.
+- **Every key plays**, all 27, the black ones too, at its own pitch in the song's key: the same transpose as the play
+  track, so the white keys stay in the key the song was written in.
+- **Nothing is judged:** no score, no WRONG, the combo kept. A note at a solo's edge is judged as ever, even when it is
+  pressed a little early, inside the solo.
+- The play track's notes inside a solo are not in the chart (the import report says how many), and an octave shift
+  that would fall inside one is moved to its end.
+
+CHROME HORIZON has one, over its breakdown (bars 25–28).
+
+**Why.** A rhythm game asks you to follow; a solo lets you play. On a synth with keys that is the point of it, and a
+song can give the player a few bars of their own without leaving the game.
+
+**The count** before the first note is no longer a band across the middle of the highway, where it hid the first notes
+on their way down. It counts to the song's first note (4, 3, 2, 1) beside the highway, on the right. The title banner
+at the start goes as soon as the first note comes onto the highway.
+
+**Found on the way:** the firmware's autoplay (AUTO and the DEMO) did not let go of most of the notes it played. It
+looked for them from the window's first note, which has passed a short note before its release comes, so the key
+stayed lit and its voice on. It now has its own first note to let go of. `tests/kf/kf_game_test.c` checks that no key is
+left sounding after a song on autoplay.

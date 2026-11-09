@@ -91,8 +91,8 @@ release tail on its own, for example at the end of a song, is allowed to ring ou
 | What | Measured in fm1-emu |
 |---|---|
 | ENGINE TOUR bars 41–44, the audio engine alone (the band and the melody) | **31.6 %**, 1717 instructions per frame |
-| The same as DEMO in the game (the player's voice with the combo's brightness) | **34.0 %**, 1853 instructions per frame; **30.8 %**, 1673, after the optimisation below |
-| The same, all interrupts | 36.9 %; 33.6 % after |
+| The same as DEMO in the game (the player's voice with the combo's brightness) | **34.0 %**, 1853 instructions per frame; **30.8 %**, 1673, after the optimisation below; **28.6 %**, 1556, since autoplay lets go of its notes (D14) |
+| The same, all interrupts | 36.9 %; 33.6 % after; 31.4 % since D14 |
 
 The x86 estimate (callgrind × 0.8) said 31.5 %, so the estimate can be used between CI runs.
 
@@ -102,7 +102,7 @@ breakpoints on the call into the audio interrupt, on `draw()` and on `song_start
 
 | What (fm1-emu, 2026-11-07) | The DEMO, 60 fps | MIDI MODE, flood from a DAW |
 |---|---|---|
-| The audio blocks (256 frames, 5.8 ms each), median / worst | 32 % / 42 % of the time (before: 36 / 46) | 44 % / 48 % (before: 48 / 54) |
+| The audio blocks (256 frames, 5.8 ms each), median / worst | 29 % / 39 % of the time since D14 (32 / 42 before it, 36 / 46 before the optimisation) | 44 % / 48 % (before: 48 / 54) |
 | `draw()` including the interrupts, median / worst | 3.1 ms / 5.5 ms (before: 6.6 / 9.3) | 2.3 ms / 4.9 ms (30 fps; before: 6.3 / 6.6) |
 | Longest gap between two frames | 19.2 ms | 35.0 ms |
 
@@ -140,7 +140,7 @@ What was done, with the same pixels and the same sound (bit for bit, checked aga
 - **The filter and FM:** drive and crush are set by the patch, not by the sample. The loops are split into one per variant, and
   the drive table is looked up once.
 
-The engine went from 34.1 % to 30.8 % of the chip, and a frame in the DEMO from 6.6 to 3.1 ms (median, with the interrupts).
+The engine went from 34.1 % to 30.8 % of the chip (28.6 % since D14, when autoplay stopped leaving its notes on), and a frame in the DEMO from 6.6 to 3.1 ms (median, with the interrupts).
 The renders are identical byte for byte (the engine tour, the worst case, 60 s of each song), and all 23 screenshots from
 the test scripts are identical pixel for pixel.
 

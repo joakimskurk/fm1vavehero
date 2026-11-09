@@ -51,6 +51,8 @@ run "the game on the host: splash, DEMO, songs, a song, MIDI MODE" sh tests/run_
 run "the screens are there" sh -c 'for t in 600 2500 7400 8400 15000 15800; do test -s build/host/vavehero-$t.png || exit 1; done'
 run "a song on AUTO to its results, again, back to the songs" sh tests/run_host.sh tests/kf/results.txt
 run "the results' screen is there" test -s build/host/vavehero-42000.png
+run "CHROME HORIZON on AUTO: the count beside the highway, its FREE SOLO (D14) with every key open" sh -c \
+    "sh tests/run_host.sh tests/kf/solo.txt >/dev/null && for t in 9040 55190 57250 58400; do test -s build/host/vavehero-\$t.png || exit 1; done"
 run "the sound file is there and not empty" test -s "$OUT/vavehero.wav"
 if [ -f build/vavehero.fwsc ]; then                 # (CI builds the package before the tests)
     run "the site (web/make_site.py): the page with the installer, the package, the game in the browser, the link preview" sh -c \
@@ -66,7 +68,7 @@ if echo 'int main(void) { return 0; }' | gcc $SAN -x c - -o build/san/probe 2>/d
     run "the app built with the sanitizers" \
         gcc $SAN -Wall -Wno-unused-function -DDINGHY_HOST -DAPP_VER='"san"' -Ifirmware/hal -Ifirmware/src -Ifirmware/gen \
             -o build/san/vavehero firmware/src/vavehero.c
-    for s in default tests/kf/game.txt tests/kf/results.txt fuzz:1 fuzz:2; do
+    for s in default tests/kf/game.txt tests/kf/results.txt tests/kf/solo.txt fuzz:1 fuzz:2; do
         case $s in
             default) arg= ;;
             fuzz:*) python3 tests/kf/fuzz.py "${s#fuzz:}" 45 > "build/san/fuzz${s#fuzz:}.txt"; arg="build/san/fuzz${s#fuzz:}.txt" ;;

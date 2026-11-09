@@ -23,6 +23,8 @@ typedef struct {
     const kf_oct_t *octs;
     uint8_t noct, nphrase;
     const kf_phrase_t *phrases;
+    const kf_phrase_t *solos;                   /* D14: the FREE SOLOs (every key plays, nothing judged), in T96 */
+    uint8_t nsolo;
 } kf_song_t;
 
 static const kf_cnote_t KF_S0_C[38] = {
@@ -431,6 +433,7 @@ static const kf_bev_t KF_S0_B[362] = {
 };
 static const kf_oct_t KF_S0_O[1] = {{0, 0}};
 static const kf_phrase_t KF_S0_P[3] = {{1152, 1920}, {2688, 3456}, {3840, 4608}};
+static const kf_phrase_t KF_S0_F[1] = {{0, 0}};
 
 static const kf_cnote_t KF_S1_C[110] = {
     {768, 96, 64, 2, 0, 16},
@@ -1537,6 +1540,7 @@ static const kf_bev_t KF_S1_B[989] = {
 };
 static const kf_oct_t KF_S1_O[2] = {{3792, 1}, {6864, -1}};
 static const kf_phrase_t KF_S1_P[6] = {{768, 1536}, {2304, 3072}, {3840, 4608}, {5376, 6144}, {6912, 7680}, {8448, 9216}};
+static const kf_phrase_t KF_S1_F[1] = {{0, 0}};
 
 static const kf_cnote_t KF_S2_C[188] = {
     {1536, 96, 64, 2, 0, 0},
@@ -3561,8 +3565,9 @@ static const kf_bev_t KF_S2_B[1829] = {
 };
 static const kf_oct_t KF_S2_O[2] = {{12192, 1}, {13728, -1}};
 static const kf_phrase_t KF_S2_P[6] = {{2304, 3072}, {5376, 6144}, {8448, 9216}, {11520, 12288}, {14592, 15360}, {17664, 18432}};
+static const kf_phrase_t KF_S2_F[1] = {{0, 0}};
 
-static const kf_cnote_t KF_S3_C[114] = {
+static const kf_cnote_t KF_S3_C[105] = {
     {1536, 96, 64, 2, 0, 0},
     {1632, 96, 69, 5, 0, 0},
     {1728, 48, 67, 4, 0, 0},
@@ -3633,22 +3638,13 @@ static const kf_cnote_t KF_S3_C[114] = {
     {8736, 96, 71, 6, 0, 64},
     {8832, 288, 67, 4, 0, 65},
     {8832, 288, 71, 6, 0, 65},
-    {9216, 192, 69, 5, 0, 1},
-    {9408, 192, 72, 7, 0, 1},
-    {9600, 192, 67, 4, 0, 1},
-    {9792, 192, 64, 2, 0, 1},
-    {9984, 192, 62, 1, 0, 81},
-    {10176, 192, 71, 6, 0, 81},
-    {10368, 96, 72, 7, 0, 80},
-    {10464, 96, 71, 6, 0, 80},
-    {10560, 192, 69, 5, 0, 81},
-    {10752, 144, 69, 5, 0, 1},
-    {10896, 48, 64, 2, 0, 0},
-    {10944, 96, 69, 5, 0, 0},
-    {11040, 96, 71, 6, 0, 0},
-    {11136, 144, 72, 7, 0, 1},
-    {11280, 48, 71, 6, 0, 0},
-    {11328, 192, 69, 5, 0, 1},
+    {10752, 144, 69, 5, 0, 81},
+    {10896, 48, 64, 2, 0, 80},
+    {10944, 96, 69, 5, 0, 80},
+    {11040, 96, 71, 6, 0, 80},
+    {11136, 144, 72, 7, 0, 81},
+    {11280, 48, 71, 6, 0, 80},
+    {11328, 192, 69, 5, 0, 81},
     {11520, 96, 67, 4, 0, 96},
     {11616, 48, 64, 2, 0, 96},
     {11664, 48, 67, 4, 0, 96},
@@ -4936,13 +4932,14 @@ static const kf_bev_t KF_S3_B[1255] = {
     {13824, 12, 6, 49, 110, 0},
 };
 static const kf_oct_t KF_S3_O[2] = {{12192, 1}, {13776, -1}};
-static const kf_phrase_t KF_S3_P[6] = {{2304, 3072}, {4992, 5760}, {6912, 7680}, {8448, 9216}, {9984, 10752}, {11520, 12288}};
+static const kf_phrase_t KF_S3_P[6] = {{2304, 3072}, {4992, 5760}, {6912, 7680}, {8448, 9216}, {10752, 11520}, {11520, 12288}};
+static const kf_phrase_t KF_S3_F[1] = {{9216, 10752}};
 
 #define KF_NSONG 4u
 static const kf_song_t KF_SONG[KF_NSONG] = {
-    {"FIRST LIGHT", "first-light.mid", 9600u, 18816000u, 60, 0, 0, 0, 11449, KF_S0_C, 38, KF_S0_B, 362, KF_S0_O, 0, 3, KF_S0_P},
-    {"NEON CARRIER", "neon-carrier.mid", 11200u, 16128000u, 112, 0, 0, 1, 1608, KF_S1_C, 110, KF_S1_B, 989, KF_S1_O, 2, 6, KF_S1_P},
-    {"ENGINE TOUR", "engine-tour.mid", 12000u, 15052800u, 196, 0, 0, 2, 2313, KF_S2_C, 188, KF_S2_B, 1829, KF_S2_O, 2, 6, KF_S2_P},
-    {"CHROME HORIZON", "chrome-horizon.mid", 10400u, 17368615u, 148, 5, 0, 1, 14858, KF_S3_C, 114, KF_S3_B, 1255, KF_S3_O, 2, 6, KF_S3_P},
+    {"FIRST LIGHT", "first-light.mid", 9600u, 18816000u, 60, 0, 0, 0, 11449, KF_S0_C, 38, KF_S0_B, 362, KF_S0_O, 0, 3, KF_S0_P, KF_S0_F, 0},
+    {"NEON CARRIER", "neon-carrier.mid", 11200u, 16128000u, 112, 0, 0, 1, 1608, KF_S1_C, 110, KF_S1_B, 989, KF_S1_O, 2, 6, KF_S1_P, KF_S1_F, 0},
+    {"ENGINE TOUR", "engine-tour.mid", 12000u, 15052800u, 196, 0, 0, 2, 2313, KF_S2_C, 188, KF_S2_B, 1829, KF_S2_O, 2, 6, KF_S2_P, KF_S2_F, 0},
+    {"CHROME HORIZON", "chrome-horizon.mid", 10400u, 17368615u, 148, 5, 0, 1, 7704, KF_S3_C, 105, KF_S3_B, 1255, KF_S3_O, 2, 6, KF_S3_P, KF_S3_F, 1},
 };
 /* 4 songs, about 38 KB of notes */

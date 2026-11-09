@@ -55,7 +55,7 @@ const songs = files.map(f => {
 });
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify(songs.map(s => ({ file: s.file, title: s.song.title, bpm: s.song.bpm, end: s.song.end, transpose: s.song.transpose,
-    oct0: s.song.oct0, octs: s.song.octs, phrases: s.song.phrases, hash: s.song.hash, level: s.song.level,
+    oct0: s.song.oct0, octs: s.song.octs, phrases: s.song.phrases, hash: s.song.hash, level: s.song.level, solos: s.song.solos,
     chart: s.chart.map(n => ({ t: n.t, len: n.len, pitch: n.pitch, lane: n.lane, oct: n.oct, hold: n.hold, ph: n.ph })),
     events: s.song.events.length })), null, 1));
   process.exit(0);
@@ -87,6 +87,8 @@ w('    uint16_t nband;');
 w('    const kf_oct_t *octs;');
 w('    uint8_t noct, nphrase;');
 w('    const kf_phrase_t *phrases;');
+w('    const kf_phrase_t *solos;                   /* D14: the FREE SOLOs (every key plays, nothing judged), in T96 */');
+w('    uint8_t nsolo;');
 w('} kf_song_t;');
 w('');
 let total = 0;
@@ -113,6 +115,8 @@ songs.forEach((s, i) => {
   total += all.length * 8;
   w(`static const kf_oct_t KF_S${i}_O[${Math.max(1, S.octs.length)}] = {${S.octs.length ? S.octs.map(o => `{${T96(o.t)}, ${o.dir}}`).join(', ') : '{0, 0}'}};`);
   w(`static const kf_phrase_t KF_S${i}_P[${Math.max(1, S.phrases.length)}] = {${S.phrases.length ? S.phrases.map(p => `{${T96(p.a)}, ${T96(p.b)}}`).join(', ') : '{0, 0}'}};`);
+  if (S.solos.length > 8) throw new Error(`${s.file}: more than 8 FREE SOLOs`);
+  w(`static const kf_phrase_t KF_S${i}_F[${Math.max(1, S.solos.length)}] = {${S.solos.length ? S.solos.map(r => `{${T96(r.a)}, ${T96(r.b)}}`).join(', ') : '{0, 0}'}};`);
   w('');
   s.n = { band: all.length };
 });
@@ -121,7 +125,7 @@ w('static const kf_song_t KF_SONG[KF_NSONG] = {');
 songs.forEach((s, i) => {
   const S = s.song, fpt = Math.round(44100 * 60 / S.bpm / 96 * 65536);
   w(`    {"${S.title}", "${s.file}", ${Math.round(S.bpm * 100)}u, ${fpt}u, ${S.end}, ${S.transpose}, ${S.oct0}, ${S.level}, ${S.hash}, ` +
-    `KF_S${i}_C, ${s.chart.length}, KF_S${i}_B, ${s.n.band}, KF_S${i}_O, ${S.octs.length}, ${S.phrases.length}, KF_S${i}_P},`);
+    `KF_S${i}_C, ${s.chart.length}, KF_S${i}_B, ${s.n.band}, KF_S${i}_O, ${S.octs.length}, ${S.phrases.length}, KF_S${i}_P, KF_S${i}_F, ${S.solos.length}},`);
 });
 w('};');
 w(`/* ${songs.length} songs, about ${Math.round(total / 1024)} KB of notes */`);

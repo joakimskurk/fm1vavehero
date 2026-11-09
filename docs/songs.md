@@ -12,7 +12,7 @@ reference):
 | [`first-light.mid`](../songs/first-light.mid) | FIRST LIGHT, 96 BPM, EASY | The simple one: five white keys, BELL EP, SUB bass and STRINGS |
 | [`neon-carrier.mid`](../songs/neon-carrier.mid) | NEON CARRIER, 112 BPM, MED | Octave shifts, chords and patch changes between the sections |
 | [`engine-tour.mid`](../songs/engine-tour.mid) | ENGINE TOUR, 120 BPM, HARD | **A tour of the audio engine.** The drums alone first, then bass, pad, arpeggio, lead and keys come in one by one. Each instrument goes through all four of its patches, two bars each, with the dirty one last. The drum kits and the player's voice change along the way, and at the end everything plays together on the dirty sounds. All 29 sounds are heard. |
-| [`chrome-horizon.mid`](../songs/chrome-horizon.mid) | CHROME HORIZON, 104 BPM, MED | **A full synthwave song in D minor:** intro, verse, pre-chorus, dirty choruses with DIRT BASS, DIRT drums and FUZZ LEAD, a breakdown, and a final chorus an octave up with FUZZ as the player's voice. The play track is written in D minor, and the import moves it 5 semitones down to white keys. |
+| [`chrome-horizon.mid`](../songs/chrome-horizon.mid) | CHROME HORIZON, 104 BPM, MED | **A full synthwave song in D minor:** intro, verse, pre-chorus, dirty choruses with DIRT BASS, DIRT drums and FUZZ LEAD, a breakdown that is a FREE SOLO (bars 25–28), and a final chorus an octave up with FUZZ as the player's voice. The play track is written in D minor, and the import moves it 5 semitones down to white keys. |
 
 Each patch in ENGINE TOUR (two bars each, the clean ones first and the dirty one last):
 
@@ -99,6 +99,12 @@ the high verse.
 - **OP phrases:** put note 11 (B-1) on channel 1 and hold it for as long as the phrase lasts. In the piano roll it is a
   line under the phrase. Flawless phrases fill the OP meter. Without OP notes the import makes phrases itself (two bars
   out of every four).
+- **FREE SOLO** ([D14](DECISIONS.md)): put note 10 (A#-1) on channel 1 and hold it over the solo. There the highway
+  lights up, every key plays (the black ones too, in the song's key) and nothing is judged. Notes of the play track
+  inside a solo are left out of the chart, so leave those bars empty on channel 1. CHROME HORIZON has one over its
+  breakdown.
+
+  <img src="screens/fw-solo.png" width="240" alt="A FREE SOLO on the FM-1: the highway lit in neon, every key open">
 - **The level** is the song's own, one of EASY, MED, HARD and EXP ([D12](DECISIONS.md)), as on the arcade machines:
   the player chooses the song, not the level. The import counts it from the notes over time ([D13](DECISIONS.md)):
   notes a second at the song's tempo, every chord note counted, over the whole song and over its busiest four bars.

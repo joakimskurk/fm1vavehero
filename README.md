@@ -35,6 +35,7 @@ Edge.
 | PLAY | Start a song, or pause it. On the title screen, FX plays a demo. |
 | SELECT | Pick a song. Each song has its own level, from EASY to EXP. |
 | In a song | Play the notes on the white keys C4–C5. OCT− and OCT+ when the song changes octave, FX for OP BOOST, HOME to quit. |
+| FREE SOLO | Where the highway lights up, every key is yours: play what you like. |
 | KNOB 2–4 | Your sound, the speed for practice, and the mix. |
 | ALGORITHM | GRIT: how dirty the sound is. |
 | GLO | SPREAD: every other white key, for big fingers. |

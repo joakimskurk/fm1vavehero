@@ -105,6 +105,14 @@ async function choose(page, song) {                       /* a song's level is i
   await a.page.evaluate(() => window.KF.setAuto(true));
   await choose(a.page, 0); await a.page.keyboard.press('Enter');
   await waitBeat(a.page, 2); await screen(a.page, '03-first-light-intro');
+  await waitBeat(a.page, 6.5); await screen(a.page, '03b-first-light-count');
+  const count = await a.page.evaluate(() => {                     /* the count to the first note (beat 8): beside the highway */
+    const g = document.getElementById('scr').getContext('2d'), d = g.getImageData(206, 100, 32, 32).data, row = g.getImageData(0, 99, 240, 1).data;
+    let face = 0; for (let i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 600) face++;
+    let band = 0; for (let i = 0; i < row.length; i += 4) if (row[i] > 240 && row[i + 1] > 160 && row[i + 1] < 200 && row[i + 2] < 100) band++;
+    return { face, band };
+  });
+  check(count.face > 20 && count.band === 0, 'the count is beside the highway, not a band across it over the first notes: ' + JSON.stringify(count));
   await waitResults(a.page);
   let L = await a.page.evaluate(() => window.KF.G.last);
   check(L.acc === 100 && L.counts.M === 0 && L.grade === 'S', `FIRST LIGHT (EASY) on autoplay: ${L.acc.toFixed(1)}% ${L.grade}, ${L.counts.M} misses`);
@@ -205,16 +213,31 @@ async function choose(page, song) {                       /* a song's level is i
   const demo = await a.page.evaluate(() => window.VAVEHERO_SONGS.slice(2).map(f => {
     const K = window.KF, { song, report } = K.importSong(K.parseMidi(Uint8Array.from(atob(f.data), c => c.charCodeAt(0))), f.file);
     const used = new Set(song.patchLog.map(e => e.part + ':' + e.ks)), all = Object.entries(K.PATCHSET).flatMap(([p, ns]) => ns.map((n, i) => p + ':' + i));
-    return { title: song.title, T: song.transpose, warn: report.warn.length, unused: all.filter(x => !used.has(x)).length, octs: song.octs.length, ph: song.phrases.length };
+    return { title: song.title, T: song.transpose, warn: report.warn.length, unused: all.filter(x => !used.has(x)).length, octs: song.octs.length, ph: song.phrases.length,
+             solos: song.solos.map(r => r.a + '-' + r.b).join(), soloInfo: report.info.find(t => /FREE SOLO/.test(t)) || '' };
   }));
   check(demo[0].title === 'ENGINE TOUR' && demo[0].warn === 0 && demo[0].unused === 0, 'ENGINE TOUR imports cleanly and uses every patch and kit: ' + JSON.stringify(demo[0]));
   check(demo[1].title === 'CHROME HORIZON' && demo[1].warn === 0 && demo[1].T === 5 && demo[1].octs === 2, 'CHROME HORIZON (D minor) imports cleanly, its play track 5 semitones down on white keys: ' + JSON.stringify(demo[1]));
+  check(demo[1].solos === '96-112' && /1 FREE SOLO from the SOLO note \(A#-1 on channel 1\): bars 25-28/.test(demo[1].soloInfo) && demo[0].solos === '',
+    'D14: CHROME HORIZON has a FREE SOLO from the SOLO note, over bars 25-28: ' + demo[1].soloInfo);
   const pair = [await open(ctx), await open(ctx)];
   await Promise.all(pair.map(async (x, i) => {
     await x.page.evaluate(i => { window.KF.setAuto(true); window.KF.G.scr = 'songs'; window.KF.G.sel = 2 + i; }, i);
     await x.page.keyboard.press('Enter');
   }));
   await waitBeat(pair[0].page, 92); await screen(pair[0].page, '21-engine-tour'); await screen(pair[1].page, '22-chrome-horizon');
+  /* D14: CHROME HORIZON's FREE SOLO: the lit stretch coming, then every key open; a black key sounds and nothing is judged */
+  await waitBeat(pair[1].page, 93); await screen(pair[1].page, '23-free-solo-coming');
+  await waitBeat(pair[1].page, 97);
+  const solo = await pair[1].page.evaluate(() => {
+    const K = window.KF, p = K.play, j0 = p.judge && p.judge.t0, c0 = p.combo, s0 = p.score, glow = K.leds().every(v => v >= 1);
+    K.pressKey('solo-black', 8, performance.now(), 'test');
+    const lit = K.leds()[8];
+    K.releaseNote('solo-black', performance.now() + 30);
+    return { glow, lit, same: (p.judge && p.judge.t0) === j0 && p.combo === c0 && p.score === s0, combo: c0 };
+  });
+  check(solo.glow && solo.lit === 2 && solo.same && solo.combo > 0, 'D14: in the FREE SOLO every key glows, a black key (C#4) plays and lights, and nothing is judged: ' + JSON.stringify(solo));
+  await screen(pair[1].page, '24-free-solo');
   for (const [i, x] of pair.entries()) {
     await waitResults(x.page, 160000);
     const R = await x.page.evaluate(() => window.KF.G.last);

@@ -1,0 +1,16 @@
+# VaveHero on the host: CHROME HORIZON on AUTO, the count to its first note beside the highway, then its FREE SOLO
+# (D14, bars 25-28): the lit stretch coming, its banner, and every key open: a black key and one outside the layout
+# sound and light, nothing is judged
+300 btn 12
+600 btn 11
+800 enc 0 3
+1100 btn 12
+9040 shot
+55190 shot
+57000 keys 0x101
+57250 shot
+57500 keys 0
+58200 keys 0x40100
+58400 shot
+58600 keys 0
+59000 end

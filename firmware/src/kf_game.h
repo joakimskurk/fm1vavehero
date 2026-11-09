@@ -31,7 +31,7 @@ typedef struct {
     const kf_song_t *song;
     uint8_t idx, level, speed, spread;
     const kf_cnote_t *notes;
-    uint32_t n, first;                           /* the notes; the first not yet behind the window */
+    uint32_t n, first, afirst;                   /* the notes; the first not yet behind the window; autoplay's first not let go */
     uint8_t nst[KG_MAXN], adn[KG_MAXN];          /* each note's state; autoplay: 1 pressed, 2 let go */
     uint8_t ost[KG_MAXO];
     uint8_t ph_total[16], ph_hit[16], ph_failed[16];
@@ -105,7 +105,7 @@ static void kg_start(uint32_t idx, uint32_t speed, uint32_t spread, uint32_t t0)
     kg.notes = s->chart;
     kg.n = s->nchart;
     if (kg.n > KG_MAXN) kg.n = KG_MAXN;
-    kg.first = 0;
+    kg.first = 0; kg.afirst = 0;
     for (i = 0; i < kg.n; i++) { kg.nst[i] = KN_PENDING; kg.adn[i] = 0; }
     for (i = 0; i < KG_MAXO; i++) kg.ost[i] = KO_PENDING;
     for (i = 0; i < 16u; i++) { kg.ph_total[i] = 0; kg.ph_hit[i] = 0; kg.ph_failed[i] = 0; }
@@ -163,13 +163,39 @@ static void kg_hold_end(uint32_t i, int32_t frac)   /* frac Q12 */
     for (k = 0; k < 27u; k++) if (kg.held[k] == (int16_t)i) kg.held[k] = -1;
 }
 
-/* a key (0 = F3 .. 26 = G5) at a frame as heard: only the eight keys of the layout do anything (D1, D2) */
+/* a FREE SOLO (D14) at a position, or -1 */
+static int32_t kg_solo_at(int32_t pos)
+{
+    const kf_song_t *s = kg.song;
+    uint32_t i;
+    for (i = 0; i < s->nsolo; i++)
+        if (pos >= (int32_t)s->solos[i].a * 256 && pos < (int32_t)s->solos[i].b * 256) return (int32_t)i;
+    return -1;
+}
+static int32_t kg_judgeable(uint32_t frame)       /* a note still to play within GOOD of a frame */
+{
+    uint32_t i;
+    for (i = kg.first; i < kg.n; i++) {
+        int32_t dt = (int32_t)(frame - kg_note_frame(i));
+        if (dt < -KG_WIN_GOOD) break;
+        if (kg.nst[i] == KN_PENDING && dt <= KG_WIN_GOOD) return 1;
+    }
+    return 0;
+}
+
+/* a key (0 = F3 .. 26 = G5) at a frame as heard: only the eight keys of the layout do anything (D1, D2). In a FREE
+ * SOLO (D14) every key plays, at its own pitch in the song's key, and nothing is judged (a note at its edge is, as ever) */
 static void kg_press(uint32_t key, uint32_t frame)
 {
     int32_t lane = -1, s, pitch, near = -1, best = -1, best_dt = 0, near_dt = 0;
     uint32_t i;
+    if (kg.done || key >= 27u) return;
+    if (kg_solo_at(kg_pos_at(frame)) >= 0 && !kg_judgeable(frame)) {
+        kg_sound_on(key, (uint32_t)(53 + (int32_t)key + 12 * kg.oct + kg.song->transpose), 0, kg_bright());
+        return;
+    }
     for (i = 0; i < 8u; i++) if (KG_LAYOUT[kg.spread ? 1 : 0][i] == key) lane = (int32_t)i;
-    if (lane < 0 || kg.done) return;
+    if (lane < 0) return;
     s = KG_WHITE_SEMI[lane];
     pitch = 60 + s + 12 * kg.oct;
     for (i = kg.first; i < kg.n; i++) {          /* judgePress */
@@ -256,7 +282,10 @@ static void kg_autoplay(void)
         if ((int32_t)n->t * 256 > kg.pos) break;
         if (kg.nst[i] == KN_PENDING && !kg.adn[i]) { kg.adn[i] = 1; kg_press(key, kg_note_frame(i)); }
     }
-    for (i = kg.first; i < kg.n; i++) {
+    /* (from autoplay's own first, not kg.first: a short note's release comes after the window has passed it, and from
+     * kg.first it was never let go: its key stayed lit and its voice on) */
+    while (kg.afirst < kg.n && (kg.adn[kg.afirst] == 2u || (kg.adn[kg.afirst] == 0u && kg.nst[kg.afirst] != KN_PENDING))) kg.afirst++;
+    for (i = kg.afirst; i < kg.n; i++) {
         const kf_cnote_t *n = &kg.notes[i];
         uint32_t up = n->t + ((n->flags & 1u) ? n->len : (n->len < 48u ? n->len : 48u)) * 95u / 100u;
         if ((int32_t)n->t * 256 > kg.pos) break;
