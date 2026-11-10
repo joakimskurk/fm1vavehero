@@ -184,3 +184,9 @@ most within 0.3 dB. Every fourth bar of the first 30 seconds of all four songs i
 2. **Real hardware.** fm1-emu counts instructions, not cycles, and cache misses from flash can make it slower.
    None of the FM-1 apps have been measured on a real FM-1 yet.
 3. **One core.** Everything is planned for one core. The second core is a bonus if it turns out to be stable.
+   On some FM-1s it is not: core 1 misreads RAM now and then, more often under load (fm1-x0x#10; fm1-emu's
+   `--flaky-core1`). If it is ever needed, the plan is the community's: core 1 renders some of the audio engine's
+   voices into a buffer each block, every job guarded by a check word (Felucca's `fm1_cpu1.h`), and core 0 does it
+   all itself the moment a check fails. The game, the drawing and the screen stay on core 0: they share the game's
+   state and the screen's DMA, and the screen's link (12 MHz, the same divider as M-VAVE's own open firmware) limits
+   the frame rate, not the CPU. Measured on a real FM-1 first.

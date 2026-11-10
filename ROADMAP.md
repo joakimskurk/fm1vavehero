@@ -56,6 +56,9 @@ tested on the host and in fm1-emu.
 - [ ] The level: count octave shifts, chord shapes and lane jumps too, if playtests ask for it
 - [x] D14: FREE SOLO sections (note 10 on channel 1): every key plays, nothing judged; CHROME HORIZON has one
 - [x] The count to the first note beside the highway, not over the first notes
+- [ ] The second core, only if a real FM-1 shows the need: the audio engine's voices on core 1 (Felucca's way, a check
+      word on each job), with the game and the screen on core 0, and one core always enough (some FM-1s have a core 1
+      that misreads RAM)
 - [ ] An EXP song and 2–3 new songs
 - [ ] MIDI import: tempo changes, and a keyswitch note to override the automatic octave shifts
 - [x] Sound check: renders of the reference as the ground truth for the port, as in RoboSeq (`tools/ref_tour.cjs`, `tests/kf/parity.py`)

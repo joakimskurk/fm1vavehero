@@ -20,7 +20,9 @@ Open **[the VaveHero page](https://joakimskurk.github.io/fm1vavehero/)** in Chro
 USB cable, and press Install.
 
 If the FM-1 will not start, hold **OCT−** while switching it on and install again. To go back to the official
-firmware, use M-VAVE's updater M-UPGRADE.
+firmware, use M-VAVE's updater M-UPGRADE; if its sounds look wrong afterwards, use Reset Patches in its System menu
+(VaveHero keeps its settings where the official firmware keeps some of its own). To move on to another custom
+firmware, go back to the official one first.
 
 ## Play it in the browser
 
