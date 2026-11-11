@@ -18,10 +18,13 @@ jobs:
       id-token: write
       attestations: write
     with:
+      # a tag: the release package (build/vavehero-X.Y.fwsc, FM-1_95Y), then the everyday build the tests and fm1-emu
+      # use (build/vavehero.fwsc and its .dis), as Dinghy's release does; only the release package is released
       build: |
-        if [ "$GITHUB_REF_TYPE" = tag ]; then ./build.sh --release "${GITHUB_REF_NAME#v}"; else ./build.sh; fi
+        if [ "$GITHUB_REF_TYPE" = tag ]; then ./build.sh --release "${GITHUB_REF_NAME#v}"; fi
+        ./build.sh
       test: sh tests/run_vavehero.sh && sh tests/run_tests.sh && sh tools/emu_ci.sh
-      packages: build/vavehero*.fwsc
+      packages: ${{ github.ref_type == 'tag' && 'build/vavehero-[0-9]*.fwsc' || 'build/vavehero*.fwsc' }}
 
   # The site (GitHub Pages, https://joakimskurk.github.io/fm1vavehero/): VaveHero's page and its installer in the
   # browser (Web MIDI), and the game in the browser (web/make_site.py). The page installs the newest release (its
