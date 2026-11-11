@@ -17,7 +17,8 @@ show what is coming, and a synthwave band plays along.
 ## Install
 
 Open **[the VaveHero page](https://joakimskurk.github.io/fm1vavehero/)** in Chrome or Edge, connect the FM-1 with a
-USB cable, and press Install.
+USB cable, and press Install. The page installs the newest [release](https://github.com/joakimskurk/fm1vavehero/releases)
+(now 0.1); its `.fwsc` is there too, for other installers.
 
 If the FM-1 will not start, hold **OCT−** while switching it on and install again. To go back to the official
 firmware, use M-VAVE's updater M-UPGRADE; if its sounds look wrong afterwards, use Reset Patches in its System menu
