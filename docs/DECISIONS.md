@@ -374,3 +374,10 @@ left sounding after a song on autoplay.
   the DEMO; turns of a knob that a screen did not read were applied on the next screen. All fixed, with tests where
   the rules can show it.
 - KNOB 2 (TONE) and KNOB 4 (MIX) work during a song on the FM-1 too, as in the reference, and KNOB 3 shows the speed.
+
+**From RetroDash** (nasonliu's rhythm game built on VaveHero, tried on a real FM-1, where it played 200 notes over
+USB MIDI with no miss): the FM-1's TIMER4 counts 24 MHz and wraps every 178.9 s, so `fm1_micros()` (the count
+divided by 24) wraps there too, not at 2^32, and a difference across the wrap is wrong. RetroDash's screen froze on
+it. VaveHero's frames run on `fm1_ms` and did not, but its measure of the drawing's lead (`vis_lead_us`, D11) took a
+difference of `fm1_micros()`: once every three minutes the notes were drawn up to 5 ms early for a moment. It now
+subtracts the ticks first, and the host tests refuse a difference of `fm1_micros()` in the app.

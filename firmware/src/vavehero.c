@@ -439,7 +439,7 @@ static void draw(void)
     } else if (scr == SCR_PLAY) {
         uint8_t lit[8], led[8];
 #ifndef DINGHY_HOST
-        t_draw = fm1_micros();
+        t_draw = fm1_ticks();                    /* (ticks: fm1_micros wraps at 178.9 s, not at 2^32, so its differences jump) */
 #endif
         kg.vpos = paused || kg.done ? kg.pos : kg_pos_at(heard_now() + vis_lead_us * 441u / 10000u);
         for (i = 0; i < 8u; i++) {
@@ -458,7 +458,7 @@ static void draw(void)
     idle_ok = 0;
 #ifndef DINGHY_HOST
     if (scr == SCR_PLAY) {                       /* the lead, for the next frames */
-        uint32_t d = fm1_micros() - t_draw;
+        uint32_t d = (fm1_ticks() - t_draw) / FM1_TICKS_PER_US;   /* µs, right across TIMER4's wrap */
         vis_lead_us = (vis_lead_us * 7u + (d > 40000u ? 40000u : d)) / 8u;
     }
 #endif

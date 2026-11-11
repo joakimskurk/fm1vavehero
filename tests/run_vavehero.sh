@@ -18,6 +18,8 @@ fi
 if python3 -c 'import numpy' 2>/dev/null && [ -f "${INTER:-/usr/share/fonts/opentype/inter/InterDisplay-BlackItalic.otf}" ]; then
     run "firmware/gen/kf_splash.h is what tools/gen_splash.py draws" python3 tools/gen_splash.py --check
 fi
+run "no difference of fm1_micros() in the app: it wraps at 178.9 s, not at 2^32 (subtract fm1_ticks(), then divide)" \
+    sh -c "! grep -n 'fm1_micros() *-' firmware/src/*.c firmware/src/*.h"
 run "vavehero.c compiles for the host without a warning (-Werror)" \
     cc -O2 -Wall -Werror -Wno-unused-function -DDINGHY_HOST -DAPP_VER='"test"' -Ifirmware/hal -Ifirmware/src -Ifirmware/gen \
        -o "$OUT/vavehero-werror" firmware/src/vavehero.c
