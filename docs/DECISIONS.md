@@ -167,7 +167,10 @@ because the pads have long release tails. With the budget the sound uses 31.6 % 
 game around it (measured in fm1-emu). A 2.8 s convolution is far beyond what the chip can do.
 
 **Checked by.** `tests/run_vavehero.sh`: all 25 patches and 4 drum kits within 1.5 dB and 25 % brightness of the
-reference, most within 0.3 dB, and every fourth bar of the first 30 seconds of the four songs within 0.8 dB.
+reference, most within 0.3 dB, and every fourth bar of the first 30 seconds of the eight songs within 1.1 dB. The
+exception is the verses of KIRAMEKI RUSH and YOZORA SPARK, up to 3.0 dB louder on the FM-1: there FM EP and BELL EP
+repeat the same notes fast, and how their phases meet differs by chance (the FM point above;
+`tests/kf/parity-allow.txt`).
 `tools/emu_cpu.sh` in CI fails if the heaviest spot uses more than 45 % of the chip.
 
 ## D9 (2026-11-07): the game is called VaveHero
@@ -276,7 +279,7 @@ What the level does:
 - **MED, HARD, EXP:** the right note in the right octave, and the player follows the shifts with OCT− and OCT+. HARD
   and EXP are ratings for songs with more and faster notes, more chords and more shifts; the rules are MED's.
 
-The built-in songs: FIRST LIGHT is EASY, NEON CARRIER and CHROME HORIZON are MED, ENGINE TOUR is HARD.
+The built-in songs (then): FIRST LIGHT is EASY, NEON CARRIER and CHROME HORIZON are MED, ENGINE TOUR is HARD.
 
 (Changed the same day by D13: the level is counted from the notes over time, and a marker only overrides that.)
 
@@ -314,7 +317,8 @@ say. The import report gives the rating and both numbers, shows the notes a seco
 bars marked, and says when a marker overrides them.
 
 The built-in songs carry no marker any more. Their notes give them the levels they had: FIRST LIGHT 1.4 EASY, CHROME
-HORIZON 1.8 MED, NEON CARRIER 2.5 MED, ENGINE TOUR 2.9 HARD.
+HORIZON 1.8 MED, NEON CARRIER 2.5 MED, ENGINE TOUR 2.9 HARD. The songs added later have no marker either:
+TURBO NOIR 2.8 HARD, DISCO VOLTAGE 3.7 HARD, KIRAMEKI RUSH 5.3 EXP, YOZORA SPARK 6.3 EXP.
 
 **Why.** The level should say what the song asks of the hands, and the same way for every song, whoever made it.
 Notes over time is what the hands feel. The busiest stretch counts most, because that is where a song is lost; the

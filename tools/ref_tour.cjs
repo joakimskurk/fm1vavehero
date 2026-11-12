@@ -24,7 +24,7 @@ fs.mkdirSync(OUT, { recursive: true });
     const secs = +(args[args.indexOf('--songs') + 1] || 30);
     const res = await page.evaluate(async (secs) => {
       const out = [];
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < KF.SONGS.length; i++) {      /* (every built-in song) */
         const song = KF.SONGS[i], r = await KF.renderSong(i, secs), bin = atob(r.wav), n = (bin.length - 44) / 4, bar = 4 * 60 / song.bpm, rows = [];
         const v = new DataView(new ArrayBuffer(bin.length)); for (let k = 0; k < bin.length; k++) v.setUint8(k, bin.charCodeAt(k));
         for (let t0 = .05, k = 0; t0 + 4 * bar <= secs + 1e-6; t0 += 4 * bar, k++) {

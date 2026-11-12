@@ -21,8 +21,9 @@ PPQ = 480
 CH = dict(PLAY=0, BASS=1, PAD=2, ARP=3, LEAD=4, KEYS=5, DRUMS=9)       # 0-based on the wire
 NAMES = {'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11}
 CHORD = {'C': [0, 4, 7], 'G': [7, 11, 14], 'Am': [9, 12, 16], 'F': [5, 9, 12], 'Em': [4, 7, 11], 'Dm': [2, 5, 9],
-         'Bb': [10, 14, 17], 'Gm': [7, 10, 14]}
-ROOT = {'C': 0, 'G': 7, 'Am': 9, 'F': 5, 'Em': 4, 'Dm': 2, 'Bb': 10, 'Gm': 7}
+         'Bb': [10, 14, 17], 'Gm': [7, 10, 14], 'E': [4, 8, 11], 'A': [9, 13, 16], 'D': [2, 6, 9], 'F#m': [6, 9, 13],
+         'Bm': [11, 14, 18]}
+ROOT = {'C': 0, 'G': 7, 'Am': 9, 'F': 5, 'Em': 4, 'Dm': 2, 'Bb': 10, 'Gm': 7, 'E': 4, 'A': 9, 'D': 2, 'F#m': 6, 'Bm': 11}
 KICK, SNARE, CLAP, HAT, OHAT, CRASH, TOM_LO, TOM_MID, TOM_HI = 36, 38, 39, 42, 46, 49, 45, 48, 50
 OP_NOTE = 11                                                            # B-1 on channel 1, held over an OP phrase
 SOLO_NOTE = 10                                                          # A#-1 on channel 1, held over a FREE SOLO (D14)
@@ -429,6 +430,475 @@ def arrange_chrome_horizon(s):
     return dict(BASS=bass, PAD=pad, ARP=arp, LEAD=stabs + lead, KEYS=keys, DRUMS=drums, KS=ks)
 
 
+# KIRAMEKI RUSH: arcade J-pop, fast and hard (EXP). The royal road (IV V iii vi) the genre leans on, a hook in the
+# intro, a pre-chorus that climbs to the III chord (E major), a busy chorus, a run, the chorus again an octave up.
+KIRAMEKI_TEXT = """
+0: A5 0 .5 | C6 .5 .5 | G5 1 1 | F5 2 .5 | G5 2.5 .5 | A5 3 1
+1: B5 0 .5 | G5 .5 .5 | D5 1 1 | G5 2 .5 | A5 2.5 .5 | B5 3 1
+2: C6 0 .5 | B5 .5 .5 | G5 1 .5 | E5 1.5 .5 | G5 2 .5 | B5 2.5 .5 | E5 3 1
+3: A5 0 1.5 | G5 1.5 .5 | E5 2 .5 | C5 2.5 1.5
+4: E4 0 .5 | E4 .5 .5 | G4 1 .5 | C5 1.5 1 | B4 2.5 .5 | G4 3 1
+5: D4 0 .5 | D4 .5 .5 | G4 1 .5 | B4 1.5 1 | A4 2.5 .5 | G4 3 .5 | D4 3.5 .5
+6: E4 0 .5 | C4 .5 .5 | E4 1 .5 | A4 1.5 1 | G4 2.5 .5 | E4 3 1
+7: G4 0 1.5 | E4 1.5 .5 | D4 2 .5 | E4 2.5 .5 | G4 3 .5 | B4 3.5 .5
+8: C5 0 .5 | A4 .5 .5 | F4 1 .5 | A4 1.5 1 | G4 2.5 .5 | F4 3 1
+9: E4 0 .5 | G4 .5 .5 | C5 1 1.5 | B4 2.5 .5 | A4 3 .5 | G4 3.5 .5
+10: F4 0 .5 | E4 .5 .5 | D4 1 .5 | F4 1.5 .5 | A4 2 1 | C5 3 1
+11: B4 0 2 | A4 2 .5 | G4 2.5 .5 | D4 3 1
+12: A4 0 1 | A4 1 .5 | G4 1.5 .5 | A4 2 1 | C5 3 1
+13: B4 0 1 | B4 1 .5 | A4 1.5 .5 | B4 2 1 | G4 3 1
+14: G4 0 .5 | A4 .5 .5 | B4 1 .5 | C5 1.5 .5 | B4 2 .5 | A4 2.5 .5 | G4 3 .5 | E4 3.5 .5
+15: B4 0 1.5 | A4 1.5 .5 | B4 2 .5 | E4 2.5 .5 | B4 3 1
+16: A5 0 .5 | G5 .5 .5 | A5 1 .5 | C6 1.5 1 | A5 2.5 .5 | G5 3 .5 | F5 3.5 .5
+17: G5 0 .5 | D5 .5 .5 | G5 1 .5 | B5 1.5 1 | A5 2.5 .5 | G5 3 .5 | D5 3.5 .5
+18: E5 0 .5 | G5 .5 .5 | B5 1 .5 | C6 1.5 .5 | B5 2 .5 | G5 2.5 .5 | E5 3 .5 | G5 3.5 .5
+19: A5+C6 0 1.5 | G5 1.5 .5 | E5 2 .5 | G5 2.5 .5 | A5 3 1
+20: A5 0 .5 | G5 .5 .5 | A5 1 .5 | C6 1.5 1 | A5 2.5 .5 | C6 3 .5 | A5 3.5 .5
+21: B5 0 .5 | A5 .5 .5 | G5 1 .5 | D5 1.5 .5 | G5 2 .5 | A5 2.5 .5 | B5 3 .5 | C6 3.5 .5
+22: E5+G5+C6 0 2 | G5 2 .5 | A5 2.5 .5 | B5 3 .5 | C6 3.5 .5
+23: C6 0 2 | G5 2 .5 | E5 2.5 .5 | C5 3 1
+24: D5 0 .5 | F5 .5 .5 | A5 1 .5 | D5 1.5 .5 | F5 2 .5 | A5 2.5 .5 | C6 3 .5 | A5 3.5 .5
+25: E5 0 .5 | G5 .5 .5 | B5 1 .5 | E5 1.5 .5 | G5 2 .5 | B5 2.5 .5 | C6 3 .5 | B5 3.5 .5
+26: F5 0 .5 | A5 .5 .5 | C6 1 .5 | A5 1.5 .5 | F5+A5 2 1 | G5 3 .5 | A5 3.5 .5
+27: G5+B5 0 1 | D5 1 .5 | G5 1.5 .5 | B5 2 .5 | A5 2.5 .5 | G5 3 1
+36: C6+E6+G6 0 3"""
+
+
+def kirameki_play():
+    """the play track: as written, and its chorus (bars 17-24) again an octave up in bars 29-36"""
+    notes = melody(KIRAMEKI_TEXT)
+    return notes + [(t + 48, p + 12, ln, v) for t, p, ln, v in notes if 64 <= t < 96]
+
+
+KIRAMEKI_RUSH = dict(
+    file='kirameki-rush.mid', title='KIRAMEKI RUSH', bpm=174,
+    chords=['F', 'G', 'Em', 'Am'] + ['C', 'G', 'Am', 'Em', 'F', 'C', 'Dm', 'G'] + ['F', 'G', 'Em', 'E']
+           + ['F', 'G', 'Em', 'Am', 'F', 'G', 'C', 'C'] + ['Dm', 'Em', 'F', 'G'] + ['F', 'G', 'Em', 'Am', 'F', 'G', 'C', 'C']
+           + ['C'],
+    phrases=[(2, 3), (8, 9), (14, 15), (18, 19), (22, 23), (26, 27), (30, 31), (34, 35)],
+    play=kirameki_play())
+
+
+def arrange_kirameki_rush(s):
+    """arcade J-pop at 174 BPM in C major: a glass pad and a pluck arp under the intro's hook, a verse on bell EP with EP
+    stabs and pulse bass, a pre-chorus over four on the floor that climbs to E major, choruses with octave bass, a
+    supersaw, a saw lead's long notes and sixteenth arps, a run over rising chords, the last chorus an octave up"""
+    bass, pad, arp, keys, lead, drums = [], [], [], [], [], []
+    bars = len(s['chords'])
+    for bar in range(bars):
+        last = bar == bars - 1
+        intro, verse, pre = bar < 4, 4 <= bar < 12, 12 <= bar < 16
+        chorus, run, final = 16 <= bar < 24, 24 <= bar < 28, 28 <= bar < bars - 1
+        big = chorus or final
+        for t, ch, ln in segments(s['chords'], bar):
+            r = bass_root(ch)
+            for p in voicing(ch, 55 if big or run else 52):
+                pad.append((t, p, 4 if last else ln, 70 if big else 58))
+            if last:
+                bass.append((t, r, 3, 112))
+            elif intro and bar < 2:
+                bass.append((t, r, 3.8, 96))
+            elif verse:
+                bass += [(t + k * .5, r + (12 if k % 2 else 0), .4, 102 if k % 4 == 0 else 84) for k in range(8)]
+            else:                                                       # the octave bass of the genre
+                bass += [(t + k * .5, r + (12 if k % 2 else 0), .4, 112 if k % 2 == 0 else 94) for k in range(8)]
+            tones = sorted(72 + iv % 12 for iv in CHORD[ch]) + [84 + CHORD[ch][0] % 12]
+            if verse:
+                arp += [(t + k * .5, tones[k % 4] - 12, .4, 54 if k % 4 == 0 else 44) for k in range(8)]
+                keys += [(t + o, p, .3, 64) for o in (.5, 1.5, 2.5, 3.5) for p in voicing(ch, 60)]
+            elif not last and not (intro and bar < 2):
+                arp += [(t + k * .25, tones[k % 4], .2, 62 if k % 4 == 0 else 48) for k in range(16)]
+            if big:
+                top = voicing(ch, 64)
+                lead += [(t, top[2], 1.9, 64), (t + 2, top[1], 1.9, 60)]
+        b0 = bar * 4
+        if last:
+            drums += [(b0, KICK, 120), (b0, CRASH, 112)]
+            continue
+        if intro:
+            if bar >= 2:
+                drums += [(b0 + o, KICK, 112) for o in range(4)] + [(b0 + o + .5, OHAT, 70) for o in range(4)]
+            if bar == 3:
+                drums += [(b0 + 2 + k * .25, SNARE, 70 + k * 6) for k in range(8)]
+            continue
+        if verse:
+            drums += [(b0, KICK, 116), (b0 + 1.5, KICK, 98), (b0 + 2, KICK, 112), (b0 + 1, SNARE, 106), (b0 + 3, SNARE, 106)]
+            drums += [(b0 + k * .25, HAT, 66 if k % 2 == 0 else 40) for k in range(16)]
+        elif pre:
+            drums += [(b0 + o, KICK, 116) for o in range(4)] + [(b0 + 1, SNARE, 108), (b0 + 3, SNARE, 108)]
+            drums += [(b0 + k * .5, HAT, 64) for k in range(8)]
+            if bar == 15:
+                drums += [(b0 + 2 + k * .25, SNARE, 84 + k * 5) for k in range(8)]
+        else:                                                           # the choruses and the run: four on the floor
+            drums += [(b0 + o, KICK, 118) for o in range(4)]
+            drums += [(b0 + 1, SNARE, 112), (b0 + 3, SNARE, 112), (b0 + 1, CLAP, 92), (b0 + 3, CLAP, 92)]
+            drums += [(b0 + o + .5, OHAT, 78) for o in range(4)]
+            if run:
+                drums += [(b0 + k * .25, HAT, 48) for k in range(16) if k % 2]
+            if bar in (23, 27, 35):
+                drums += [(b0 + 3, TOM_HI, 104), (b0 + 3.25, TOM_MID, 108), (b0 + 3.5, TOM_LO, 112), (b0 + 3.75, TOM_LO, 116)]
+        if bar in (4, 12, 16, 24, 28, 32):
+            drums.append((b0, CRASH, 104))
+    ks = dict(PLAY=[(0, 0), (16, 1), (48, 3), (64, 0), (96, 2), (112, 0)],   # SYN LEAD, BELL EP, GLASS, SYN LEAD, BRASS, SYN LEAD
+              BASS=[(0, 1), (16, 0), (48, 1)],                              # FM BASS, PULSE, FM BASS
+              PAD=[(0, 2), (16, 1), (64, 0)],                               # GLASS PAD, STRINGS, SUPERSAW
+              ARP=[(0, 0), (16, 1), (48, 0)],                               # PLUCK, BELL, PLUCK
+              KEYS=[(16, 0)],                                               # FM EP
+              LEAD=[(64, 0)],                                               # SAW LEAD
+              DRUMS=[(0, 0), (16, 1), (48, 0)])                             # GATED, TIGHT, GATED
+    return dict(BASS=bass, PAD=pad, ARP=arp, LEAD=lead, KEYS=keys, DRUMS=drums, KS=ks)
+
+
+# YOZORA SPARK: arcade J-pop as KIRAMEKI RUSH, faster and harder (EXP), on the genre's best-loved progressions: the
+# Komuro progression (vi IV V I) in the intro and the verse, "Just the Two of Us" (IV III7 vi, v I7) in the
+# pre-chorus, the royal road (IV V iii vi) in the chorus, the last chorus a whole step up (C to D major: its melody
+# keeps to D E G A B, so it stays on the white keys; the band has the F# and C#), and the arcade's cadence to end on,
+# bVI bVII I (Bb C D). Sixteenth pairs on one key and runs make it harder.
+YOZORA_TEXT = """
+0: E5 0 .5 | A5 .5 .5 | B5 1 .5 | C6 1.5 .5 | B5 2 .5 | A5 2.5 .5 | E5 3 .5 | G5 3.5 .5
+1: A5 0 .5 | F5 .5 .5 | A5 1 .5 | C6 1.5 1 | A5 2.5 .5 | G5 3 .5 | F5 3.5 .5
+2: G5 0 .5 | B5 .5 .5 | D5 1 .5 | G5 1.5 .5 | B5 2 .25 | A5 2.25 .25 | G5 2.5 .5 | D5 3 1
+3: E5+G5 0 1 | C6 1 .5 | B5 1.5 .5 | G5 2 .5 | E5 2.5 .5 | C5 3 1
+4: A4 0 .5 | A4 .5 .25 | A4 .75 .25 | C5 1 .5 | B4 1.5 .5 | A4 2 .5 | E4 2.5 .5 | G4 3 .5 | A4 3.5 .5
+5: F4 0 .5 | A4 .5 .5 | C5 1 1 | B4 2 .5 | A4 2.5 .5 | F4 3 1
+6: G4 0 .5 | G4 .5 .25 | G4 .75 .25 | B4 1 .5 | A4 1.5 .5 | G4 2 .5 | D4 2.5 .5 | G4 3 1
+7: E4 0 .5 | G4 .5 .5 | C5 1 1.5 | B4 2.5 .5 | C5 3 .5 | E4 3.5 .5
+8: A4 0 .5 | C5 .5 .5 | E4 1 .5 | A4 1.5 .5 | C5 2 .5 | B4 2.5 .25 | A4 2.75 .25 | G4 3 1
+9: F4 0 .5 | A4 .5 .5 | C5 1 1 | A4 2 .5 | F4 2.5 .5 | E4 3 1
+10: G4 0 1 | B4 1 .5 | A4 1.5 .5 | G4 2 .5 | F4 2.5 .5 | E4 3 .5 | D4 3.5 .5
+11: E4 0 .5 | B4 .5 .5 | E4 1 .5 | B4 1.5 .5 | D4 2 .5 | E4 2.5 .5 | B4 3 1
+12: A4 0 .5 | C5 .5 .5 | E4 1 .5 | F4 1.5 .5 | A4 2 1 | C5 3 .5 | A4 3.5 .5
+13: B4 0 1 | E4 1 .5 | B4 1.5 .5 | A4 2 .5 | B4 2.5 .5 | E4 3 1
+14: C5 0 .5 | B4 .5 .5 | A4 1 .5 | E4 1.5 .5 | A4 2 .5 | B4 2.5 .5 | C5 3 1
+15: G4 0 .5 | D4 .5 .5 | G4 1 1 | C5 2 .5 | E4 2.5 .5 | G4 3 1
+16: A5+C6 0 .5 | A5 .5 .5 | G5 1 .5 | A5 1.5 .5 | C6 2 .5 | A5 2.5 .5 | G5 3 .5 | F5 3.5 .5
+17: G5+B5 0 .5 | G5 .5 .5 | D5 1 .5 | G5 1.5 .5 | B5 2 .5 | A5 2.5 .25 | G5 2.75 .25 | D5 3 1
+18: E5+G5 0 .5 | B5 .5 .5 | E5 1 .5 | G5 1.5 .5 | B5 2 .5 | C6 2.5 .5 | B5 3 .5 | G5 3.5 .5
+19: A5+C6 0 1.5 | G5 1.5 .5 | A5 2 .5 | C6 2.5 .5 | E5 3 1
+20: F5+A5 0 .5 | D5 .5 .5 | F5 1 .5 | A5 1.5 .5 | C6 2 .5 | A5 2.5 .5 | F5 3 .5 | D5 3.5 .5
+21: G5+B5 0 .5 | D5 .5 .5 | G5 1 .5 | B5 1.5 .5 | A5 2 .25 | B5 2.25 .25 | C6 2.5 .5 | B5 3 .5 | G5 3.5 .5
+22: E5+G5+C6 0 2 | G5 2 .5 | A5 2.5 .5 | B5 3 .5 | C6 3.5 .5
+23: C6 0 1 | B5 1 .5 | G5 1.5 .5 | E5 2 .5 | D5 2.5 .5 | C5 3 1
+24: D5 0 .25 | F5 .25 .25 | A5 .5 .5 | D5 1 .5 | A5 1.5 .5 | C6 2 .5 | A5 2.5 .5 | F5 3 1
+25: E5 0 .25 | G5 .25 .25 | B5 .5 .5 | E5 1 .5 | B5 1.5 .5 | C6 2 .5 | B5 2.5 .5 | G5 3 1
+26: F5+A5 0 .5 | C6 .5 .5 | A5 1 .5 | F5 1.5 .5 | A5 2 .5 | C6 2.5 .5 | A5 3 1
+27: G5+B5 0 .5 | D5 .5 .5 | G5 1 .5 | B5 1.5 .5 | E5+A5 2 1
+28: G6+B6 0 .5 | G6 .5 .5 | E6 1 .5 | G6 1.5 .5 | B6 2 .5 | G6 2.5 .5 | E6 3 .5 | D6 3.5 .5
+29: E6+A6 0 .5 | E6 .5 .5 | A6 1 .5 | B6 1.5 .5 | A6 2 .25 | B6 2.25 .25 | A6 2.5 .5 | E6 3 1
+30: A6 0 .5 | E6 .5 .5 | A6 1 .5 | B6 1.5 .5 | A6 2 1 | E6 3 1
+31: D6+B6 0 1.5 | A6 1.5 .5 | B6 2 .5 | D6 2.5 .5 | E6 3 1
+32: E6+G6 0 .5 | B6 .5 .5 | G6 1 .5 | E6 1.5 .5 | G6 2 .5 | B6 2.5 .5 | A6 3 .5 | G6 3.5 .5
+33: E6+A6 0 .5 | B6 .5 .5 | A6 1 .5 | E6 1.5 .5 | A6 2 .25 | B6 2.25 .25 | A6 2.5 .5 | E6 3 .5 | G6 3.5 .5
+34: D6+A6 0 2 | B6 2 .5 | A6 2.5 .5 | G6 3 .5 | E6 3.5 .5
+35: D6 0 1 | E6 1 .5 | G6 1.5 .5 | A6 2 1 | B6 3 1
+36: D6+F6 0 1 | F6 1 .5 | D6 1.5 .5 | E6+G6 2 1 | G6 3 .5 | A6 3.5 .5
+37: D6+A6 0 3"""
+
+YOZORA_SPARK = dict(
+    file='yozora-spark.mid', title='YOZORA SPARK', bpm=180,
+    chords=['Am', 'F', 'G', 'C'] + ['Am', 'F', 'G', 'C', 'Am', 'F', 'G', 'E'] + ['F', 'E', 'Am', 'Gm C']
+           + ['F', 'G', 'Em', 'Am', 'Dm', 'G', 'C', 'C'] + ['Dm', 'Em', 'F', 'G A']
+           + ['G', 'A', 'F#m', 'Bm', 'Em', 'A', 'D', 'D'] + ['Bb C', 'D'],
+    phrases=[(2, 3), (8, 9), (14, 15), (18, 19), (22, 23), (26, 27), (30, 31), (34, 35)],
+    play=YOZORA_TEXT)
+
+
+def arrange_yozora_spark(s):
+    """arcade J-pop at 180 BPM, as KIRAMEKI RUSH: a pluck arp and a glass pad under the intro's hook, a verse on bell EP
+    with EP stabs and octave bass, a pre-chorus with a syncopated bass under "Just the Two of Us", choruses on four on
+    the floor with a supersaw, a saw lead's long notes and sixteenth arps, a run, the last chorus a whole step up, the
+    cadence bVI bVII I and a held D"""
+    bass, pad, arp, keys, lead, drums = [], [], [], [], [], []
+    bars = len(s['chords'])
+    for bar in range(bars):
+        end = bar >= bars - 2
+        intro, verse, pre = bar < 4, 4 <= bar < 12, 12 <= bar < 16
+        chorus, run, final = 16 <= bar < 24, 24 <= bar < 28, 28 <= bar < bars - 2
+        big = chorus or final
+        for t, ch, ln in segments(s['chords'], bar):
+            r, n8, n16 = bass_root(ch), int(round(ln * 2)), int(round(ln * 4))
+            for p in voicing(ch, 55 if big or run or end else 52):
+                pad.append((t, p, ln if bar < bars - 1 else 4, 72 if big or end else 58))
+            if bar == bars - 1:
+                bass.append((t, r, 3, 114))
+            elif intro and bar < 2:
+                bass.append((t, r, ln - .2, 96))
+            elif pre:                                                   # the syncopation of "Just the Two of Us"
+                bass += [(t + o, r + (12 if o in (.75, 2.75) else 0), .35, 104 if o in (0, 2) else 90)
+                         for o in (0, .75, 1.5, 2, 2.75, 3.5) if o < ln]
+            else:                                                       # the octave bass
+                bass += [(t + k * .5, r + (12 if k % 2 else 0), .4, 112 if k % 2 == 0 else 94) for k in range(n8)]
+            tones = sorted(72 + iv % 12 for iv in CHORD[ch]) + [84 + CHORD[ch][0] % 12]
+            if verse or pre:
+                arp += [(t + k * .5, tones[k % 4] - 12, .4, 54 if k % 4 == 0 else 44) for k in range(n8)]
+                keys += [(t + k + .5, p, .3, 64) for k in range(int(ln)) for p in voicing(ch, 60)]
+            elif bar < bars - 1 and not (intro and bar < 2):
+                arp += [(t + k * .25, tones[k % 4], .2, 62 if k % 4 == 0 else 48) for k in range(n16)]
+            if big or end:
+                top = voicing(ch, 64)
+                lead += [(t, top[2], min(1.9, ln - .1), 64)] + ([(t + 2, top[1], 1.9, 60)] if ln >= 4 else [])
+        b0 = bar * 4
+        if bar == bars - 1:
+            drums += [(b0, KICK, 122), (b0, CRASH, 114)]
+            continue
+        if intro:
+            if bar >= 2:
+                drums += [(b0 + o, KICK, 112) for o in range(4)] + [(b0 + o + .5, OHAT, 70) for o in range(4)]
+            if bar == 3:
+                drums += [(b0 + 2 + k * .25, SNARE, 70 + k * 6) for k in range(8)]
+            continue
+        if verse:
+            drums += [(b0, KICK, 116), (b0 + 1.5, KICK, 98), (b0 + 2, KICK, 112), (b0 + 1, SNARE, 106), (b0 + 3, SNARE, 106)]
+            drums += [(b0 + k * .25, HAT, 66 if k % 2 == 0 else 40) for k in range(16)]
+        elif pre:
+            drums += [(b0, KICK, 116), (b0 + .75, KICK, 96), (b0 + 2, KICK, 112), (b0 + 2.75, KICK, 96),
+                      (b0 + 1, SNARE, 108), (b0 + 3, SNARE, 108)] + [(b0 + k * .5, HAT, 64) for k in range(8)]
+            if bar == 15:
+                drums += [(b0 + 2 + k * .25, SNARE, 84 + k * 5) for k in range(8)]
+        else:                                                           # the choruses, the run, the cadence
+            drums += [(b0 + o, KICK, 118) for o in range(4)]
+            drums += [(b0 + 1, SNARE, 112), (b0 + 3, SNARE, 112), (b0 + 1, CLAP, 92), (b0 + 3, CLAP, 92)]
+            drums += [(b0 + o + .5, OHAT, 78) for o in range(4)]
+            if run:
+                drums += [(b0 + k * .25, HAT, 48) for k in range(16) if k % 2]
+            if bar in (23, 27, 35):
+                drums += [(b0 + 3, TOM_HI, 104), (b0 + 3.25, TOM_MID, 108), (b0 + 3.5, TOM_LO, 112), (b0 + 3.75, TOM_LO, 116)]
+        if bar in (4, 12, 16, 24, 28, 32, 36):
+            drums.append((b0, CRASH, 104))
+    ks = dict(PLAY=[(0, 0), (16, 1), (48, 3), (64, 0), (96, 2), (112, 0)],   # SYN LEAD, BELL EP, GLASS, SYN LEAD, BRASS, SYN LEAD
+              BASS=[(0, 1)],                                                # FM BASS
+              PAD=[(0, 2), (16, 1), (64, 0)],                               # GLASS PAD, STRINGS, SUPERSAW
+              ARP=[(0, 0), (16, 1), (64, 0)],                               # PLUCK, BELL, PLUCK
+              KEYS=[(16, 0)],                                               # FM EP
+              LEAD=[(64, 0)],                                               # SAW LEAD
+              DRUMS=[(0, 0), (16, 1), (48, 0)])                             # GATED, TIGHT, GATED
+    return dict(BASS=bass, PAD=pad, ARP=arp, LEAD=lead, KEYS=keys, DRUMS=drums, KS=ks)
+
+
+# TURBO NOIR: outrun after Kavinsky's night drives (an original song). A minor at 112 BPM: a robotic, staccato line over a
+# pulsing sixteenth bass and a square sequence, a pre-chorus that hangs on E major, a chorus of long synth-brass notes
+# over saw chords and a gated snare, a breakdown, the last chorus an octave up on the dirty bass.
+TURBO_TEXT = """
+0: A4 0 .5 | A4 1 .5 | C5 1.5 .5 | B4 2 1 | E4 3 1
+1: A4 0 .5 | A4 1 .5 | C5 1.5 .5 | B4 2 .5 | A4 2.5 .5 | G4 3 1
+2: F4 0 .5 | F4 1 .5 | A4 1.5 .5 | G4 2 1 | C4 3 1
+3: F4 0 .5 | F4 1 .5 | A4 1.5 .5 | C5 2 1.5 | B4 3.5 .5
+4: E4 0 .5 | A4 .5 .5 | E4 1 .5 | C5 1.5 .5 | B4 2 .5 | A4 2.5 .5 | E4 3 1
+5: E4 0 .5 | A4 .5 .5 | E4 1 .5 | C5 1.5 .5 | B4 2 1 | G4 3 1
+6: F4 0 .5 | A4 .5 .5 | F4 1 .5 | C5 1.5 .5 | B4 2 .5 | A4 2.5 .5 | F4 3 1
+7: F4 0 .5 | A4 .5 .5 | F4 1 .5 | C5 1.5 .5 | A4 2 1.5 | E4 3.5 .5
+8: G4 0 .5 | C5 .5 .5 | G4 1 .5 | E4 1.5 .5 | G4 2 .5 | A4 2.5 .5 | G4 3 1
+9: E4 0 .5 | G4 .5 .5 | C5 1 1 | B4 2 .5 | C5 2.5 .5 | G4 3 1
+10: D4 0 .5 | G4 .5 .5 | B4 1 .5 | G4 1.5 .5 | B4 2 .5 | A4 2.5 .5 | G4 3 1
+11: B4 0 2 | A4 2 .5 | G4 2.5 .5 | D4 3 1
+12: D4+F4 0 1 | A4 1 1 | F4 2 .5 | A4 2.5 .5 | C5 3 1
+13: D4+A4 0 1.5 | C5 1.5 .5 | A4 2 1 | F4 3 1
+14: E4+B4 0 1.5 | E4 1.5 .5 | B4 2 1 | A4 3 .5 | B4 3.5 .5
+15: B4 0 2 | C5 2 .5 | B4 2.5 .5 | E4 3 1
+16: A5 0 1.5 | E5 1.5 .5 | A5 2 .5 | C6 2.5 1.5
+17: A5 0 1.5 | F5 1.5 .5 | A5 2 .5 | C6 2.5 .5 | B5 3 .5 | A5 3.5 .5
+18: G5 0 1.5 | E5 1.5 .5 | G5 2 .5 | C6 2.5 1.5
+19: B5 0 1 | A5 1 .5 | G5 1.5 .5 | D5 2 2
+20: E5+A5 0 1.5 | C6 1.5 .5 | B5 2 .5 | A5 2.5 .5 | E5 3 1
+21: F5+A5 0 1.5 | C6 1.5 .5 | A5 2 .5 | F5 2.5 .5 | A5 3 1
+22: E5+B5 0 2 | C6 2 .5 | B5 2.5 .5 | A5 3 .5 | B5 3.5 .5
+23: E5+B5 0 3
+24: C6 0 2 | B5 2 1 | A5 3 1
+25: E5 0 3
+26: A5 0 2 | G5 2 1 | F5 3 1
+27: F5+A5 0 2
+36: E6+A6 0 3"""
+
+
+def turbo_play():
+    """the play track: as written, and its chorus (bars 17-24) again an octave up in bars 29-36"""
+    notes = melody(TURBO_TEXT)
+    return notes + [(t + 48, p + 12, ln, v) for t, p, ln, v in notes if 64 <= t < 96]
+
+
+TURBO_NOIR = dict(
+    file='turbo-noir.mid', title='TURBO NOIR', bpm=112,
+    chords=['Am', 'Am', 'F', 'F'] + ['Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G'] + ['Dm', 'Dm', 'E', 'E']
+           + ['Am', 'F', 'C', 'G', 'Am', 'F', 'E', 'E'] + ['Am', 'Am', 'F', 'F']
+           + ['Am', 'F', 'C', 'G', 'Am', 'F', 'E', 'E'] + ['Am'],
+    phrases=[(2, 3), (8, 9), (14, 15), (18, 19), (22, 23), (30, 31), (34, 35)],
+    play=turbo_play())
+
+
+def arrange_turbo_noir(s):
+    """outrun at 112 BPM in A minor: a glass pad and a bell arp in the intro, a verse on a pulsing sixteenth bass and a
+    square sequence over strings, brass stabs on the pre-chorus's E major, choruses on four on the floor with a gated
+    snare, saw chords and octave bass, a breakdown on the pad and a kick, the last chorus on the dirty bass"""
+    bass, pad, arp, lead, keys, drums = [], [], [], [], [], []
+    bars = len(s['chords'])
+    for bar in range(bars):
+        last = bar == bars - 1
+        intro, verse, pre = bar < 4, 4 <= bar < 12, 12 <= bar < 16
+        chorus, brk, final = 16 <= bar < 24, 24 <= bar < 28, 28 <= bar < bars - 1
+        big = chorus or final
+        for t, ch, ln in segments(s['chords'], bar):
+            r = bass_root(ch)
+            for p in voicing(ch, 55 if big else 52):
+                pad.append((t, p, 4 if last else ln, 74 if big else 62))
+            tones = sorted(69 + (iv - 9) % 12 for iv in CHORD[ch]) + [81 + (CHORD[ch][0] - 9) % 12]
+            if last:
+                bass.append((t, r, 3.5, 114))
+            elif intro:
+                bass.append((t, r, 3.8, 90 if bar < 2 else 100))
+                arp += [(t + k * .5, tones[k % 4], .45, 52 if k % 4 == 0 else 42) for k in range(8)]
+            elif verse or pre:
+                bass += [(t + k * .25, r, .2, 104 if k % 4 == 0 else 84) for k in range(16)]   # the pulse
+                if verse:
+                    arp += [(t + k * .25, tones[(k * 3) % 4] - 12, .2, 60 if k % 4 == 0 else 46) for k in range(16)]
+                else:
+                    lead += [(t + o, p, .6, 96) for o in (0, 1.5, 3) for p in voicing(ch, 60)]
+            elif brk:
+                bass.append((t, r, 3.8, 98))
+            else:                                                       # the choruses: octave bass, a pluck sequence
+                bass += [(t + k * .5, r + (12 if k % 2 else 0), .42, 114 if k % 2 == 0 else 96) for k in range(8)]
+                arp += [(t + k * .25, tones[k % 4], .2, 58 if k % 4 == 0 else 44) for k in range(16)]
+                if final:
+                    top = voicing(ch, 64)
+                    lead += [(t, top[2], 1.9, 62), (t + 2, top[1], 1.9, 58)]
+        b0 = bar * 4
+        if last:
+            drums += [(b0, KICK, 122), (b0, CRASH, 112)]
+            continue
+        if intro:
+            if bar >= 2:
+                drums += [(b0, KICK, 110), (b0 + 2, KICK, 106)]
+            if bar == 3:
+                drums += [(b0 + 3 + k * .25, SNARE, 80 + k * 8) for k in range(4)]
+            continue
+        if verse or pre:
+            drums += [(b0, KICK, 116), (b0 + 2, KICK, 112), (b0 + 2.5, KICK, 96), (b0 + 1, SNARE, 112), (b0 + 3, SNARE, 112)]
+            drums += [(b0 + k * .5, HAT, 66 if k % 2 == 0 else 50) for k in range(8)]
+            if bar == 15:
+                drums += [(b0 + 2 + k * .25, SNARE, 84 + k * 5) for k in range(8)]
+        elif brk:
+            drums += [(b0, KICK, 112)]
+            if bar == 27:
+                drums += [(b0 + 2 + k * .25, SNARE, 70 + k * 7) for k in range(8)]
+        else:                                                           # the choruses
+            drums += [(b0 + o, KICK, 118) for o in range(4)] + [(b0 + 1, SNARE, 116), (b0 + 3, SNARE, 116)]
+            drums += [(b0 + 1, CLAP, 90), (b0 + 3, CLAP, 90)] + [(b0 + k * .5, HAT, 70 if k % 2 else 56) for k in range(8)]
+            if bar in (23, 35):
+                drums += [(b0 + 3, TOM_HI, 104), (b0 + 3.25, TOM_MID, 108), (b0 + 3.5, TOM_LO, 112), (b0 + 3.75, TOM_LO, 116)]
+        if bar in (4, 12, 16, 20, 24, 28, 32):
+            drums.append((b0, CRASH, 104))
+    ks = dict(PLAY=[(0, 0), (64, 2), (96, 3), (112, 2)],                   # SYN LEAD, BRASS, GLASS, BRASS
+              BASS=[(0, 2), (16, 0), (64, 1), (96, 2), (112, 3)],          # SUB, PULSE, FM BASS, SUB, DIRT BASS
+              PAD=[(0, 2), (16, 1), (64, 0), (96, 2), (112, 0)],           # GLASS PAD, STRINGS, SUPERSAW, GLASS PAD, SUPERSAW
+              ARP=[(0, 1), (16, 2), (64, 0)],                              # BELL, SQUARE, PLUCK
+              LEAD=[(48, 2), (112, 0)],                                    # BRASS LEAD stabs, SAW LEAD
+              DRUMS=[(0, 0)])                                              # GATED
+    return dict(BASS=bass, PAD=pad, ARP=arp, LEAD=lead, KEYS=keys, DRUMS=drums, KS=ks)
+
+
+# DISCO VOLTAGE: French house after Daft Punk (an original song). 123 BPM, A minor with the dorian D major: four on the
+# floor, a funky octave bass on the sixteenths, chord stabs on the offbeats, a hook that hops on the sixteenths, disco
+# strings and long notes in the breakdown, then the hook again.
+DISCO_TEXT = """
+0: A4 0 .5 | A4 1 .5 | A4 2 .5 | G4 2.5 .5 | A4 3 1
+1: A4 0 .5 | A4 1 .5 | B4 2 .5 | A4 2.5 .5 | E4 3 1
+2: A4 0 .5 | C5 .75 .25 | A4 1 .5 | G4 1.5 .5 | E4 2.25 .25 | G4 2.5 .5 | A4 3 1
+3: A4 0 .5 | B4 .75 .25 | A4 1 .5 | E4 1.5 .5 | D4 2.25 .25 | E4 2.5 .5 | A4 3 1
+4: A4 0 .5 | C5 .75 .25 | A4 1 .5 | G4 1.5 .5 | E4 2.25 .25 | G4 2.5 .5 | A4 3 1
+5: A4 0 .5 | B4 .75 .25 | A4 1 .5 | E4 1.5 .5 | D4 2.25 .25 | E4 2.5 .5 | A4 3 1
+6: A4 0 .5 | C5 .75 .25 | A4 1 .5 | G4 1.5 .5 | E4 2.25 .25 | G4 2.5 .5 | A4 3 1
+7: A4 0 .5 | B4 .75 .25 | A4 1 .5 | E4 1.5 .5 | B4 2 1 | C5 3 .5 | B4 3.5 .5
+8: A4 0 .5 | C5 .75 .25 | A4 1 .5 | F4 1.5 .5 | C5 2.25 .25 | A4 2.5 .5 | F4 3 1
+9: G4 0 .5 | B4 .75 .25 | G4 1 .5 | D4 1.5 .5 | B4 2.25 .25 | G4 2.5 .5 | A4 3 .5 | B4 3.5 .5
+10: C5 0 1 | B4 1 .5 | A4 1.5 .5 | E4 2 .5 | G4 2.5 .5 | A4 3 1
+11: A4 0 2 | E4 2 .5 | G4 2.5 .5 | A4 3 1
+12: D4+F4 0 .5 | A4 .5 .5 | D4+F4 1.5 .5 | C5 2.5 .5 | A4 3 1
+13: E4+G4 0 .5 | B4 .5 .5 | E4+G4 1.5 .5 | B4 2.5 .5 | G4 3 1
+14: F4+A4 0 .5 | C5 .5 .5 | F4+A4 1.5 .5 | C5 2.5 .5 | A4 3 1
+15: G4+B4 0 .5 | B4 .5 .5 | G4+B4 1.5 .5 | B4 2.5 .5 | G4 3 1
+16: A5 0 .5 | C6 .75 .25 | A5 1 .5 | G5 1.5 .5 | E5 2.25 .25 | G5 2.5 .5 | A5 3 .5 | C6 3.5 .5
+17: A5 0 .5 | B5 .75 .25 | A5 1 .5 | E5 1.5 .5 | D5 2.25 .25 | E5 2.5 .5 | A5 3 1
+18: A5 0 .5 | C6 .75 .25 | A5 1 .5 | G5 1.5 .5 | E5 2.25 .25 | G5 2.5 .5 | A5 3 .5 | C6 3.5 .5
+19: B5 0 .5 | A5 .5 .5 | E5 1 .5 | D5 1.5 .5 | E5 2 1 | A5 3 1
+20: A5+C6 0 .5 | A5 .75 .25 | F5 1 .5 | C6 1.5 .5 | A5 2.25 .25 | F5 2.5 .5 | A5 3 1
+21: G5+B5 0 .5 | G5 .75 .25 | D5 1 .5 | B5 1.5 .5 | G5 2.25 .25 | D5 2.5 .5 | G5 3 1
+22: E5+B5 0 1.5 | D5 1.5 .5 | E5 2 1 | B5 3 1
+23: B5 0 2 | A5 2 .5 | E5 2.5 .5 | B5 3 1
+24: A5 0 2 | C6 2 2
+25: A5 0 1 | G5 1 1 | F5 2 2
+26: G5 0 2 | B5 2 2
+27: B5 0 1 | A5 1 1 | G5 2 2
+34: A5+C6 0 1.5 | G5 1.5 .5 | E5 2 .5 | G5 2.5 .5 | A5 3 1
+35: A5 0 2 | C6 2 1 | A5 3 1
+36: E5+A5 0 3"""
+
+
+def disco_play():
+    """the play track: as written, and the hook of bars 17-22 again in bars 29-34 (the drop)"""
+    notes = melody(DISCO_TEXT)
+    return notes + [(t + 48, p, ln, v) for t, p, ln, v in notes if 64 <= t < 88]
+
+
+DISCO_VOLTAGE = dict(
+    file='disco-voltage.mid', title='DISCO VOLTAGE', bpm=123,
+    chords=['Am', 'D', 'Am', 'D'] + ['Am', 'D', 'Am', 'D', 'F', 'G', 'Am', 'Am'] + ['Dm', 'Em', 'F', 'G']
+           + ['Am', 'D', 'Am', 'D', 'F', 'G', 'E', 'E'] + ['F', 'F', 'G', 'G']
+           + ['Am', 'D', 'Am', 'D', 'F', 'G', 'Am', 'Am'] + ['Am'],
+    phrases=[(2, 3), (6, 7), (10, 11), (14, 15), (18, 19), (22, 23), (30, 31), (34, 35)],
+    play=disco_play())
+
+
+def arrange_disco_voltage(s):
+    """French house at 123 BPM: drums and the bass first, the hook over a funky octave bass on the sixteenths and EP
+    stabs on the offbeats, a rising run on a pluck arp, the hook up an octave on a supersaw's stabs, a breakdown of
+    disco strings and long notes with the kick out, and the drop"""
+    bass, pad, arp, keys, lead, drums = [], [], [], [], [], []
+    bars = len(s['chords'])
+    groove = ((0, 0, .4), (.75, 12, .2), (1.5, 0, .4), (2.25, 0, .2), (2.5, 12, .4), (3.25, 0, .2), (3.5, 7, .4))
+    for bar in range(bars):
+        last = bar == bars - 1
+        intro, a, b = bar < 4, 4 <= bar < 12, 12 <= bar < 16
+        c, brk, drop = 16 <= bar < 24, 24 <= bar < 28, 28 <= bar < bars - 1
+        for t, ch, ln in segments(s['chords'], bar):
+            r = bass_root(ch)
+            tones = sorted(69 + (iv - 9) % 12 for iv in CHORD[ch]) + [81 + (CHORD[ch][0] - 9) % 12]
+            if last:
+                bass.append((t, r, 3, 112))
+                pad += [(t, p, 4, 72) for p in voicing(ch, 55)]
+                continue
+            if brk:
+                pad += [(t, p, ln, 76) for p in voicing(ch, 57)]
+                bass.append((t, r, ln - .2, 92))
+                continue
+            bass += [(t + o, r + iv, l, 112 if o in (0, 1.5) else 96) for o, iv, l in groove]   # the funk
+            if not intro:
+                stab = [(t + o, p, .22, 74) for o in (.5, 1.5, 2.5, 3.5) for p in voicing(ch, 60)]
+                (pad if c or drop else keys).extend(stab)
+            if b:
+                arp += [(t + k * .25, tones[k % 4], .2, 56 if k % 4 == 0 else 44) for k in range(16)]
+        b0 = bar * 4
+        if last:
+            drums += [(b0, KICK, 122), (b0, CRASH, 110)]
+            continue
+        if brk:
+            drums += [(b0 + k * .5 + .5, HAT, 54) for k in range(0, 8, 2)]
+            if bar == 27:
+                drums += [(b0 + k * .25, SNARE, 60 + k * 4) for k in range(16)]
+            continue
+        drums += [(b0 + o, KICK, 118) for o in range(4)] + [(b0 + o + .5, OHAT, 74) for o in range(4)]
+        drums += [(b0 + k * .25, HAT, 56 if k % 2 == 0 else 38) for k in range(16)]
+        if not (intro and bar < 2):
+            drums += [(b0 + 1, CLAP, 104), (b0 + 3, CLAP, 104), (b0 + 1, SNARE, 84), (b0 + 3, SNARE, 84)]
+        if bar in (4, 16, 28):
+            drums.append((b0, CRASH, 104))
+    ks = dict(PLAY=[(0, 0), (64, 4), (96, 3), (112, 4)],                   # SYN LEAD, FUZZ, GLASS (the breakdown), FUZZ
+              BASS=[(0, 1)],                                               # FM BASS
+              PAD=[(0, 0), (96, 1), (112, 0)],                             # SUPERSAW stabs, STRINGS, SUPERSAW
+              ARP=[(48, 0)],                                               # PLUCK
+              KEYS=[(16, 0)],                                              # FM EP
+              DRUMS=[(0, 1)])                                              # TIGHT
+    return dict(BASS=bass, PAD=pad, ARP=arp, LEAD=lead, KEYS=keys, DRUMS=drums, KS=ks)
+
+
 # ---------------------------------------------------------------- a standard MIDI file, format 1
 
 def vlq(n):
@@ -495,7 +965,9 @@ def main():
     os.makedirs(os.path.join(HERE, 'songs'), exist_ok=True)
     files = []
     for s, arrange in ((FIRST_LIGHT, arrange_first_light), (NEON_CARRIER, arrange_neon_carrier),
-                       (ENGINE_TOUR, arrange_engine_tour), (CHROME_HORIZON, arrange_chrome_horizon)):
+                       (ENGINE_TOUR, arrange_engine_tour), (CHROME_HORIZON, arrange_chrome_horizon),
+                       (KIRAMEKI_RUSH, arrange_kirameki_rush), (YOZORA_SPARK, arrange_yozora_spark),
+                       (TURBO_NOIR, arrange_turbo_noir), (DISCO_VOLTAGE, arrange_disco_voltage)):
         data = write_song(s, arrange(s))
         with open(os.path.join(HERE, 'songs', s['file']), 'wb') as f:
             f.write(data)

@@ -8,7 +8,7 @@ to happen.
 VaveHero takes this to the FM-1. Notes come down a neon highway, you play them on the white keys while the key LEDs
 show what is coming, and a synthwave band plays along.
 
-> **An alpha (0.1): a proof of concept.** Its four songs are generated demo songs, made to try the game out; real
+> **An alpha: a proof of concept.** Its eight songs are generated demo songs, made to try the game out; real
 > songs are welcome. It is tested in CI and in an FM-1 emulator, but **not yet tried on a real FM-1**: install it at
 > your own risk. **Testers wanted:** have an FM-1? Tell us how it went in
 > an [issue](https://github.com/joakimskurk/fm1vavehero/issues).
@@ -18,8 +18,8 @@ show what is coming, and a synthwave band plays along.
 ## Install
 
 Open **[the VaveHero page](https://joakimskurk.github.io/fm1vavehero/)** in Chrome or Edge, connect the FM-1 with a
-USB cable, and press Install. The page installs the newest [release](https://github.com/joakimskurk/fm1vavehero/releases)
-(now 0.1); its `.fwsc` is there too, for other installers.
+USB cable, and press Install. The page installs the newest [release](https://github.com/joakimskurk/fm1vavehero/releases);
+its `.fwsc` is there too, for other installers.
 
 If the FM-1 will not start, hold **OCT−** while switching it on and install again. To go back to the official
 firmware, use M-VAVE's updater M-UPGRADE; if its sounds look wrong afterwards, use Reset Patches in its System menu

@@ -61,7 +61,8 @@ tested on the host and in fm1-emu.
 - [ ] The second core, only if a real FM-1 shows the need: the audio engine's voices on core 1 (Felucca's way, a check
       word on each job), with the game and the screen on core 0, and one core always enough (some FM-1s have a core 1
       that misreads RAM)
-- [ ] An EXP song and 2–3 new songs
+- [x] Two EXP songs and two more: KIRAMEKI RUSH and YOZORA SPARK (arcade J-pop, EXP), TURBO NOIR (outrun) and
+      DISCO VOLTAGE (French house), both HARD
 - [ ] MIDI import: tempo changes, and a keyswitch note to override the automatic octave shifts
 - [x] Sound check: renders of the reference as the ground truth for the port, as in RoboSeq (`tools/ref_tour.cjs`, `tests/kf/parity.py`)
 
@@ -83,7 +84,7 @@ but the audio is the tight part, so it is measured first.
       (the latency on a real FM-1 must be calibrated)
 - [x] The synthwave engine in the audio interrupt (fixed point: sawtooth with PolyBLEP, filters, chorus, gated reverb,
       hall reverb), measured in fm1-emu and checked against the reference's renders (all patches within 1.5 dB, the
-      songs within 0.8 dB)
+      songs within 1.1 dB but where FM patches repeat the same notes fast: D8)
 - [x] `tools/mid2vavehero.mjs`: MIDI file to note chart and band tracks for flash, with the reference's own import code
 - [x] The patches (D6) and GRIT (D7) in fixed point, with keyswitch notes in firmware. GRIT is on ALGORITHM.
 - [x] MIDI MODE LIVE in firmware: USB-MIDI and TRS in (`midi_get`), clock and STOP, keyswitch notes, the keys out on

@@ -357,7 +357,7 @@ static void ks_splash(uint32_t ms, const char *version)
     ktextOut(&FONT_S, 236 - ktw(&FONT_S, version), 0, version, K_DIM, K_OUT, 1);
 }
 
-typedef struct { uint32_t sel, speed, spread, tone; int32_t best[8]; uint32_t mm_mode, ms; } ks_menu_t;   /* best: acc10, -1 none */
+typedef struct { uint32_t sel, speed, spread, tone; int32_t best[KF_NSONG]; uint32_t mm_mode, ms; } ks_menu_t;   /* best: acc10, -1 none */
 static void ks_songs(const ks_menu_t *m, const char *tone)
 {
     static const char *const KN[4] = {"", "TONE", "SPEED", "MIX"}, *const KM[4] = {"MODE", "TONE", "BPM", "MIX"};
@@ -380,7 +380,7 @@ static void ks_songs(const ks_menu_t *m, const char *tone)
         knum(s, i + 1u, 2);
         ktext(&FONT_S, 9, y, s, sel ? K_CYAN : K_MUTE);
         ktext(&FONT_S, 33, y, KF_SONG[i].title, K_TEXT);
-        best = i < 8u ? m->best[i] : -1;
+        best = m->best[i];
         if (best < 0) { ktextR(&FONT_S, 236, y, "NEW", K_CYAN); continue; }
         medals = best >= 900 ? 3 : best >= 800 ? 2 : best >= 700 ? 1 : 0;
         for (k = 0; k < 3; k++) {

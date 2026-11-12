@@ -45,6 +45,7 @@ static void wav(const char *path)
     fclose(f);
     printf("wav    -> %s (%.1f s)\n", path, pcm_n / (double)SR);
 }
+static const char *stats_song;                   /* the song the levels are of (tests/kf/parity-allow.txt) */
 static void stats(FILE *js, const char *name, double t0, double t1, int last)
 {
     uint32_t a = fr(t0), b = fr(t1), i;
@@ -61,7 +62,9 @@ static void stats(FILE *js, const char *name, double t0, double t1, int last)
     }
     sum /= 2.0 * (b - a) * 32768.0 * 32768.0;
     dsum /= 2.0 * (b - a) * 32768.0 * 32768.0;
-    fprintf(js, "  {\"name\": \"%s\", \"rms_db\": %.2f, \"peak\": %.4f, \"bright\": %.4f}%s\n", name,
+    fprintf(js, "  {\"name\": \"%s\", ", name);
+    if (stats_song) fprintf(js, "\"song\": \"%s\", ", stats_song);
+    fprintf(js, "\"rms_db\": %.2f, \"peak\": %.4f, \"bright\": %.4f}%s\n",
             10 * log10(sum + 1e-12), peak, sqrt(dsum / (sum + 1e-12)), last ? "" : ",");
     printf("  %-12s rms %6.2f dB  peak %.3f  bright %.3f\n", name, 10 * log10(sum + 1e-12), peak, sqrt(dsum / (sum + 1e-12)));
 }
@@ -136,6 +139,7 @@ static void song(int idx, double secs, const char *wavp, const char *jsp)
         FILE *js = fopen(jsp, "w");
         double bar = 4 * 60.0 / (s->bpm_x100 / 100.0), t0;
         int k = 0;
+        stats_song = s->title;
         fprintf(js, "[\n");
         for (t0 = .05; t0 + 4 * bar <= secs + 1e-6; t0 += 4 * bar, k++) {
             char name[32];

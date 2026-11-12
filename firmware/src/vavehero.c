@@ -434,7 +434,7 @@ static void draw(void)
     if (scr == SCR_SPLASH) ks_splash(fm1_ms, VER);
     else if (scr == SCR_SONGS) {
         m.sel = set.sel; m.speed = set.speed; m.spread = set.spread; m.tone = set.tone; m.mm_mode = 0; m.ms = fm1_ms;
-        for (i = 0; i < KF_NSONG && i < 8u; i++) m.best[i] = best_of(i);
+        for (i = 0; i < KF_NSONG; i++) m.best[i] = best_of(i);
         ks_songs(&m, tone_name());
     } else if (scr == SCR_PLAY) {
         uint8_t lit[8], led[8];

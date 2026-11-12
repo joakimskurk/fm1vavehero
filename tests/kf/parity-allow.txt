@@ -1,0 +1,12 @@
+# Windows of the songs where the firmware's level may differ more from the reference's than tests/kf/parity.py's
+# 1.5 dB and 25 % brightness, and why. One line each: SONG | WINDOW | dB | brightness % | why
+#
+# FM voices that ring into each other at the same pitch: two notes of one pitch add up louder or softer by how their
+# phases meet. In the reference the FM phase follows each note's start time, so its level varies by up to 4 dB from
+# note to note; the firmware starts the modulators at the phase of the average level (docs/DECISIONS.md, D8). Where
+# an FM patch repeats the same notes fast, the two meet differently by chance. Measured: FM EP chords a beat apart
+# at 120-180 BPM, alone, differ by -0.5 to +2.8 dB; a saw lead the same way, on the same time grid, by 0.6 dB at most.
+KIRAMEKI RUSH | bars 5-8  | 4 | 40 | the verse: FM EP stabs on the same chord every beat, and the melody's repeats on BELL EP, at 174 BPM
+KIRAMEKI RUSH | bars 9-12 | 4 | 40 | the same
+YOZORA SPARK  | bars 5-8  | 4 | 40 | the verse: FM EP stabs on the same chord every beat, and the melody's sixteenth pairs on one key on BELL EP, at 180 BPM
+YOZORA SPARK  | bars 9-12 | 4 | 40 | the same

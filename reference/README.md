@@ -6,7 +6,7 @@ as in RoboSeq and SkurkyMello.
 
 | File | Version | SHA-256 |
 |---|---|---|
-| `vavehero.html` | REF 0.1.16 (the review's fixes: shifts before their note, shifts in a FREE SOLO by themselves, AUTO not kept, a solo at the end kept, LINK protocol 2) | `a0d2f821e94f75854516d710f6d7bb862d66a22edb6a1c9edb33fc878500104f` |
+| `vavehero.html` | REF 0.1.17 (eight built-in songs: KIRAMEKI RUSH, YOZORA SPARK, TURBO NOIR and DISCO VOLTAGE added; a template button for each) | `9cbab4a528970990f15c3742900edfa3c8932975c797df7d4c07f9db01d1a1da` |
 
 A new HTML is a new reference and gets its own commit with a new SHA-256 here.
 

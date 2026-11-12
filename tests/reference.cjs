@@ -91,6 +91,7 @@ async function choose(page, song) {                       /* a song's level is i
   const art = await a.page.evaluate(() => { const d = document.getElementById('scr').getContext('2d').getImageData(120, 80, 1, 1).data; return [d[0], d[1], d[2]]; });
   check(art[0] > 200 && art[1] > 120, 'the splash shows its art: the sun at (120, 80) is ' + art.join(','));
   const autoWas = await a.page.evaluate(() => window.KF.G.auto);
+  const BUILT = await a.page.evaluate(() => window.VAVEHERO_SONGS.length);   /* the built-in songs (a song loaded comes after them) */
   await a.page.keyboard.press('Space');
   await a.page.waitForTimeout(1500);
   const dm = await a.page.evaluate(() => ({ scr: window.KF.G.scr, demo: !!(window.KF.play && window.KF.play.demo), beat: window.KF.play ? window.KF.play.beat : -1, title: window.KF.play ? window.KF.play.song.title : '' }));
@@ -102,7 +103,7 @@ async function choose(page, song) {                       /* a song's level is i
   check(await a.page.evaluate(() => window.KF.G.scr) === 'songs', 'PLAY on the splash opens SONGS');
   await screen(a.page, '02-songs');
   const charts = await a.page.evaluate(() => window.KF.SONGS.map(s => ({ title: s.title, level: window.KF.LEVELS[s.level], notes: window.KF.buildChart(s).notes.length, melody: s.melody.length })));
-  check(charts.map(c => c.title + ' ' + c.level).join() === 'FIRST LIGHT EASY,NEON CARRIER MED,ENGINE TOUR HARD,CHROME HORIZON MED' && charts.every(c => c.notes > 10 && c.notes === c.melody),
+  check(charts.map(c => c.title + ' ' + c.level).join() === 'FIRST LIGHT EASY,NEON CARRIER MED,ENGINE TOUR HARD,CHROME HORIZON MED,KIRAMEKI RUSH EXP,YOZORA SPARK EXP,TURBO NOIR HARD,DISCO VOLTAGE HARD' && charts.every(c => c.notes > 10 && c.notes === c.melody),
     'D12: one chart a song, at its own level, the play track as written: ' + JSON.stringify(charts));
   const rates = await a.page.evaluate(() => window.KF.SONGS.map(s => ({ t: s.title, r: +s.rate.rating.toFixed(2), l: s.rate.level, own: s.level })));
   check(rates.every(x => x.l === x.own), 'D13: the built-in songs have no LEVEL marker, their levels are counted from their notes over time: ' + JSON.stringify(rates));
@@ -172,15 +173,15 @@ async function choose(page, song) {                       /* a song's level is i
   /* 1c. a song of your own: loaded through the file input, transposed to white keys, played perfectly */
   const em = path.join(OUT, 'em-drive.mid'); fs.writeFileSync(em, emDrive());
   await a.page.setInputFiles('#file', em);
-  await a.page.waitForFunction(() => window.KF.SONGS.length === 5, null, { timeout: 5000 });
-  const imp = await a.page.evaluate(() => { const s = window.KF.SONGS[4]; return { title: s.title, T: s.transpose, octs: s.octs.length, notes: s.melody.length, report: document.getElementById('report').textContent }; });
+  await a.page.waitForFunction(() => window.KF.SONGS.length === window.VAVEHERO_SONGS.length + 1, null, { timeout: 5000 });
+  const imp = await a.page.evaluate(() => { const s = window.KF.SONGS[window.VAVEHERO_SONGS.length]; return { title: s.title, T: s.transpose, octs: s.octs.length, notes: s.melody.length, report: document.getElementById('report').textContent }; });
   check(imp.title === 'EM DRIVE' && imp.T === -5, `EM DRIVE is transposed 5 up onto white keys: ${JSON.stringify({ title: imp.title, T: imp.T })}`);
   check(imp.octs >= 2 && /black keys/.test(imp.report) && /more than three/.test(imp.report), `its climb gets OCT shifts (${imp.octs}), the chromatic note and the fourth chord note are reported`);
   check(/Channel 16/.test(imp.report) && /Channel 7/.test(imp.report), 'channels 7 and 16 are reported as not played');
   check(/Patches: BASS FM BASS from bar 1, PULSE from bar 5/.test(imp.report) && /without a patch: channel 2, note 7/.test(imp.report), 'the keyswitches are reported, and the one with no patch is flagged');
-  const emPh = await a.page.evaluate(() => window.KF.SONGS[4].phrases.map(r => r.a + '-' + r.b).join());
+  const emPh = await a.page.evaluate(() => window.KF.SONGS[window.VAVEHERO_SONGS.length].phrases.map(r => r.a + '-' + r.b).join());
   check(emPh === '16-24' && /1 OP phrase from the OP note/.test(imp.report), 'the OP note (B-1 on channel 1, held) makes the OP phrase: ' + emPh);
-  const emLevel = await a.page.evaluate(() => { const s = window.KF.SONGS[4]; return { level: s.level, rate: s.rate.level, bars: s.rate.bars.length, graph: !!document.querySelector('#report .rate svg rect') }; });
+  const emLevel = await a.page.evaluate(() => { const s = window.KF.SONGS[window.VAVEHERO_SONGS.length]; return { level: s.level, rate: s.rate.level, bars: s.rate.bars.length, graph: !!document.querySelector('#report .rate svg rect') }; });
   check(emLevel.level === emLevel.rate && /from the notes over time \([0-9.]+: [0-9.]+ notes a second over the song, [0-9.]+ in its busiest four bars/.test(imp.report) && emLevel.graph,
     'D13: a file without a LEVEL marker gets the level its notes over time give it, and the report shows them bar by bar: ' + JSON.stringify(emLevel));
   const over = await a.page.evaluate(b64 => { const K = window.KF, u8 = Uint8Array.from(atob(b64), c => c.charCodeAt(0)), r = K.importSong(K.parseMidi(u8), 'em-exp.mid');
@@ -208,7 +209,7 @@ async function choose(page, song) {                       /* a song's level is i
   await a.page.keyboard.press('Escape');
   await a.page.evaluate(i => { window.KF.SONGS.splice(i, 1); }, solo2);
   await a.page.evaluate(() => window.KF.setAuto(true));
-  await choose(a.page, 4); await a.page.keyboard.press('Enter');
+  await choose(a.page, BUILT); await a.page.keyboard.press('Enter');
   await waitResults(a.page);
   L = await a.page.evaluate(() => window.KF.G.last);
   check(L.acc === 100 && L.counts.M === 0, `EM DRIVE (MED) on autoplay: ${L.acc.toFixed(1)}%, ${L.counts.S} shifts`);
@@ -436,7 +437,7 @@ async function choose(page, song) {                       /* a song's level is i
   await sleep(4200);
   const roles = await Promise.all([p1, p2].map(x => x.page.evaluate(() => ({ role: window.KF.Link.role(), linked: window.KF.Link.linked(), id: window.KF.Link.id }))));
   check(roles[0].linked && roles[1].linked && roles[0].role !== roles[1].role && roles[0].id !== roles[1].id, 'two windows that start with the same id draw again and link up as P1 and P2: ' + JSON.stringify(roles));
-  check(await p2.page.evaluate(() => window.KF.SONGS.length) === 5, 'a song loaded in one window is kept for the next (EM DRIVE in the second window)');
+  check(await p2.page.evaluate(() => window.KF.SONGS.length) === BUILT + 1, 'a song loaded in one window is kept for the next (EM DRIVE in the second window)');
   const lead = roles[0].role === 'P1' ? p1 : p2, follow = lead === p1 ? p2 : p1;
   await lead.page.evaluate(() => window.KF.setAuto(true));
   await follow.page.evaluate(() => window.KF.setAuto(true));

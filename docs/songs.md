@@ -4,7 +4,7 @@ A VaveHero song is an ordinary MIDI file (`.mid`), made in any DAW. Each instrum
 play track, the notes the player is to play, sits on a channel of its own. The audio engine plays the rest in
 synthwave style ([D3](DECISIONS.md), [D4](DECISIONS.md)).
 
-The four built-in songs are made exactly this way and work as templates (they can also be downloaded from the
+The eight built-in songs are made exactly this way and work as templates (they can also be downloaded from the
 reference):
 
 | File | Song | What it shows |
@@ -13,6 +13,10 @@ reference):
 | [`neon-carrier.mid`](../songs/neon-carrier.mid) | NEON CARRIER, 112 BPM, MED | Octave shifts, chords and patch changes between the sections |
 | [`engine-tour.mid`](../songs/engine-tour.mid) | ENGINE TOUR, 120 BPM, HARD | **A tour of the audio engine.** The drums alone first, then bass, pad, arpeggio, lead and keys come in one by one. Each instrument goes through all four of its patches, two bars each, with the dirty one last. The drum kits and the player's voice change along the way, and at the end everything plays together on the dirty sounds. All 29 sounds are heard. |
 | [`chrome-horizon.mid`](../songs/chrome-horizon.mid) | CHROME HORIZON, 104 BPM, MED | **A full synthwave song in D minor:** intro, verse, pre-chorus, dirty choruses with DIRT BASS, DIRT drums and FUZZ LEAD, a breakdown that is a FREE SOLO (bars 25–28), and a final chorus an octave up with FUZZ as the player's voice. The play track is written in D minor, and the import moves it 5 semitones down to white keys. |
+| [`kirameki-rush.mid`](../songs/kirameki-rush.mid) | KIRAMEKI RUSH, 174 BPM, EXP | **Arcade J-pop in C major:** a hook in the intro, a verse on BELL EP with EP stabs, a pre-chorus over four on the floor that climbs to E major, choruses on the royal road (IV V iii vi) with octave bass, supersaw and sixteenth arps, a run over rising chords, and the last chorus an octave up. |
+| [`yozora-spark.mid`](../songs/yozora-spark.mid) | YOZORA SPARK, 180 BPM, EXP | **Faster and harder arcade J-pop**, on the genre's best-loved progressions: vi IV V I in the verse, IV III7 vi in the pre-chorus, the royal road in the chorus. Sixteenth pairs on one key and runs, the last chorus a whole step up in D major (its melody stays on the white keys; the band has the F# and C#), and the arcade's cadence to end on, bVI bVII I. |
+| [`turbo-noir.mid`](../songs/turbo-noir.mid) | TURBO NOIR, 112 BPM, HARD | **Outrun in A minor, a night drive:** a staccato line over a pulsing sixteenth bass and a square sequence, a pre-chorus that hangs on E major with brass stabs, choruses of long synth-brass notes over saw chords and a gated snare, a breakdown, and the last chorus an octave up on the dirty bass. |
+| [`disco-voltage.mid`](../songs/disco-voltage.mid) | DISCO VOLTAGE, 123 BPM, HARD | **French house in A minor with the dorian D major:** four on the floor, a funky octave bass on the sixteenths, EP stabs on the offbeats, a hook that hops on the sixteenths, the hook again over supersaw stabs, a breakdown of disco strings and long notes with the kick out, and the drop. |
 
 Each patch in ENGINE TOUR (two bars each, the clean ones first and the dirty one last):
 

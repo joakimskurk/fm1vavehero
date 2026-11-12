@@ -30,8 +30,8 @@ fm1-emu. None of the FM-1 apps have been measured on a real FM-1 yet. That is wh
 | The title screen's image above the horizon (240 × 148, RGB565) | flash | 69 KB. The floor below the horizon is drawn live. |
 | The sky above the highway (240 × 20, RGB565, D10) | flash | 9.6 KB |
 | Wave tables and curves (tanh, bitcrush) | flash | about 10 KB |
-| Built-in songs, 5 bytes per note | flash | FIRST LIGHT 2 KB, NEON CARRIER 5 KB, ENGINE TOUR 10 KB, CHROME HORIZON 7 KB. **30 songs are about 180 KB.** |
-| **Total flash** | | **about 385 KB of 568** |
+| Built-in songs, 8 bytes per note | flash | 3–16 KB a song: FIRST LIGHT 3 KB, ENGINE TOUR 16 KB, YOZORA SPARK 15 KB. **The eight are 94 KB.** |
+| **Total flash** | | **285 KB of 568** (measured, with the eight songs), room for about 20 more songs |
 | Game state, voices, MIDI MODE buffer (one bar), LINK | RAM | about 15 KB of 96 |
 | Screen canvas | pool | 59 KB (240 × 124, two strips) or 113 KB (the whole screen) |
 | Tempo delay, dotted eighth down to 80 BPM, mono | pool | about 50 KB |
@@ -145,8 +145,9 @@ The renders are identical byte for byte (the engine tour, the worst case, 60 s o
 the test scripts are identical pixel for pixel.
 
 The sound is checked against the reference: all 25 patches and 4 drum kits are within 1.5 dB and 25 % brightness,
-most within 0.3 dB. Every fourth bar of the first 30 seconds of all four songs is within 0.8 dB
-(`tests/run_vavehero.sh`).
+most within 0.3 dB. Every fourth bar of the first 30 seconds of all eight songs is within 1.1 dB, except the verses of
+KIRAMEKI RUSH and YOZORA SPARK, up to 3.0 dB louder: there FM EP and BELL EP repeat the same notes fast, and how their
+phases meet differs by chance (D8). Checked by `tests/run_vavehero.sh`, with those windows in `tests/kf/parity-allow.txt`.
 
 ## Graphics
 
@@ -161,6 +162,8 @@ most within 0.3 dB. Every fourth bar of the first 30 seconds of all four songs i
   about 85 KB per frame, so 30 frames per second uses about a third of the SPI time, but little CPU.
 - Target: 30 frames per second, 60 if possible. **Measured with the screen timed (D11):** the DEMO 60 fps (16.0 ms
   between frames at the median, 2 of 305 frames over 25 ms, the longest 27 ms), MIDI MODE its 30 fps.
+  The fastest songs, KIRAMEKI RUSH and YOZORA SPARK (174 and 180 BPM), draw about 50 fps in their busiest
+  choruses: 20–23 of about 240 frames take more than 25 ms. The audio stays at 41–43 % of the chip there.
 - **Calculated (firmware 0.1):** the play screen in ENGINE TOUR's heaviest bars costs about 0.69 million
   instructions per frame on the chip (callgrind × 0.8), that is about 9 % of the chip at 30 frames per second.
   The highway colours are blended once at startup, and text is blended in RGB565. The whole screen is one canvas of 113 KB.

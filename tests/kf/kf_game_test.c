@@ -51,7 +51,7 @@ int main(void)
         run_song(s, 0);
         p += snprintf(p, (size_t)(lv + sizeof lv - p), "%s%s", s ? "," : "", LV[KF_SONG[s].level & 3u]);
     }
-    check(!strcmp(lv, "EASY,MED,HARD,MED"), "D12: each song has its one level (FIRST LIGHT EASY, NEON CARRIER MED, ENGINE TOUR HARD, CHROME HORIZON MED)");
+    check(!strcmp(lv, "EASY,MED,HARD,MED,EXP,EXP,HARD,HARD"), "D12: each song has its one level (FIRST LIGHT EASY, NEON CARRIER MED, ENGINE TOUR HARD, CHROME HORIZON MED, KIRAMEKI RUSH EXP, YOZORA SPARK EXP, TURBO NOIR HARD, DISCO VOLTAGE HARD)");
     run_song(1, 1);                              /* NEON CARRIER with SPREAD (D2) */
 
     /* EASY (FIRST LIGHT) takes the right note in any octave; MED (NEON CARRIER) does not */

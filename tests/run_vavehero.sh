@@ -32,8 +32,9 @@ run "the engine alone compiles without a warning (-Wextra -Werror)" \
     cc -O2 -Wall -Wextra -Werror -Wno-unused-function -Ifirmware/src -Ifirmware/gen -o build/kf_render tests/kf/kf_render.c -lm
 run "the engine tour: every patch and kit" sh -c "build/kf_render tour build/audio/kf-tour.wav build/audio/kf-tour.json >/dev/null"
 run "the engine against the reference: levels within 1.5 dB, brightness within 25 %" python3 tests/kf/parity.py build/audio/kf-tour.json tests/kf/ref-tour.json
-for i in 0 1 2 3; do
-    run "song $i, its first 30 s against the reference's renderSong: every 4 bars within 1.5 dB" sh -c \
+NSONG=$(sed -n 's/^#define KF_NSONG \([0-9]*\)u$/\1/p' firmware/gen/kf_songs.h)
+for i in $(seq 0 $((NSONG - 1))); do                 # every built-in song (its reference: tools/ref_tour.cjs --songs)
+    run "song $i, its first 30 s against the reference's renderSong: every 4 bars within 1.5 dB (or tests/kf/parity-allow.txt)" sh -c \
         "build/kf_render song $i 30 build/audio/kf-song$i.wav build/audio/kf-song$i.json >/dev/null && python3 tests/kf/parity.py build/audio/kf-song$i.json tests/kf/ref-song$i.json -q"
 done
 run "the worst case (kf_bench.h: ENGINE TOUR from bar 41) renders" build/kf_render stress build/audio/kf-stress.wav
