@@ -16,6 +16,7 @@ complete source under the same licence too.
 | The wiring `platform.c`, the host mode `tests/`, the docs in `docs/` (`API.md`, `RULES.md`, `MAKE-IT-YOURS.md`, `SMK37.md`, `DINGHY_README.md`) | zvenson |
 | The browser installer's protocol: `web/fm1pkg.js`, `web/fm1ota.js` (unchanged, from [SLOOP](https://github.com/isod89/sloop-fm1) by way of FM-1 Clock); the install flow of `web/index.html` and the shape of `web/make_site.py`, after SLOOP's `web/index_pkg.html` and `web/make_site.py` | Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments (Felucca), with the changes of SLOOP (isod89) |
 | VaveHero: the app `firmware/src/vavehero.c` (from Dinghy's `dinghy.c` by zvenson) and its `kf_*` files, `reference/`, `mockup/`, `songs/`, `tools/songs.py`, `tests/reference.cjs`, `tests/run_vavehero.sh`, the page `web/index.html`, `web/make_site.py` (but for what is SLOOP's in them, above) and the link preview `web/make_og.py`, `web/og.png`, the project docs | Copyright (C) 2026 Joakim (joakimskurk) |
+| The changes to Dinghy's own files, listed in PLATFORM.md: each of those files says so at its top ("Changed for VaveHero") | Copyright (C) 2026 Joakim (joakimskurk) |
 
 ## Third-party material
 
@@ -30,6 +31,15 @@ complete source under the same licence too.
 
 VaveHero's own logo is `assets/vavehero-logo.png` (made by `tools/gen_splash.py`, GPL-3.0 as the rest of VaveHero). `assets/logo.svg` / `logo.png` carry the designburg signet: Copyright (C) designburg, all rights reserved, not under
 the GPL. It marks Dinghy itself; a fork uses its own logo.
+
+## The name
+
+"VaveHero" is the name of this firmware, and it is its author's (Joakim, joakimskurk). The GPL covers the code, not
+the name: under section 7(e) of the GPL, this licence gives no right to use "VaveHero", or a name that can be taken
+for it, as the name of another work. A changed version, a fork that is passed on, or a firmware built on this one
+takes a name of its own, and does not call itself VaveHero on its screens, in its package or on its page. Saying where
+it comes from ("based on VaveHero by joakimskurk") is welcome, and is what the notices above ask for anyway. A copy
+passed on unchanged keeps the name.
 
 ## Trademarks
 
