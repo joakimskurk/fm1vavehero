@@ -1,5 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Joakim (joakimskurk)
 # VaveHero's own host tests (no FM-1, no JieLi toolchain): the app compiles cleanly for the host and plays, the
 # engine against the reference (every patch's level and brightness, tests/kf/parity.py), the worst case renders
 # without clipping, the tables are what the reference makes. Dinghy's own tests: tests/run_tests.sh (after

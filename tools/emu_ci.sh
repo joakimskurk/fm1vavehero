@@ -1,5 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Joakim (joakimskurk)
 # CI: fm1-emu (joakimeriksson/fm1-emu, pinned) built from source, then the engine's load on the package just built
 # (tools/emu_cpu.sh) and its timing, block by block and frame by frame (tools/emu_timing.py: the DEMO and a MIDI flood).
 # The numbers land in the job's log.

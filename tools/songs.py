@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Joakim (joakimskurk)
 """The built-in songs, written as standard MIDI files exactly as docs/songs.md asks of a song made in a DAW, and
 embedded in reference/vavehero.html so the reference stays one file. The reference imports them with the same code
 as a file you load yourself.

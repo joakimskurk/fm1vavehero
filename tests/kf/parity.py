@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Joakim (joakimskurk)
 # The firmware's engine against the reference's: the engine tour's levels and brightness, patch by patch
 # (tests/kf/kf_render.c against tools/ref_tour.cjs; the reference's numbers are kept in tests/kf/ref-tour.json).
 #   python3 tests/kf/parity.py C.json [REF.json] [-q]   exit 1 if a patch is off by more than the tolerances (-q: the summary

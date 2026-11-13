@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Joakim (joakimskurk)
 // Plays reference/vavehero.html in Chromium: both songs on autoplay, a match against the bot, and two windows over LINK.
 // node tests/reference.cjs [outdir]     (Playwright with Chromium; the screens land in outdir, default build/test)
 const { chromium } = require('playwright');

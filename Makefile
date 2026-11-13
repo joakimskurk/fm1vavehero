@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Joakim (joakimskurk)
 # VaveHero: the everyday commands. The firmware itself is built by ./build.sh (docs/DINGHY_README.md: the toolchain).
 #   make test       VaveHero's host tests and the app in Dinghy's host mode (seconds, no FM-1, no toolchain)
 #   make host       the app on the host with the default script: build/host/vavehero.wav and its screens

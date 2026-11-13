@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Joakim (joakimskurk)
 // Renders vavehero-mockup.html to vavehero-mockup.png (2x) and the four screens at their native 240 x 240.
 // node mockup/render.cjs   (needs Playwright with Chromium)
 const { chromium } = require('playwright');
