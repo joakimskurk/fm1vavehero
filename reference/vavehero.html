@@ -112,7 +112,7 @@
       <p class="muted">“Two windows” links two tabs or windows in the same browser, as if they were two FM-1s. The messages are the same MIDI messages that will go over USB-C (see <code>docs/link.md</code>). With two MIDI keyboards, each window can have its own.</p>
       <div class="status" id="linkStatus"></div>
     </div>
-    <p class="muted">VaveHero reference 0.1.17 · <code>docs/concept.md</code> · <code>docs/link.md</code> · <code>ROADMAP.md</code></p>
+    <p class="muted">VaveHero reference 0.1.18 · <code>docs/concept.md</code> · <code>docs/link.md</code> · <code>ROADMAP.md</code></p>
   </aside>
 </div>
 <script>/* Terminus (ter-u16n), SIL OFL 1.1: assets/fonts/Terminus-LICENSE.txt. Dinghy 0.4 FONT_S and FONT_L, 4 bits a pixel. */
@@ -126,7 +126,7 @@ window.TERMINUS = {"S": {"h": 16, "pad": 2, "first": 32, "last": 126, "adv": [8,
 /* VaveHero, the browser reference. Until the Dinghy port exists, this file is the authority for how VaveHero feels,
    times and sounds. Everything the FM-1 has is here: the 240 x 240 screen in Dinghy's Terminus fonts, the 27 keys
    with their two LED levels, the buttons and knobs, and the LINK protocol for two players. */
-const VERSION = 'REF 0.1.17';
+const VERSION = 'REF 0.1.18';
 
 /* ================================================================ small things */
 const $ = id => document.getElementById(id);
@@ -935,12 +935,13 @@ const opsShown = p => boosting(p) ? clamp(Math.ceil(6 * (p.boostTo - p.beat) / B
 const toast = s => { G.toast = { text: s, t0: performance.now() }; };
 const p2Follow = () => Link.mode === 'tab' && Link.linked() && Link.role() === 'P2';
 
-function startSong(idx, speed, vs) {
+const COUNT_IN = 4;                                                  /* D15: a bar of closed hi-hat before beat 0, the notes on their way */
+function startSong(idx, speed, vs, cin = COUNT_IN) {
   ensureAudio(); if (!A.ctx) return;
   if (A.ctx.state === 'suspended') A.ctx.resume();
   const song = SONGS[idx];
   PLAY = Object.assign({ idx, song, level: song.level, speed, bpm: song.bpm * speed / 100, vs: !!vs, events: song.events, evi: 0, patch: {},
-    start: A.ctx.currentTime + .15, score: 0, combo: 0, maxCombo: 0, ops: 0, boostFrom: null, boostTo: null,
+    cin, ci: 0, cinKit: songPatchAt(song, 'DRUMS', 0), start: A.ctx.currentTime + .15 + cin * 6000 / (song.bpm * speed), score: 0, combo: 0, maxCombo: 0, ops: 0, boostFrom: null, boostTo: null,
     counts: { P: 0, G: 0, O: 0, M: 0, S: 0 }, dts: [], judge: null, fx: [], plus: null, beat: -1, done: false, paused: false,
     pausedBeat: 0, clockSent: -1, midiUsed: false, sentScore: -1, sentCombo: -1, lastSend: 0, holds: new Map() }, buildChart(song));
   G.oct = song.oct0; G.scr = 'play'; A.setTempo(song.bpm * speed / 100);
@@ -952,7 +953,7 @@ function startSong(idx, speed, vs) {
 }
 const DEMO_SONG = 2, DEMO_BEAT = 160;                                  /* the DEMO: ENGINE TOUR from bar 41, as the firmware's */
 function startDemo() {
-  startSong(DEMO_SONG, 100, false); if (!PLAY) return;
+  startSong(DEMO_SONG, 100, false, 0); if (!PLAY) return;     /* (no count-in: it starts in the middle) */
   const p = PLAY, from = DEMO_BEAT;
   p.demo = true; p.autoWas = G.auto; G.auto = true;
   p.start -= from * 60 / p.bpm;                                       /* (the band's events before it pass: only their keyswitches count) */
@@ -1063,6 +1064,11 @@ function update(now) {
 setInterval(() => {                                                  /* the band, scheduled a little ahead */
   const p = PLAY; if (!p || p.paused || !A.ctx) return;
   const spb = 60 / p.bpm, horizon = A.ctx.currentTime + .15;
+  while (p.ci < p.cin) {                                             /* the count-in (D15): a closed hi-hat a beat, in the song's first kit */
+    const t = p.start + (p.ci - p.cin) * spb; if (t > horizon) break;
+    if (t >= A.ctx.currentTime - .03) A.drum(42, t, p.ci ? 90 : 110, patchOf('DRUMS', p.cinKit));
+    p.ci++;
+  }
   while (p.evi < p.events.length) {
     const ev = p.events[p.evi], t = p.start + ev.beat * spb;
     if (t > horizon) break;

@@ -125,6 +125,14 @@ static void kg_start(uint32_t idx, uint32_t speed, uint32_t spread, uint32_t t0)
     kg.pos = kg.vpos = kg_pos_at(t0);
 }
 
+#define KG_COUNT_IN 4u                           /* D15: a bar of hi-hat before beat 0 */
+static void kg_count_in(uint32_t beats)          /* call after kg_start: the song begins with a count-in */
+{
+    uint32_t t = kf_seq.t0;
+    kf_seq_count_in(beats);
+    kg.pos = kg.vpos = kg_pos_at(t);
+}
+
 static void kg_hit(uint32_t i, int32_t dt, uint32_t key)
 {
     int32_t a = dt < 0 ? -dt : dt, j = a <= KG_WIN_PERFECT ? KJ_PERFECT : a <= KG_WIN_GREAT ? KJ_GREAT : KJ_GOOD, ph;

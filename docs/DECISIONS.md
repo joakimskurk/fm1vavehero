@@ -385,3 +385,20 @@ divided by 24) wraps there too, not at 2^32, and a difference across the wrap is
 it. VaveHero's frames run on `fm1_ms` and did not, but its measure of the drawing's lead (`vis_lead_us`, D11) took a
 difference of `fm1_micros()`: once every three minutes the notes were drawn up to 5 ms early for a moment. It now
 subtracts the ticks first, and the host tests refuse a difference of `fm1_micros()` in the app.
+
+## D15 (2026-11-14): a bar of hi-hat before every song
+
+**Decision.** Every song starts with a count-in: one bar (four beats) of a closed hi-hat, one on each beat, at the
+song's tempo and speed, in the kit its drums start on. Beat 0, where the song and its band begin, comes after it. The
+first notes are on the highway during the count-in, and the count beside it (4, 3, 2, 1) goes with the hi-hat when
+the song's first note is on beat 0. The DEMO has none: it starts in the middle of ENGINE TOUR. Two players over LINK
+both count in, so they stay together.
+
+**Why.** KIRAMEKI RUSH and YOZORA SPARK begin on their first beat. Without a count-in their first notes came onto the
+highway already at the line, and could not be played. A song maker should not have to leave an empty bar for it; a
+bar of hi-hat is what a band does anyway.
+
+**How.** The reference: `COUNT_IN` in `startSong`, the hats from its scheduler. The firmware: `kg_count_in` after
+`kg_start` moves beat 0 a bar later and the sequencer posts the hats (`kf_seq_count_in`); a position before beat 0 is
+negative, and the beat lines are drawn there too. Checked by `tests/kf/kf_game_test.c` (four hats a beat apart, beat 0
+a bar later, every song on autoplay from the count-in) and `tests/reference.cjs`.

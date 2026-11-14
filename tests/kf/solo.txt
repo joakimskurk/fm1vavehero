@@ -5,12 +5,12 @@
 600 btn 11
 800 enc 0 3
 1100 btn 12
-9040 shot
-55190 shot
-57000 keys 0x101
-57250 shot
-57500 keys 0
-58200 keys 0x40100
-58400 shot
-58600 keys 0
-59000 end
+11348 shot
+57498 shot
+59308 keys 0x101
+59558 shot
+59808 keys 0
+60508 keys 0x40100
+60708 shot
+60908 keys 0
+61308 end

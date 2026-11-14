@@ -14,6 +14,7 @@ typedef struct {
     uint32_t bi;                                 /* the next band event */
     uint8_t patch[KF_NPART];                     /* each part's patch, an index into its own (0 = the first) */
     uint8_t on;
+    uint8_t cin, ci, ckit;                       /* the count-in (D15): its beats, those posted, its kit */
 } kf_seq_t;
 static kf_seq_t kf_seq;
 
@@ -27,6 +28,7 @@ static void kf_seq_start(const kf_song_t *s, uint32_t t0, uint32_t speed_pct)   
     kf_seq.fpt = speed_pct >= 100u || !speed_pct ? s->fpt_q16 : s->fpt_q16 / speed_pct * 100u;
     kf_seq.bi = 0;
     for (i = 0; i < KF_NPART; i++) kf_seq.patch[i] = 0;
+    kf_seq.cin = kf_seq.ci = 0;
     kf_seq.on = 1;
     kf_sched_clear();
     kf_set_tempo(s->bpm_x100 * (speed_pct ? speed_pct : 100u) / 100u);
@@ -38,10 +40,28 @@ static void kf_seq_stop(void)
     kf_sched_clear();
     kf_post(&e);
 }
+/* the count-in (D15): beat 0 so many beats later, and a closed hi-hat on each beat before it, in the kit the song's
+ * drums start on (its keyswitch at beat 0) */
+static void kf_seq_count_in(uint32_t beats)
+{
+    const kf_song_t *s = kf_seq.s;
+    uint32_t i;
+    kf_seq.t0 += kf_seq_len(beats * 96u);
+    kf_seq.cin = (uint8_t)beats; kf_seq.ci = 0; kf_seq.ckit = 0;
+    for (i = 0; i < s->nband && s->band[i].t == 0; i++)
+        if (s->band[i].part == KF_P_DRUMS && s->band[i].ks) kf_seq.ckit = (uint8_t)(s->band[i].ks - 1u);
+}
 static void kf_seq_post(uint32_t upto)           /* every band event before this frame, to the engine */
 {
     const kf_song_t *s = kf_seq.s;
     if (!kf_seq.on) return;
+    while (kf_seq.ci < kf_seq.cin) {             /* the count-in's hi-hats, velocity 110 and then 90, as the reference's */
+        uint32_t t = kf_seq.t0 - kf_seq_len((uint32_t)(kf_seq.cin - kf_seq.ci) * 96u);
+        if ((int32_t)(t - upto) >= 0) break;
+        kf_sched_flush(t + 1u);
+        kf_drum(t, kf_seq.ckit < KF_NKIT ? kf_seq.ckit : 0u, 42u, kf_seq.ci ? 90u : 110u);
+        kf_seq.ci++;
+    }
     while (kf_seq.bi < s->nband) {
         const kf_bev_t *e = &s->band[kf_seq.bi];
         uint32_t t = kf_seq_frame(e->t), part = e->part;

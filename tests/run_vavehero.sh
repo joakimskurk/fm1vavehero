@@ -51,11 +51,11 @@ run "the rules compile without a warning (-Wextra -Werror)" \
 run "the rules: every song on autoplay 100 %, late, wrong, black and outside keys, a broken hold" build/kf_game_test
 run "the app on the host: the default script" sh tests/run_host.sh
 run "the game on the host: splash, DEMO, songs, a song, MIDI MODE" sh tests/run_host.sh tests/kf/game.txt
-run "the screens are there" sh -c 'for t in 600 2500 7400 8400 15000 15800; do test -s build/host/vavehero-$t.png || exit 1; done'
+run "the screens are there" sh -c 'for t in 600 2500 7400 10543 17143 17943; do test -s build/host/vavehero-$t.png || exit 1; done'
 run "a song on AUTO to its results, again, back to the songs" sh tests/run_host.sh tests/kf/results.txt
-run "the results' screen is there" test -s build/host/vavehero-42000.png
+run "the results' screen is there" test -s build/host/vavehero-44500.png
 run "CHROME HORIZON on AUTO: the count beside the highway, its FREE SOLO (D14) with every key open" sh -c \
-    "sh tests/run_host.sh tests/kf/solo.txt >/dev/null && for t in 9040 55190 57250 58400; do test -s build/host/vavehero-\$t.png || exit 1; done"
+    "sh tests/run_host.sh tests/kf/solo.txt >/dev/null && for t in 11348 57498 59558 60708; do test -s build/host/vavehero-\$t.png || exit 1; done"
 run "the sound file is there and not empty" test -s "$OUT/vavehero.wav"
 if [ -f build/vavehero.fwsc ]; then                 # (CI builds the package before the tests)
     run "the site (web/make_site.py): the page with the installer, the package, the game in the browser, the link preview" sh -c \

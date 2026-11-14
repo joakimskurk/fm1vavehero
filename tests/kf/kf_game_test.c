@@ -27,6 +27,7 @@ static void run_song(uint32_t idx, uint32_t spread)
     memset(sounding, 0, sizeof sounding);
     kf_init();
     kg_start(idx, 100, spread, 44100);
+    kg_count_in(KG_COUNT_IN);                    /* (as the app starts a song: D15) */
     kg.auto_on = 1;
     for (f = 0; f < 44100u * 400u; f += 256u) {   /* the main loop's passes, a block apart */
         kg_ms = f / 44;
@@ -53,6 +54,34 @@ int main(void)
     }
     check(!strcmp(lv, "EASY,MED,HARD,MED,EXP,EXP,HARD,HARD"), "D12: each song has its one level (FIRST LIGHT EASY, NEON CARRIER MED, ENGINE TOUR HARD, CHROME HORIZON MED, KIRAMEKI RUSH EXP, YOZORA SPARK EXP, TURBO NOIR HARD, DISCO VOLTAGE HARD)");
     run_song(1, 1);                              /* NEON CARRIER with SPREAD (D2) */
+
+    /* D15: the count-in. A bar before beat 0, a closed hi-hat on each beat in the song's first kit, and the first notes
+     * on their way: KIRAMEKI RUSH's first note is on beat 0 */
+    {
+        uint32_t t0 = 44100, beat, hats = 0, ok = 1, kit = 99, first_band = 0xFFFFFFFFu;
+        char what[200];
+        kf_init();
+        kg_start(4, 100, 0, t0);
+        kg_count_in(KG_COUNT_IN);
+        beat = kf_seq_len(96);
+        kf_seq_post(t0 + 6u * beat);
+        while (kf_qr[1] != kf_qw[1]) {
+            const kf_ev_t *e = &kf_q[1][kf_qr[1] % KF_QN];
+            if (e->type == KF_EV_DRUM && e->t < t0 + 4u * beat) {
+                ok &= e->pitch == 42u && e->t == kf_seq.t0 - kf_seq_len((4u - hats) * 96u);
+                kit = e->patch; hats++;
+            } else if (e->t < first_band) first_band = e->t;
+            kf_qr[1]++;
+        }
+        snprintf(what, sizeof what, "D15: %s starts with a bar of hi-hat: %u hats a beat apart in kit %u, beat 0 a bar later (%d beats now), the band from there, its first note at beat %u",
+                 kg.song->title, hats, kit, kg.pos / KG_BEAT, kg.notes[0].t / 96u);
+        check(hats == 4 && ok && kit < KF_NKIT && kg.pos + 4 * KG_BEAT >= -2 && kg.pos + 4 * KG_BEAT <= 2 && first_band >= kf_seq.t0 && kf_seq.t0 == t0 + kf_seq_len(4u * 96u) && kg.notes[0].t == 0, what);
+        kf_init();
+        kg_start(2, 100, 0, t0);                 /* the DEMO's way in: no count-in */
+        kf_seq_post(t0 + 4u * beat);
+        for (hats = 0; kf_qr[1] != kf_qw[1]; kf_qr[1]++) hats += kf_q[1][kf_qr[1] % KF_QN].t < t0;
+        check(hats == 0 && kg.pos == 0, "D15: without kg_count_in a song starts on beat 0 (the DEMO), nothing before it");
+    }
 
     /* EASY (FIRST LIGHT) takes the right note in any octave; MED (NEON CARRIER) does not */
     for (s = 0; s < 2u; s++) {

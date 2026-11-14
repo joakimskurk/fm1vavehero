@@ -122,7 +122,9 @@ static int32_t ks_z(int32_t t96, int32_t pos) { return (t96 * 256 - pos) / 6; } 
 static void ks_beat_lines(int32_t pos, int32_t boost)
 {
     int32_t b;
-    for (b = (pos + 25) / KG_BEAT + 1; ; b++) {  /* ceil(beat + .001) */
+    b = pos + 25;                                /* ceil(beat + .001): floor, also before beat 0 (the count-in) */
+    b = (b >= 0 ? b / KG_BEAT : -((-b + KG_BEAT - 1) / KG_BEAT)) + 1;
+    for (; ; b++) {
         int32_t z = ks_z(b * 96, pos), y, s, xl, xr, bar;
         if (z > KH_ZTOP_Q12) break;
         if (z < 82) continue;                    /* .02 */

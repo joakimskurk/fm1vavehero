@@ -100,6 +100,8 @@ the high verse.
   before big leaps.
 - **Chords:** at most three notes at once, within one octave. Notes beyond that are removed.
 - **Hold notes:** a note of 1.5 beats or more becomes a hold note with a tail. Shorter notes are ordinary presses.
+- **The start:** the game counts in with a bar of hi-hat before beat 0 ([D15](DECISIONS.md)), so the play track may
+  begin on the first beat; no empty bar is needed.
 - **OP phrases:** put note 11 (B-1) on channel 1 and hold it for as long as the phrase lasts. In the piano roll it is a
   line under the phrase. Flawless phrases fill the OP meter. Without OP notes the import makes phrases itself (two bars
   out of every four).

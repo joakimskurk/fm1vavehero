@@ -55,6 +55,7 @@ tested on the host and in fm1-emu.
 - [x] The reference's panel has every control the firmware uses: MASTER, SELECT, ALGORITHM, KNOB 1–4 (drag, wheel or tap) and SEQ
 - [ ] The level: count octave shifts, chord shapes and lane jumps too, if playtests ask for it
 - [x] D14: FREE SOLO sections (note 10 on channel 1): every key plays, nothing judged; CHROME HORIZON has one
+- [x] D15: a bar of hi-hat before every song, so a first note on beat 0 can be played
 - [x] The count to the first note beside the highway, not over the first notes
 - [x] v0.1, the first release: a GitHub release with the `.fwsc` (identity `FM-1_951`), built and attested by fm1-build;
       the page installs the newest release

@@ -240,9 +240,10 @@ static void song_start(uint32_t idx, uint32_t is_demo)
     for (k = 0; k < 128u; k++) midi_key[k] = 0;
     voices_off();
     demo = is_demo;
-    kg_start(idx, is_demo ? 100u : set.speed, is_demo ? 0u : set.spread, kf_now + 6615u);   /* beat 0 in 150 ms */
+    kg_start(idx, is_demo ? 100u : set.speed, is_demo ? 0u : set.spread, kf_now + 6615u);   /* in 150 ms */
     kg.auto_on = (uint8_t)(is_demo || autoplay);
     if (is_demo) kg_seek(kf_bench_beat);
+    else kg_count_in(KG_COUNT_IN);               /* D15: a bar of hi-hat first (the DEMO starts in the middle) */
     keys_sync();                                 /* (a key held from before does not count) */
     paused = 0;
     scr = SCR_PLAY;

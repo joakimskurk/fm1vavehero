@@ -94,8 +94,8 @@ async function choose(page, song) {                       /* a song's level is i
   const BUILT = await a.page.evaluate(() => window.VAVEHERO_SONGS.length);   /* the built-in songs (a song loaded comes after them) */
   await a.page.keyboard.press('Space');
   await a.page.waitForTimeout(1500);
-  const dm = await a.page.evaluate(() => ({ scr: window.KF.G.scr, demo: !!(window.KF.play && window.KF.play.demo), beat: window.KF.play ? window.KF.play.beat : -1, title: window.KF.play ? window.KF.play.song.title : '' }));
-  check(dm.scr === 'play' && dm.demo && dm.title === 'ENGINE TOUR' && dm.beat >= 160 && dm.beat < 166, 'FX on the splash: the DEMO, ENGINE TOUR from bar 41 on autoplay: ' + JSON.stringify(dm));
+  const dm = await a.page.evaluate(() => ({ scr: window.KF.G.scr, demo: !!(window.KF.play && window.KF.play.demo), beat: window.KF.play ? window.KF.play.beat : -1, title: window.KF.play ? window.KF.play.song.title : '', cin: window.KF.play ? window.KF.play.cin : -1 }));
+  check(dm.scr === 'play' && dm.demo && dm.title === 'ENGINE TOUR' && dm.beat >= 160 && dm.beat < 166 && dm.cin === 0, 'FX on the splash: the DEMO, ENGINE TOUR from bar 41 on autoplay, no count-in: ' + JSON.stringify(dm));
   await a.page.keyboard.press('Enter');
   const back = await a.page.evaluate(() => ({ scr: window.KF.G.scr, play: !!window.KF.play, auto: window.KF.G.auto }));
   check(back.scr === 'splash' && !back.play && back.auto === autoWas, 'PLAY ends the DEMO: back on the splash, autoplay as it was');
@@ -114,6 +114,18 @@ async function choose(page, song) {                       /* a song's level is i
   check(blacks === 0, 'D1: no black keys in any chart');
 
   await a.page.evaluate(() => window.KF.setAuto(true));
+  /* D15: a bar of closed hi-hat (GM 42) before beat 0, a beat apart, so a first note on beat 0 can be played:
+     KIRAMEKI RUSH's is */
+  await a.page.evaluate(() => { const E = window.KF.engine, o = E.drum; window.__hats = []; E.drum = (n, t, v, k) => { window.__hats.push({ n, t, v, k }); return o(n, t, v, k); }; E.__drum = o; });
+  await choose(a.page, 4); await a.page.keyboard.press('Enter');
+  const cin0 = await a.page.evaluate(() => { const p = window.KF.play; return { beat: +((window.KF.engine.ctx.currentTime - p.start) * p.bpm / 60).toFixed(2), cin: p.cin, first: p.notes[0].t }; });
+  await waitBeat(a.page, .3); await screen(a.page, '03a-kirameki-count-in-over');
+  const cin = await a.page.evaluate(() => { const p = window.KF.play, spb = 60 / p.bpm, h = window.__hats.filter(x => x.t < p.start - .01);
+    window.KF.engine.drum = window.KF.engine.__drum;
+    return { n: h.length, notes: h.map(x => x.n).join(), gaps: h.slice(1).map((x, i) => +((x.t - h[i].t) / spb).toFixed(3)).join(), last: +((p.start - h[h.length - 1].t) / spb).toFixed(3), judged: p.counts.P }; });
+  check(cin0.cin === 4 && cin0.beat < -3 && cin0.first === 0 && cin.n === 4 && cin.notes === '42,42,42,42' && cin.gaps === '1,1,1' && cin.last === 1 && cin.judged >= 1,
+    'D15: KIRAMEKI RUSH starts with a bar of hi-hat, a beat apart, then its first note on beat 0 is played: ' + JSON.stringify({ cin0, cin }));
+  await a.page.keyboard.press('Escape'); await a.page.waitForTimeout(100);
   await choose(a.page, 0); await a.page.keyboard.press('Enter');
   await waitBeat(a.page, 2); await screen(a.page, '03-first-light-intro');
   await waitBeat(a.page, 6.5); await screen(a.page, '03b-first-light-count');
@@ -199,7 +211,7 @@ async function choose(page, song) {                       /* a song's level is i
   const solo2 = await a.page.evaluate(b64 => {                    /* the solo's two shifts, played (from beat 28, as the DEMO seeks) */
     const K = window.KF; K.setAuto(false);
     const res = K.addSong(Uint8Array.from(atob(b64), c => c.charCodeAt(0)), 'solo-edge.mid', false); K.G.scr = 'songs'; K.G.sel = res.index;
-    K.startSong(res.index, 100, false); const p = K.play; p.start -= 28 * 60 / p.bpm;
+    K.startSong(res.index, 100, false, 0); const p = K.play; p.start -= 28 * 60 / p.bpm;   /* (no count-in: it seeks) */
     for (const n of p.notes) if (n.t < 28) n.state = 'done';
     return res.index;
   }, soloEdge().toString('base64'));
