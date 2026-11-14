@@ -402,3 +402,16 @@ bar of hi-hat is what a band does anyway.
 `kg_start` moves beat 0 a bar later and the sequencer posts the hats (`kf_seq_count_in`); a position before beat 0 is
 negative, and the beat lines are drawn there too. Checked by `tests/kf/kf_game_test.c` (four hats a beat apart, beat 0
 a bar later, every song on autoplay from the count-in) and `tests/reference.cjs`.
+
+## D16 (2026-11-14): below 100 % speed is practice
+
+**Decision.** A result counts, as the song's best and for its medals, only at full speed (SPEED 100 %) and without
+AUTO. Below 100 % it is practice: the results show the score and the accuracy as ever, with PRACTICE and the speed
+where NEW BEST would be, and nothing is kept. Over LINK both players play at P1's speed, so the match is fair at any
+speed, but a practice match is not kept either.
+
+**Why.** At a lower speed a song is far easier: the same notes come further apart. A best taken at 50 % was worth as
+much as one at 100 % and gave the same medals, so turning the speed down was the way to a high score.
+
+**Checked by.** `tests/kf/kf_game_test.c` (`kg_counts`: 100 % counts, 80 % and AUTO do not) and `tests/reference.cjs`
+(a result at 80 % is not kept).

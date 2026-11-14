@@ -112,7 +112,7 @@
       <p class="muted">“Two windows” links two tabs or windows in the same browser, as if they were two FM-1s. The messages are the same MIDI messages that will go over USB-C (see <code>docs/link.md</code>). With two MIDI keyboards, each window can have its own.</p>
       <div class="status" id="linkStatus"></div>
     </div>
-    <p class="muted">VaveHero reference 0.1.18 · <code>docs/concept.md</code> · <code>docs/link.md</code> · <code>ROADMAP.md</code></p>
+    <p class="muted">VaveHero reference 0.1.19 · <code>docs/concept.md</code> · <code>docs/link.md</code> · <code>ROADMAP.md</code></p>
   </aside>
 </div>
 <script>/* Terminus (ter-u16n), SIL OFL 1.1: assets/fonts/Terminus-LICENSE.txt. Dinghy 0.4 FONT_S and FONT_L, 4 bits a pixel. */
@@ -126,7 +126,7 @@ window.TERMINUS = {"S": {"h": 16, "pad": 2, "first": 32, "last": 126, "adv": [8,
 /* VaveHero, the browser reference. Until the Dinghy port exists, this file is the authority for how VaveHero feels,
    times and sounds. Everything the FM-1 has is here: the 240 x 240 screen in Dinghy's Terminus fonts, the 27 keys
    with their two LED levels, the buttons and knobs, and the LINK protocol for two players. */
-const VERSION = 'REF 0.1.18';
+const VERSION = 'REF 0.1.19';
 
 /* ================================================================ small things */
 const $ = id => document.getElementById(id);
@@ -1027,15 +1027,16 @@ function octPress(dir, ts) {
     G.oct = octAt(p.song, e.t + .001); Link.judge('PERFECT'); return;
   }
 }
+const counts = p => !G.auto && !p.demo && p.speed >= 100;          /* D16: only at full speed and without AUTO; below 100 % it is practice */
 function finish(p) {
   p.done = true;
   const total = p.notes.length + p.octs.length, c = p.counts;
   const acc = total ? (c.P + c.S + .7 * c.G + .4 * c.O) / total * 100 : 0;
   const grade = acc >= 97 ? 'S' : acc >= 90 ? 'A' : acc >= 80 ? 'B' : acc >= 70 ? 'C' : 'D';
-  const key = bestKey(p.song), prev = store.get(key, null), newBest = !G.auto && !p.demo && (prev == null || acc > prev);   /* (AUTO: not kept) */
+  const key = bestKey(p.song), prev = store.get(key, null), newBest = counts(p) && (prev == null || acc > prev);   /* (AUTO and practice: not kept) */
   if (newBest) store.set(key, Math.round(acc * 10) / 10);
   const meanDt = p.dts.length ? p.dts.reduce((a, b) => a + b, 0) / p.dts.length : 0;
-  G.last = { idx: p.idx, level: p.level, acc, grade, score: p.score, counts: Object.assign({}, c), maxCombo: p.maxCombo, meanDt, newBest,
+  G.last = { idx: p.idx, level: p.level, speed: p.speed, acc, grade, score: p.score, counts: Object.assign({}, c), maxCombo: p.maxCombo, meanDt, newBest,
              vs: p.vs, full: p.maxCombo === total, total };
   if (p.vs) Link.cc(118, Math.round(acc));
   ui.cal();
@@ -1685,6 +1686,7 @@ function drawResults(ctx, now) {
   text(ctx, 'L', 62, 38, L.acc.toFixed(1) + '%', P.text);
   text(ctx, 'S', 62, 72, pad(L.score, 6), P.dim);
   if (L.newBest) { const nb = tw('S', 'NEW BEST') + 10; pcap(ctx, 236 - nb, 72, nb, 17, P.cyan); text(ctx, 'S', 241 - nb, 72, 'NEW BEST', P.ink); }
+  else if (L.speed < 100) { const t = 'PRACTICE ' + L.speed + '%', nb = tw('S', t) + 10; pcap(ctx, 236 - nb, 72, nb, 17, P.amber); text(ctx, 'S', 241 - nb, 72, t, P.ink); }   /* D16: not kept */
   const c = L.counts, rows = [['PERFECT', c.P + c.S, P.cyan], ['GREAT', c.G, P.blue], ['GOOD', c.O, P.violet], ['MISS', c.M, P.coral]];
   rows.forEach((row, i) => {
     const y = 96 + i * 18;

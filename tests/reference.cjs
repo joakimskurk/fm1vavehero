@@ -143,6 +143,13 @@ async function choose(page, song) {                       /* a song's level is i
   check(kept.newBest === false && kept.stored === null, 'AUTO\'s result is not kept (as on the FM-1): ' + JSON.stringify(kept));
   check(Math.abs(L.meanDt) < 5, `mean timing ${L.meanDt.toFixed(2)} ms`);
   await screen(a.page, '04-first-light-results');
+  /* D16: below 100 % speed it is practice: the result is not kept, and the results say so (NEON CARRIER at 80 %, its
+     end reached at once: every note a miss, which at full speed would still be a first best) */
+  await a.page.evaluate(() => { const K = window.KF; window.__autoWas = K.G.auto; K.setAuto(false); K.G.scr = 'songs'; K.startSong(1, 80, false); const p = K.play; p.start -= (p.song.end + 6) * 60 / p.bpm; });
+  await waitResults(a.page);
+  const prac = await a.page.evaluate(() => { const K = window.KF, s = K.SONGS[1]; K.setAuto(window.__autoWas); return { newBest: K.G.last.newBest, speed: K.G.last.speed, stored: localStorage.getItem(`vavehero.best.${s.hash}.${s.level}`) }; });
+  check(prac.newBest === false && prac.speed === 80 && prac.stored === null, 'D16: a result at 80 % speed is practice, not kept: ' + JSON.stringify(prac));
+  await screen(a.page, '04b-practice-results');
 
   await a.page.keyboard.press('Escape');
   await choose(a.page, 1); await a.page.keyboard.press('Enter');

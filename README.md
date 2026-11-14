@@ -40,7 +40,7 @@ Edge.
 | SELECT | Pick a song. Each song has its own level, from EASY to EXP. |
 | In a song | A bar of hi-hat counts you in. Play the notes on the white keys C4–C5. OCT− and OCT+ when the song changes octave, FX for OP BOOST, HOME to quit. |
 | FREE SOLO | Where the highway lights up, every key is yours: play what you like. |
-| KNOB 2–4 | Your sound, the speed for practice, and the mix. |
+| KNOB 2–4 | Your sound, the speed for practice (below 100 % the result is not kept), and the mix. |
 | ALGORITHM | GRIT: how dirty the sound is. |
 | GLO | SPREAD: every other white key, for big fingers. |
 | SEQ | AUTO: the song plays itself. |

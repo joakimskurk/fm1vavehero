@@ -55,6 +55,17 @@ int main(void)
     check(!strcmp(lv, "EASY,MED,HARD,MED,EXP,EXP,HARD,HARD"), "D12: each song has its one level (FIRST LIGHT EASY, NEON CARRIER MED, ENGINE TOUR HARD, CHROME HORIZON MED, KIRAMEKI RUSH EXP, YOZORA SPARK EXP, TURBO NOIR HARD, DISCO VOLTAGE HARD)");
     run_song(1, 1);                              /* NEON CARRIER with SPREAD (D2) */
 
+    /* D16: a result counts (its best, its medals) only at full speed and without AUTO */
+    {
+        int32_t full, slow, aut;
+        kf_init();
+        kg_start(0, 100, 0, 44100); kg.auto_on = 0; full = kg_counts();
+        kg_start(0, 80, 0, 44100); kg.auto_on = 0; slow = kg_counts();
+        kg_start(0, 100, 0, 44100); kg.auto_on = 1; aut = kg_counts();
+        check(full && !slow && !aut, "D16: a result counts at 100 % without AUTO; at 80 % it is practice, and AUTO's never counts");
+        kg.auto_on = 0;
+    }
+
     /* D15: the count-in. A bar before beat 0, a closed hi-hat on each beat in the song's first kit, and the first notes
      * on their way: KIRAMEKI RUSH's first note is on beat 0 */
     {

@@ -103,8 +103,8 @@ The player follows the song's choice (TONE SONG) or picks their own voice with K
 ## Modes
 
 - **Setlist:** songs that unlock over time, with medals and best percentage saved in flash.
-- **Practice:** SPEED (KNOB 3) from 50 to 100 %, looping a section, and "wait for the right key" (the game waits until you
-  hit it). You can also practice one hand at a time.
+- **Practice:** SPEED (KNOB 3) from 50 to 100 % (below 100 % the result is not kept: D16), looping a section, and "wait for
+  the right key" (the game waits until you hit it). You can also practice one hand at a time.
 - **Listen and repeat:** the game plays a phrase while the LEDs show it, and then you play it back. It suits
   the small screen well and works as a tutorial.
 - **Two players, two FM-1s (LINK):** each player has their own FM-1, and the units are connected. In VS both play

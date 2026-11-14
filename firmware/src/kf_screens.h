@@ -585,6 +585,11 @@ static void ks_results(const char *num, uint32_t ms)
     knum(s, (uint32_t)kg.score, 6);
     ktext(&FONT_S, 62, 72, s, K_DIM);
     if (kg.new_best) { int32_t nb = ktw(&FONT_S, "NEW BEST") + 10; kpcap(236 - nb, 72, nb, 17, K_CYAN); ktext(&FONT_S, 241 - nb, 72, "NEW BEST", K_INK); }
+    else if (kg.speed < 100u) {                  /* D16: practice, not kept */
+        int32_t nb;
+        p = kput(s, "PRACTICE "); p = knum(p, kg.speed, 0); kput(p, "%");
+        nb = ktw(&FONT_S, s) + 10; kpcap(236 - nb, 72, nb, 17, K_AMBER); ktext(&FONT_S, 241 - nb, 72, s, K_INK);
+    }
     for (i = 0; i < 4; i++) {
         int32_t y = 96 + i * 18;
         ktext(&FONT_S, 4, y, NAME[i], COL[i]);

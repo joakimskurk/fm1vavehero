@@ -125,6 +125,9 @@ static void kg_start(uint32_t idx, uint32_t speed, uint32_t spread, uint32_t t0)
     kg.pos = kg.vpos = kg_pos_at(t0);
 }
 
+/* D16: a result counts (a best, its medals) only at full speed and without AUTO; below 100 % it is practice */
+static int32_t kg_counts(void) { return !kg.auto_on && kg.speed >= 100u; }
+
 #define KG_COUNT_IN 4u                           /* D15: a bar of hi-hat before beat 0 */
 static void kg_count_in(uint32_t beats)          /* call after kg_start: the song begins with a count-in */
 {

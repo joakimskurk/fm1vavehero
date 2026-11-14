@@ -536,7 +536,7 @@ static void app_main(void)
                 if (kg_update(heard_now())) {
                     if (demo) song_start(KF_BENCH_SONG, 1);   /* the DEMO goes round */
                     else {
-                        kg.new_best = kg.auto_on ? 0 : best_put(kg.idx, kg.acc10);   /* (AUTO: not kept) */
+                        kg.new_best = kg_counts() ? best_put(kg.idx, kg.acc10) : 0;   /* (AUTO and practice: not kept, D16) */
                         ch = 1;
                         song_stop();
                         scr = SCR_RESULTS;
