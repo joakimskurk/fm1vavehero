@@ -112,7 +112,7 @@
       <p class="muted">“Two windows” links two tabs or windows in the same browser, as if they were two FM-1s. The messages are the same MIDI messages that will go over USB-C (see <code>docs/link.md</code>). With two MIDI keyboards, each window can have its own.</p>
       <div class="status" id="linkStatus"></div>
     </div>
-    <p class="muted">VaveHero reference 0.1.21 · <code>docs/concept.md</code> · <code>docs/link.md</code> · <code>ROADMAP.md</code></p>
+    <p class="muted">VaveHero reference 0.1.22 · <code>docs/concept.md</code> · <code>docs/link.md</code> · <code>ROADMAP.md</code></p>
   </aside>
 </div>
 <script>/* Terminus (ter-u16n), SIL OFL 1.1: assets/fonts/Terminus-LICENSE.txt. Dinghy 0.4 FONT_S and FONT_L, 4 bits a pixel. */
@@ -126,7 +126,7 @@ window.TERMINUS = {"S": {"h": 16, "pad": 2, "first": 32, "last": 126, "adv": [8,
 /* VaveHero, the browser reference. Until the Dinghy port exists, this file is the authority for how VaveHero feels,
    times and sounds. Everything the FM-1 has is here: the 240 x 240 screen in Dinghy's Terminus fonts, the 27 keys
    with their two LED levels, the buttons and knobs, and the LINK protocol for two players. */
-const VERSION = 'REF 0.1.21';
+const VERSION = 'REF 0.1.22';
 
 /* ================================================================ small things */
 const $ = id => document.getElementById(id);
@@ -360,7 +360,7 @@ const LAYOUTS = {                                                     /* lane ->
   spread: [0, 4, 7, 11, 14, 18, 21, 24],                              /* D2: every other white key, F3 A3 C4 E4 G4 B4 D5 F5 */
 };
 const layout = () => G.spread ? LAYOUTS.spread : LAYOUTS.normal;
-function keyCap(ctx, cx, y, w, h, col, state, black) {              /* the FM-1's capsule keys (the splash's too) */
+function keyCap(ctx, cx, y, w, h, col, state, black) {              /* the FM-1's capsule keys (MIDI MODE's strip) */
   const x = cx - w / 2;
   if (state === 'lit') { pcap(ctx, x - 1, y - 1, w + 2, h + 2, mix(P.bg, col, .55)); pcap(ctx, x, y, w, h, col); rect(ctx, x + h / 2, y + 2, w - h, 1, mix(col, '#ffffff', .65)); }
   else if (state === 'next') { pcap(ctx, x, y, w, h, col); pcap(ctx, x + 1, y + 1, w - 2, h - 2, mix(black ? '#261336' : '#39224e', col, .22)); }
@@ -369,16 +369,17 @@ function keyCap(ctx, cx, y, w, h, col, state, black) {              /* the FM-1'
 /* D17: a button for each lane on the hit line, the notes' target: lit only while its key is down. Idle it is a ring in
    the lane's colour with the line through it (gold in OP BOOST, neon in a FREE SOLO) */
 const PAD_W = 27, PAD_H = 14;
-function padRing(ctx, i, line) {
-  const col = LANE[i], x = Math.round(U(i + .5) - PAD_W / 2), y = HIT - 1 - PAD_H / 2, inner = mix('#12061d', col, .16);
-  pcap(ctx, x, y, PAD_W, PAD_H, mix(P.bg, col, .7)); pcap(ctx, x + 2, y + 2, PAD_W - 4, PAD_H - 4, inner);
-  rect(ctx, x + 4, HIT - 1, PAD_W - 8, 1, mix(inner, line, .5));
+function laneBtn(ctx, x, y, w, h, col, lit, line) {                       /* (the splash's are smaller) */
+  if (lit) {                                                           /* whiter than a note: a note in it is not a key down */
+    pcap(ctx, x - 2, y - 2, w + 4, h + 4, mix(P.bg, col, .55)); pcap(ctx, x, y, w, h, mix(col, '#ffffff', .2));
+    pcap(ctx, x + 2, y + 2, w - 4, h - 4, mix(col, '#ffffff', .55)); return;
+  }
+  const inner = mix('#12061d', col, .16);
+  pcap(ctx, x, y, w, h, mix(P.bg, col, .7)); pcap(ctx, x + 2, y + 2, w - 4, h - 4, inner);
+  rect(ctx, x + 4, y + (h >> 1), w - 8, 1, mix(inner, line, .5));
 }
-function padLit(ctx, i) {
-  const col = LANE[i], x = Math.round(U(i + .5) - PAD_W / 2), y = HIT - 1 - PAD_H / 2;
-  pcap(ctx, x - 2, y - 2, PAD_W + 4, PAD_H + 4, mix(P.bg, col, .55)); pcap(ctx, x, y, PAD_W, PAD_H, mix(col, '#ffffff', .2));
-  pcap(ctx, x + 2, y + 2, PAD_W - 4, PAD_H - 4, mix(col, '#ffffff', .55));            /* (whiter than a note: a note in it is not a key down) */
-}
+const padRing = (ctx, i, line) => laneBtn(ctx, Math.round(U(i + .5) - PAD_W / 2), HIT - 1 - PAD_H / 2, PAD_W, PAD_H, LANE[i], false, line);
+const padLit = (ctx, i) => laneBtn(ctx, Math.round(U(i + .5) - PAD_W / 2), HIT - 1 - PAD_H / 2, PAD_W, PAD_H, LANE[i], true);
 function keyStrip(ctx, st, led = []) {
   if (G.spread) return spreadStrip(ctx, st, led);
   const cap = (cx, y, w, h, col, state, black) => keyCap(ctx, cx, y, w, h, col, state, black);
@@ -1532,6 +1533,9 @@ function drawSplash(ctx, now) {
     rect(ctx, 0, y, xl, 1, gcol); rect(ctx, xr, y, 240 - xr, 1, gcol);
   }
   rect(ctx, 0, SP.HZN, 240, 1, NEON); rect(ctx, 0, SP.HZN + 1, 240, 1, H(kmixI(0x1a0638, 0xff4fd8, Q12(.45))));   /* the horizon */
+  rect(ctx, SP.NL, SP.HIT - 2, 8 * SP.LW, 1, mix(P.bg, P.cyan, .4));  /* the hit line and its buttons, as the play screen's (D17) */
+  rect(ctx, SP.NL, SP.HIT - 1, 8 * SP.LW, 2, P.cyan);
+  for (let i = 0; i < 8; i++) laneBtn(ctx, 29 + SP.LW * i, SP.HIT - 6, 21, 11, LANE[i], false, P.cyan);
   for (let k = 1; k >= 0; k--) SP_NOTES.forEach(([hb, lane], i) => {   /* the notes: this loop's and the next's, chords barred */
     const tq = hb * 2048 + k * 8 * 4096 - beat, z = idiv(tq * 3, 2);
     if (tq <= 0 || z > SP.ZTOP) return;
@@ -1546,17 +1550,13 @@ function drawSplash(ctx, now) {
     pcap(ctx, x0, y0, w, h, H(kmixI(fl, col, f)));
     rect(ctx, x0 + r, y0 + 1, iw, 1, H(kmixI(fl, kmixI(col, 0xffffff, Q12(.6)), f)));
     rect(ctx, x0 + r, y0 + h - 1, iw, 1, H(kmixI(fl, kmixI(col, 0x000000, Q12(.3)), f)));
-    if (tq <= 4096 && !st[lane]) st[lane] = 1;
   });
-  rect(ctx, SP.NL, SP.HIT - 2, 8 * SP.LW, 1, mix(P.bg, P.cyan, .4));  /* the hit line */
-  rect(ctx, SP.NL, SP.HIT - 1, 8 * SP.LW, 2, P.cyan);
-  for (let k = 0; k >= -1; k--) SP_NOTES.forEach(([hb, lane]) => {     /* the notes hitting it: a burst, the key lit */
+  for (let k = 0; k >= -1; k--) SP_NOTES.forEach(([hb, lane]) => {     /* the notes hitting it: the button lit, a burst */
     const tq = hb * 2048 + k * 8 * 4096 - beat, age = idiv(-tq * SP.BEAT, 4096);
     if (tq > 0 || age >= 260) return;
+    if (age < 150 && !st[lane]) { st[lane] = 1; laneBtn(ctx, 29 + SP.LW * lane, SP.HIT - 6, 21, 11, LANE[lane], true); }
     burstDraw(ctx, SP.NL + SP.LW * lane + 12, SP.HIT - 1, LANE[lane], age / 260, true);
-    if (age < 150) st[lane] = 2;
   });
-  for (let i = 0; i < 8; i++) keyCap(ctx, 39 + SP.LW * i, 218, 19, 11, LANE[i], st[i] === 2 ? 'lit' : st[i] === 1 ? 'next' : null, false);
   textOut(ctx, 'S', 120 - (tw('S', 'A RHYTHM GAME FOR FM-1') >> 1), 50, 'A RHYTHM GAME FOR FM-1', P.cyan, OUT);
   if (Math.floor(ms / 500) % 2 === 0) textOut(ctx, 'S', 120 - (tw('S', 'PRESS PLAY') >> 1), 186, 'PRESS PLAY', P.amber, OUT);
   textOut(ctx, 'S', 4, 0, 'FX DEMO', P.dim, OUT);

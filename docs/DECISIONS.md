@@ -423,7 +423,8 @@ notes' target: a ring in the lane's colour with the line through it (the line is
 SOLO, as before). A button lights only while its key is down, whiter than a note, so a note in its button is not
 taken for a key. A note in its button is the moment to press. What comes next is shown on the FM-1's key LEDs only,
 as before. Without the keys' rows the hit line is 22 px lower (y 212), and the highway that much longer. MIDI MODE's
-own screen keeps its keys, since it shows what the DAW plays.
+own screen keeps its keys, since it shows what the DAW plays. The splash's highway has the same buttons on its line,
+lit as its notes hit them (`docs/screens/splash.gif`, the link preview `web/og.png`).
 
 **Why.** The keys under the highway lit up for the notes coming. That drew the eye away from the highway, and the
 LEDs on the keyboard already do it. A target on the line itself also shows when to press: when the note is in the

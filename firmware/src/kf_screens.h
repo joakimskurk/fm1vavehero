@@ -232,34 +232,26 @@ static void ks_burst(int32_t cx, int32_t cy, rgb_t col, int32_t age, int32_t big
     }
     if (age < 2048) { krect_a(cx - 3, cy - 1, 7, 2, K_WHITE, al); krect_a(cx - 1, cy - 4, 2, 7, K_WHITE, al); }
 }
-/* the FM-1's keys: two rows of capsules (D1: the black row is shown and never used), or SPREAD's 15 (D2) */
-static void ks_cap(int32_t cx, int32_t y, int32_t w, int32_t h, rgb_t col, int32_t state, int32_t black)   /* state: 0, 1 next, 2 lit */
-{
-    int32_t x = cx - w / 2;
-    if (state == 2) { kpcap(x - 1, y - 1, w + 2, h + 2, kmix(K_BG, col, Q12(.55))); kpcap(x, y, w, h, col); krect(x + h / 2, y + 2, w - h, 1, kmix(col, K_WHITE, Q12(.65))); }
-    else if (state == 1) { kpcap(x, y, w, h, col); kpcap(x + 1, y + 1, w - 2, h - 2, kmix(black ? 0x261336u : 0x39224eu, col, Q12(.22))); }
-    else { kpcap(x, y, w, h, black ? 0x532878u : 0x52316fu); kpcap(x + 1, y + 1, w - 2, h - 2, black ? 0x251137u : 0x39224eu); }
-}
 /* D17: a button for each lane on the hit line, the notes' target: lit only while its key is down. Idle a ring in the
  * lane's colour with the line through it (gold in OP BOOST, neon in a FREE SOLO); lit, whiter than a note */
 #define KS_PAD_W 27
 #define KS_PAD_H 14
-static void ks_pad_ring(int32_t i, rgb_t line)
+static void ks_pad(int32_t x, int32_t y, int32_t w, int32_t h, rgb_t col, int32_t lit, rgb_t line)   /* (the splash's are smaller) */
 {
-    int32_t x = 5 + KH_LW * i, y = KH_HIT - 1 - KS_PAD_H / 2;   /* round(U(i + .5) - 27 / 2) */
-    rgb_t col = LANE[i], inner = kmix(0x12061du, col, Q12(.16));
-    kpcap(x, y, KS_PAD_W, KS_PAD_H, kmix(K_BG, col, Q12(.7)));
-    kpcap(x + 2, y + 2, KS_PAD_W - 4, KS_PAD_H - 4, inner);
-    krect(x + 4, KH_HIT - 1, KS_PAD_W - 8, 1, kmix(inner, line, Q12(.5)));
+    rgb_t inner;
+    if (lit) {
+        kpcap(x - 2, y - 2, w + 4, h + 4, kmix(K_BG, col, Q12(.55)));
+        kpcap(x, y, w, h, kmix(col, K_WHITE, Q12(.2)));
+        kpcap(x + 2, y + 2, w - 4, h - 4, kmix(col, K_WHITE, Q12(.55)));
+        return;
+    }
+    inner = kmix(0x12061du, col, Q12(.16));
+    kpcap(x, y, w, h, kmix(K_BG, col, Q12(.7)));
+    kpcap(x + 2, y + 2, w - 4, h - 4, inner);
+    krect(x + 4, y + (h >> 1), w - 8, 1, kmix(inner, line, Q12(.5)));
 }
-static void ks_pad_lit(int32_t i)
-{
-    int32_t x = 5 + KH_LW * i, y = KH_HIT - 1 - KS_PAD_H / 2;
-    rgb_t col = LANE[i];
-    kpcap(x - 2, y - 2, KS_PAD_W + 4, KS_PAD_H + 4, kmix(K_BG, col, Q12(.55)));
-    kpcap(x, y, KS_PAD_W, KS_PAD_H, kmix(col, K_WHITE, Q12(.2)));
-    kpcap(x + 2, y + 2, KS_PAD_W - 4, KS_PAD_H - 4, kmix(col, K_WHITE, Q12(.55)));
-}
+static void ks_pad_ring(int32_t i, rgb_t line) { ks_pad(5 + KH_LW * i, KH_HIT - 1 - KS_PAD_H / 2, KS_PAD_W, KS_PAD_H, LANE[i], 0, line); }   /* (x: round(U(i + .5) - 27 / 2)) */
+static void ks_pad_lit(int32_t i) { ks_pad(5 + KH_LW * i, KH_HIT - 1 - KS_PAD_H / 2, KS_PAD_W, KS_PAD_H, LANE[i], 1, 0); }
 
 /* ---- the screens */
 /* the splash, as an 80s video game cover: the art above the horizon (tools/gen_splash.py: the sky, the stars, the
@@ -328,6 +320,9 @@ static void ks_splash(uint32_t ms, const char *version)
     }
     krect(0, KS_HZN, 240, 1, K_NEON);            /* the horizon */
     krect(0, KS_HZN + 1, 240, 1, kmix(K_FLOOR0, K_NEON, Q12(.45)));
+    krect(KS_NL, KS_HIT - 2, 8 * KS_LW, 1, kmix(K_BG, K_CYAN, Q12(.4)));   /* the hit line and its buttons, as the play screen's (D17) */
+    krect(KS_NL, KS_HIT - 1, 8 * KS_LW, 2, K_CYAN);
+    for (i = 0; i < 8; i++) ks_pad(29 + KS_LW * i, KS_HIT - 6, 21, 11, LANE[i], 0, K_CYAN);
     for (k = 1; k >= 0; k--)                     /* the notes: this loop's and the next's, chords barred */
         for (i = 0; i < 16; i++) {
             int32_t tq = KS_NOTES[i][0] * 2048 + k * 8 * 4096 - beat, z = tq * 3 / 2, sc, yq, yr, w, h, lane = KS_NOTES[i][1];
@@ -342,18 +337,14 @@ static void ks_splash(uint32_t ms, const char *version)
             if (h < 3) h = 3;
             ks_gem_px(kh_round(ks_xu(lane * 16 + 8, sc) - w * 2048), kh_round(yq - h * 2048), w, h, LANE[lane], LANE[lane],
                       Q12(.5), ks_fl(yr), ks_f(yr));
-            if (tq <= 4096 && !st[lane]) st[lane] = 1;
         }
-    krect(KS_NL, KS_HIT - 2, 8 * KS_LW, 1, kmix(K_BG, K_CYAN, Q12(.4)));   /* the hit line */
-    krect(KS_NL, KS_HIT - 1, 8 * KS_LW, 2, K_CYAN);
-    for (k = 0; k >= -1; k--)                    /* the notes hitting it: a burst, the key lit */
+    for (k = 0; k >= -1; k--)                    /* the notes hitting it: the button lit, a burst */
         for (i = 0; i < 16; i++) {
             int32_t tq = KS_NOTES[i][0] * 2048 + k * 8 * 4096 - beat, age = -tq * KS_BEAT / 4096, lane = KS_NOTES[i][1];
             if (tq > 0 || age >= 260) continue;
+            if (age < 150 && !st[lane]) { st[lane] = 1; ks_pad(29 + KS_LW * lane, KS_HIT - 6, 21, 11, LANE[lane], 1, 0); }
             ks_burst(KS_NL + KS_LW * lane + 12, KS_HIT - 1, LANE[lane], age * 4096 / 260, 1);
-            if (age < 150) st[lane] = 2;
         }
-    for (i = 0; i < 8; i++) ks_cap(39 + KS_LW * i, 218, 19, 11, LANE[i], st[i], 0);
     ktextOut(&FONT_S, 120 - (ktw(&FONT_S, "A RHYTHM GAME FOR FM-1") >> 1), 50, "A RHYTHM GAME FOR FM-1", K_CYAN, K_OUT, 1);
     if ((ms / 500u) % 2u == 0u) ktextOut(&FONT_S, 120 - (ktw(&FONT_S, "PRESS PLAY") >> 1), 186, "PRESS PLAY", K_AMBER, K_OUT, 1);
     ktextOut(&FONT_S, 4, 0, "FX DEMO", K_DIM, K_OUT, 1);
