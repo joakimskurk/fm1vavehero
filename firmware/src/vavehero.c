@@ -57,7 +57,8 @@ static uint32_t heard_now(void)                  /* the frame being heard now */
 /* ---- what survives a power-off: the settings and the best results */
 #define NBEST 16u
 static struct {
-    uint8_t pad0, speed, tone, mix, grit, spread, sel, pad;   /* (pad0: the level the player chose once; a song's own now, D12) */
+    uint8_t pad0, speed, tone, mix, grit, spread, sel, zpb;   /* (pad0: the level the player chose once; a song's own now, D12)
+                                                 * zpb: the note speed in quarters, 3..6 (D18; 0 in older saves: 1x) */
     int16_t offset, pad2;
     uint16_t best_hash[NBEST];                   /* the song's hash | its level << 14 (the key as before D12: saves stay) */
     int16_t best_acc[NBEST];                     /* accuracy x 10 */
@@ -65,7 +66,7 @@ static struct {
 static void set_defaults(void)
 {
     uint32_t i;
-    set.pad0 = 0; set.speed = 100; set.tone = 0; set.mix = 60; set.grit = 70; set.spread = 0; set.sel = 0; set.offset = 0;
+    set.pad0 = 0; set.speed = 100; set.tone = 0; set.mix = 60; set.grit = 70; set.spread = 0; set.sel = 0; set.zpb = 4; set.offset = 0;
     for (i = 0; i < NBEST; i++) { set.best_hash[i] = 0xFFFFu; set.best_acc[i] = -1; }
 }
 static uint32_t best_key(uint32_t song) { return KF_SONG[song].hash | (uint32_t)KF_SONG[song].level << 14; }
@@ -488,6 +489,8 @@ static void app_main(void)
     if (settings_load(&set, sizeof set) || set.speed < 50u || set.speed > 100u || set.tone > 5u ||
         set.mix > 100u || set.grit > 100u || set.sel > KF_NSONG)
         set_defaults();
+    if (set.zpb < 3u || set.zpb > 6u) set.zpb = 4u;   /* (a save from before D18 keeps everything else) */
+    ks_zq = set.zpb;
     offset_ms = set.offset;
     kf_init();
     kf_set_grit(set.grit);
@@ -521,7 +524,7 @@ static void app_main(void)
             (void)fm1_enc_take(ENC_KNOB1);         /* (KNOB 1: nothing on SONGS, a song's level is its own: D12) */
             if ((e = fm1_enc_take(ENC_KNOB2)) != 0) { set.tone = (uint8_t)((set.tone + 6u + (uint32_t)(e % 6 + 6)) % 6u); toast(tone_name()); ch = 1; }
             v = enc_step(ENC_KNOB3, (int32_t)set.speed, 10, 50, 100, &ch);
-            if (v != (int32_t)set.speed) { set.speed = (uint8_t)v; toast_num("SPEED ", (uint32_t)v, "%"); }
+            if (v != (int32_t)set.speed) { set.speed = (uint8_t)v; toast_num("SPEED ", (uint32_t)v, v < 100 ? "% PRACTICE" : "%"); }   /* (D16) */
         } else if (scr == SCR_PLAY) {
             if (b & (1u << BTN_HOME) || (demo && b & (1u << BTN_PLAY))) { int d = (int)demo; song_stop(); scr = d ? SCR_SPLASH : SCR_SONGS; redraw = 1; }
             else if (b & (1u << BTN_PLAY) && !kg.done) song_pause();
@@ -558,9 +561,14 @@ static void app_main(void)
             if (b & (1u << BTN_OCT_UP) && mm_oct < 2) mm_oct++;
             if ((e = fm1_enc_take(ENC_KNOB2)) != 0) { set.tone = (uint8_t)((set.tone + 6u + (uint32_t)(e % 6 + 6)) % 6u); toast(tone_name()); ch = 1; }
         }
-        if (scr == SCR_PLAY) {                   /* in a song, as the reference: KNOB 2 TONE; KNOB 3 shows the speed */
+        if (scr == SCR_PLAY) {                   /* in a song, as the reference: KNOB 2 TONE; KNOB 3 the note speed (D18) */
             if ((e = fm1_enc_take(ENC_KNOB2)) != 0) { set.tone = (uint8_t)((set.tone + 6u + (uint32_t)(e % 6 + 6)) % 6u); toast(tone_name()); ch = 1; }
-            if (fm1_enc_take(ENC_KNOB3) != 0) toast_num("SPEED ", kg.speed, "%");
+            if ((e = fm1_enc_take(ENC_KNOB3)) != 0) {
+                static const char *const ZT[4] = {"NOTE SPEED 0.75X", "NOTE SPEED 1X", "NOTE SPEED 1.25X", "NOTE SPEED 1.5X"};
+                int32_t q = (int32_t)set.zpb + (e > 0 ? 1 : -1);
+                q = q < 3 ? 3 : q > 6 ? 6 : q;
+                set.zpb = (uint8_t)q; ks_zq = q; toast(ZT[q - 3]); ch = 1;
+            }
         }
         v = enc_step(ENC_KNOB4, (int32_t)set.mix, 10, 0, 100, &ch);   /* KNOB 4: MIX, everywhere */
         if (v != (int32_t)set.mix) { set.mix = (uint8_t)v; kf_set_mix(set.mix); toast_num("MIX ", (uint32_t)v, ""); }

@@ -161,7 +161,8 @@ phases meet differs by chance (D8). Checked by `tests/run_vavehero.sh`, with tho
 - Only the highway (rows 40–222) has to be drawn every frame. The top bar and the knob row are drawn only when they change. That is
   about 85 KB per frame, so 30 frames per second uses about a third of the SPI time, but little CPU.
 - Target: 30 frames per second, 60 if possible. **Measured with the screen timed (D11):** the DEMO 60 fps (16.0 ms
-  between frames at the median, 2 of 305 frames over 25 ms, the longest 27 ms), MIDI MODE its 30 fps.
+  between frames at the median, 2 of 305 frames over 25 ms, the longest 27 ms), MIDI MODE its 30 fps. With D17's longer
+  highway (the hit line at 212) the same: drawing 11.5 ms at the median (11.3 before), 1 of 305 frames over 25 ms.
   The fastest songs, KIRAMEKI RUSH and YOZORA SPARK (174 and 180 BPM), draw about 50 fps in their busiest
   choruses: 20–23 of about 240 frames take more than 25 ms. The audio stays at 41–43 % of the chip there.
 - **Calculated (firmware 0.1):** the play screen in ENGINE TOUR's heaviest bars costs about 0.69 million

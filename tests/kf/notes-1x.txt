@@ -1,0 +1,6 @@
+# VaveHero on the host (D18): FIRST LIGHT on AUTO at the note speed 1X (see notes-15x.txt)
+300 btn 12
+600 btn 11
+1000 btn 12
+7000 shot
+7500 end

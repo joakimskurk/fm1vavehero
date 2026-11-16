@@ -129,6 +129,11 @@ async function choose(page, song) {                       /* a song's level is i
   await choose(a.page, 0); await a.page.keyboard.press('Enter');
   await waitBeat(a.page, 2); await screen(a.page, '03-first-light-intro');
   await waitBeat(a.page, 6.5); await screen(a.page, '03b-first-light-count');
+  /* D18: KNOB 3 in a song is the note speed (how fast the notes come down), not the tempo; on SONGS it is the tempo */
+  const ns = await a.page.evaluate(() => { const K = window.KF, bpm = K.play.bpm, z0 = K.G.zpb; K.enc('K3', 1); const up = K.G.zpb; K.enc('K3', 1); K.enc('K3', 1); const top = K.G.zpb;
+    K.enc('K3', -9); const low = K.G.zpb; K.enc('K3', 1); return { z0, up, top, low, back: K.G.zpb, bpm: K.play.bpm === bpm, stored: localStorage.getItem('vavehero.zpb'), panel: document.getElementById('zpb').value }; });
+  check(ns.z0 === 1 && ns.up === 1.25 && ns.top === 1.5 && ns.low === .75 && ns.back === 1 && ns.bpm && ns.stored === '1' && ns.panel === '1',
+    'D18: KNOB 3 in a song sets the note speed (0.75X to 1.5X), kept, and the tempo stays: ' + JSON.stringify(ns));
   const count = await a.page.evaluate(() => {                     /* the count to the first note (beat 8): beside the highway */
     const g = document.getElementById('scr').getContext('2d'), d = g.getImageData(206, 100, 32, 32).data, row = g.getImageData(0, 99, 240, 1).data;
     let face = 0; for (let i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 600) face++;

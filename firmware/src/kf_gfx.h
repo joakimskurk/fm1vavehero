@@ -286,16 +286,17 @@ static char *knum(char *p, uint32_t v, int32_t pad)   /* decimal, zero-padded to
     return p;
 }
 
-/* ---- the highway (reference/vavehero.html, "the highway"): HIT 190, TOPY 40, lanes from 4 to 236 (29 px), the eye 3
- * deep; a row's scale s = (y - HY) / (HIT - HY), the depth's row Y(z) = HY + (HIT - HY) 3 / (3 + z) */
-#define KH_HIT 190
+/* ---- the highway (reference/vavehero.html, "the highway"): HIT 212 (D17: the lanes' buttons on it, no keys under
+ * it), TOPY 40, lanes from 4 to 236 (29 px), the eye 3 deep; a row's scale s = (y - HY) / (HIT - HY), the depth's row
+ * Y(z) = HY + (HIT - HY) 3 / (3 + z) */
+#define KH_HIT 212
 #define KH_TOPY 40
 #define KH_NL 4
 #define KH_NR 236
 #define KH_CX 120
 #define KH_LW 29
-#define KH_HYQ (-4317647)                        /* HY = 190 - 150 / (1 - 96 / 232) = -65.882, Q16 */
-#define KH_DENQ 16769647                         /* HIT - HY = 255.882, Q16 */
+#define KH_HYQ (-5335401)                        /* HY = 212 - 172 / (1 - 96 / 232) = -81.412, Q16 */
+#define KH_DENQ 19229033                         /* HIT - HY = 293.412, Q16 */
 #define KH_ZTOP_Q12 17408                        /* the far end: 3 / (96 / 232) - 3 = 4.25, Q12 */
 #define KH_ROWS (KH_HIT - KH_TOPY)
 static int16_t kh_s[KH_ROWS];                    /* a row's scale at its middle (y + .5), Q12 */

@@ -56,6 +56,8 @@ run "a song on AUTO to its results, again, back to the songs" sh tests/run_host.
 run "the results' screen is there" test -s build/host/vavehero-44500.png
 run "CHROME HORIZON on AUTO: the count beside the highway, its FREE SOLO (D14) with every key open" sh -c \
     "sh tests/run_host.sh tests/kf/solo.txt >/dev/null && for t in 11348 57498 59558 60708; do test -s build/host/vavehero-\$t.png || exit 1; done"
+run "D18: KNOB 3 in a song is the note speed: the same moment drawn at 1X and 1.5X differs" sh -c \
+    "sh tests/run_host.sh tests/kf/notes-1x.txt >/dev/null && cp build/host/vavehero-7000.png build/host/notes-1x.png && sh tests/run_host.sh tests/kf/notes-15x.txt >/dev/null && ! cmp -s build/host/vavehero-7000.png build/host/notes-1x.png"
 run "the sound file is there and not empty" test -s "$OUT/vavehero.wav"
 if [ -f build/vavehero.fwsc ]; then                 # (CI builds the package before the tests)
     run "the site (web/make_site.py): the page with the installer, the package, the game in the browser, the link preview" sh -c \

@@ -1,0 +1,8 @@
+# VaveHero on the host (D18): FIRST LIGHT on AUTO, KNOB 3 turned up twice during the count-in: the note speed 1.5X.
+# tests/run_vavehero.sh compares its shot at 7000 ms with notes-1x.txt's, the same without the turn
+300 btn 12
+600 btn 11
+1000 btn 12
+3000 enc 4 2
+7000 shot
+7500 end

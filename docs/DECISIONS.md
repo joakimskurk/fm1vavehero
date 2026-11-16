@@ -6,8 +6,8 @@ It overrides the concept where they disagree.
 ## D1 (2026-11-07): only the white keys are played
 
 **Decision.** The note charts only have notes on white keys, and the lanes on the screen are one per white key. The
-black keys are still shown on the screen where they sit, in the upper row of the key strip, but they have no
-function. During a song they give no note, no score, no penalty and no sound.
+black keys are still shown on the screen where they sit, in the upper row of the key strip (the play screen's strip
+is gone since D17), but they have no function. During a song they give no note, no score, no penalty and no sound.
 
 *Adjusted the same day (REF 0.1.2).* For a short while the strip showed only the white keys. The black row is back
 because it makes it easier to see where you are on the keyboard. The decision was about the function, not the display.
@@ -39,8 +39,8 @@ in the reference), is saved, and cannot be changed in the middle of a song.
 key of space between them, the distance between the lanes becomes about twice as large. It fills almost the whole
 keyboard: 15 of 16 white keys.
 
-**What it looks like.** The key strip on the screen shows the used keys under the lanes and a dark, unused key
-between each. The LEDs and the letter hints in the panel follow the used keys. SPREAD applies only to the person
+**What it looks like.** The key strip on the screen showed the used keys under the lanes and a dark, unused key
+between each (since D17 the play screen has the lanes' buttons on the hit line instead). The LEDs and the letter hints in the panel follow the used keys. SPREAD applies only to the person
 playing, so in a match one player can have SPREAD on and the other not.
 
 **Checked by.** `tests/reference.cjs` plays NEON CARRIER with SPREAD on autoplay (100 %). It also checks that the
@@ -415,3 +415,35 @@ much as one at 100 % and gave the same medals, so turning the speed down was the
 
 **Checked by.** `tests/kf/kf_game_test.c` (`kg_counts`: 100 % counts, 80 % and AUTO do not) and `tests/reference.cjs`
 (a result at 80 % is not kept).
+
+## D17 (2026-11-16): the lanes' buttons on the hit line
+
+**Decision.** The play screen has no keys under the highway any more. Each lane has a button on the hit line, the
+notes' target: a ring in the lane's colour with the line through it (the line is gold in OP BOOST and neon in a FREE
+SOLO, as before). A button lights only while its key is down, whiter than a note, so a note in its button is not
+taken for a key. A note in its button is the moment to press. What comes next is shown on the FM-1's key LEDs only,
+as before. Without the keys' rows the hit line is 22 px lower (y 212), and the highway that much longer. MIDI MODE's
+own screen keeps its keys, since it shows what the DAW plays.
+
+**Why.** The keys under the highway lit up for the notes coming. That drew the eye away from the highway, and the
+LEDs on the keyboard already do it. A target on the line itself also shows when to press: when the note is in the
+button.
+
+The key strip of D1 (the black keys in the upper row) and D2 (SPREAD's used and idle keys) is gone from the play
+screen with it; the LEDs still follow SPREAD.
+
+## D18 (2026-11-16): KNOB 3 is the note speed in a song
+
+**Decision.** On the song list KNOB 3 is SPEED, the song's tempo from 50 to 100 %, chosen before the song starts;
+below 100 % it is practice (D16), and the list, the song's title banner and the results say PRACTICE. In a song
+KNOB 3 is NOTES, the note speed: how fast the notes come down the highway, 0.75X, 1X, 1.25X or 1.5X. It changes how
+far ahead the notes are seen, not the tempo or the timing, and it is kept with the settings. Before, KNOB 3 in a song
+only showed the speed, which could not be changed there.
+
+**Why.** The speed on the play screen was hard to understand: it looked like something to turn, and turning it did
+nothing. The note speed is what a player wants to change while playing: faster notes are further apart and easier
+to read in a dense song, slower ones give more time to see them coming.
+
+**How.** The reference: `setZpb` and the panel's Note speed. The firmware: `ks_zq` in `kf_screens.h` (the depth of a
+time scaled by it), kept in a byte of the settings that was padding (a save from before reads as 1X and keeps the
+rest). Checked by `tests/reference.cjs` and, on the host, `tests/kf/notes-1x.txt` against `tests/kf/notes-15x.txt`.

@@ -57,6 +57,8 @@ tested on the host and in fm1-emu.
 - [x] D14: FREE SOLO sections (note 10 on channel 1): every key plays, nothing judged; CHROME HORIZON has one
 - [x] D15: a bar of hi-hat before every song, so a first note on beat 0 can be played
 - [x] D16: below 100 % speed is practice: the result is not kept
+- [x] D17: the lanes' buttons on the hit line, lit only while a key is down; the highway longer
+- [x] D18: KNOB 3 in a song is the note speed (0.75X to 1.5X); the tempo is chosen on the song list
 - [x] The count to the first note beside the highway, not over the first notes
 - [x] v0.1, the first release: a GitHub release with the `.fwsc` (identity `FM-1_951`), built and attested by fm1-build;
       the page installs the newest release

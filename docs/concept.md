@@ -60,8 +60,8 @@ In M-VAVE's own firmware the first six black keys are **OP1–OP6**. That fits t
 - **White keys do not mean only C major.** The game can transpose the sound, so the white keys follow the song's
   key. A song in E-flat major is played with C major fingering and heard in E-flat. You get the modes by choosing the root: A minor,
   D Dorian, E Phrygian and so on.
-- At the bottom of the screen is the key strip in two rows, shaped like the FM-1's capsule keys: the black ones on top, the white ones
-  below. With SPREAD it shows the used keys with an LED strip, and a dark, unused key between each.
+- On the hit line each lane has a button, the notes' target (D17): it lights while its key is down, and a note in its
+  button is the moment to press. What comes next is on the FM-1's key LEDs.
 - **Octave shift:** a purple OCT+ or OCT− band comes down the highway. Press the button in time, and the window moves one
   octave. This way a song gets a wider range without the lanes getting too narrow.
 - **Tails** are notes you hold. **Chords** are notes on the same line, joined by a thin line.
@@ -103,8 +103,8 @@ The player follows the song's choice (TONE SONG) or picks their own voice with K
 ## Modes
 
 - **Setlist:** songs that unlock over time, with medals and best percentage saved in flash.
-- **Practice:** SPEED (KNOB 3) from 50 to 100 % (below 100 % the result is not kept: D16), looping a section, and "wait for
-  the right key" (the game waits until you hit it). You can also practice one hand at a time.
+- **Practice:** SPEED (KNOB 3 on the song list) from 50 to 100 % (below 100 % the result is not kept: D16); in a song
+  KNOB 3 is the note speed (D18). Looping a section, and "wait for the right key" (the game waits until you hit it). You can also practice one hand at a time.
 - **Listen and repeat:** the game plays a phrase while the LEDs show it, and then you play it back. It suits
   the small screen well and works as a tutorial.
 - **Two players, two FM-1s (LINK):** each player has their own FM-1, and the units are connected. In VS both play
