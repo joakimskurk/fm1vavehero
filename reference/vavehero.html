@@ -112,7 +112,7 @@
       <p class="muted">“Two windows” links two tabs or windows in the same browser, as if they were two FM-1s. The messages are the same MIDI messages that will go over USB-C (see <code>docs/link.md</code>). With two MIDI keyboards, each window can have its own.</p>
       <div class="status" id="linkStatus"></div>
     </div>
-    <p class="muted">VaveHero reference 0.1.19 · <code>docs/concept.md</code> · <code>docs/link.md</code> · <code>ROADMAP.md</code></p>
+    <p class="muted">VaveHero reference 0.1.20 · <code>docs/concept.md</code> · <code>docs/link.md</code> · <code>ROADMAP.md</code></p>
   </aside>
 </div>
 <script>/* Terminus (ter-u16n), SIL OFL 1.1: assets/fonts/Terminus-LICENSE.txt. Dinghy 0.4 FONT_S and FONT_L, 4 bits a pixel. */
@@ -126,7 +126,7 @@ window.TERMINUS = {"S": {"h": 16, "pad": 2, "first": 32, "last": 126, "adv": [8,
 /* VaveHero, the browser reference. Until the Dinghy port exists, this file is the authority for how VaveHero feels,
    times and sounds. Everything the FM-1 has is here: the 240 x 240 screen in Dinghy's Terminus fonts, the 27 keys
    with their two LED levels, the buttons and knobs, and the LINK protocol for two players. */
-const VERSION = 'REF 0.1.19';
+const VERSION = 'REF 0.1.20';
 
 /* ================================================================ small things */
 const $ = id => document.getElementById(id);
@@ -235,7 +235,7 @@ function pcap(ctx, x, y, w, h, c) {
 }
 
 /* ================================================================ the highway: a lane per white key, in perspective */
-const HIT = 190, TOPY = 40, NL = 4, NR = 236, CX = 120, D = 3, LW = (NR - NL) / 8, RT = 96 / 232;
+const HIT = 212, TOPY = 40, NL = 4, NR = 236, CX = 120, D = 3, LW = (NR - NL) / 8, RT = 96 / 232;
 const HY = HIT - (HIT - TOPY) / (1 - RT), ZTOP = D / RT - D;
 const sc = z => D / (D + z), Y = z => HY + (HIT - HY) * sc(z), sAt = y => (y - HY) / (HIT - HY);
 const X = (u, s) => CX + (u - CX) * s, U = p => NL + p * LW;
@@ -365,6 +365,19 @@ function keyCap(ctx, cx, y, w, h, col, state, black) {              /* the FM-1'
   if (state === 'lit') { pcap(ctx, x - 1, y - 1, w + 2, h + 2, mix(P.bg, col, .55)); pcap(ctx, x, y, w, h, col); rect(ctx, x + h / 2, y + 2, w - h, 1, mix(col, '#ffffff', .65)); }
   else if (state === 'next') { pcap(ctx, x, y, w, h, col); pcap(ctx, x + 1, y + 1, w - 2, h - 2, mix(black ? '#261336' : '#39224e', col, .22)); }
   else { pcap(ctx, x, y, w, h, black ? '#532878' : '#52316f'); pcap(ctx, x + 1, y + 1, w - 2, h - 2, black ? '#251137' : '#39224e'); }
+}
+/* D17: a button for each lane on the hit line, the notes' target: lit only while its key is down. Idle it is a ring in
+   the lane's colour with the line through it (gold in OP BOOST, neon in a FREE SOLO) */
+const PAD_W = 27, PAD_H = 14;
+function padRing(ctx, i, line) {
+  const col = LANE[i], x = Math.round(U(i + .5) - PAD_W / 2), y = HIT - 1 - PAD_H / 2, inner = mix('#12061d', col, .16);
+  pcap(ctx, x, y, PAD_W, PAD_H, mix(P.bg, col, .7)); pcap(ctx, x + 2, y + 2, PAD_W - 4, PAD_H - 4, inner);
+  rect(ctx, x + 4, HIT - 1, PAD_W - 8, 1, mix(inner, line, .5));
+}
+function padLit(ctx, i) {
+  const col = LANE[i], x = Math.round(U(i + .5) - PAD_W / 2), y = HIT - 1 - PAD_H / 2;
+  pcap(ctx, x - 2, y - 2, PAD_W + 4, PAD_H + 4, mix(P.bg, col, .55)); pcap(ctx, x, y, PAD_W, PAD_H, mix(col, '#ffffff', .2));
+  pcap(ctx, x + 2, y + 2, PAD_W - 4, PAD_H - 4, mix(col, '#ffffff', .55));            /* (whiter than a note: a note in it is not a key down) */
 }
 function keyStrip(ctx, st, led = []) {
   if (G.spread) return spreadStrip(ctx, st, led);
@@ -1604,6 +1617,10 @@ function drawPlay(ctx, now) {
   beatLines(ctx, beat, boost, zpb);
   rect(ctx, 0, TOPY, 240, 1, NEON); rect(ctx, 0, TOPY + 1, 240, 1, mix(FLOOR0, NEON, .45));
   for (const e of pressed.values()) if (e.lane >= 0) beam(ctx, e.lane + .5, LANE[e.lane]);
+  const solo = soloAt(p, beat), line = solo ? NEON : boost ? P.gold : P.cyan;   /* (the hit line in neon in a FREE SOLO) */
+  rect(ctx, NL, HIT - 2, NR - NL, 1, mix(P.bg, line, .4));
+  rect(ctx, NL, HIT - 1, NR - NL, 2, line);
+  for (let i = 0; i < 8; i++) padRing(ctx, i, line);                  /* D17: the lanes' buttons, the notes' target */
   for (const n of p.notes) {
     if (!n.hold || n.state === 'done') continue;
     const z0 = zOf(n.t), z1 = Math.min(ZTOP, zOf(n.t + n.len));
@@ -1622,19 +1639,16 @@ function drawPlay(ctx, now) {
   for (const [t, g] of groups) for (const n of g) gemDraw(ctx, n.p, Math.max(0, zOf(t)), laneCol(n.p), { boost, op: n.ph >= 0 && !p.phrases[n.ph].failed });
   if (p.live) for (const g of p.ghosts) { const z = zOf(g.t), s = g.pitch - 60 - 12 * g.w; if (z >= -.15 && z <= ZTOP && s > 0 && s < 12) ghostDraw(ctx, S2P[s], Math.max(0, z)); }
   for (const e of p.octs) { const z = zOf(e.t); if (e.state === 'pending' && z >= -.1 && z <= ZTOP) octBand(ctx, Math.max(0, z), e.dir, p.level === 0 || p.midiUsed || !!soloAt(p, e.t)); }
-  const solo = soloAt(p, beat), line = solo ? NEON : boost ? P.gold : P.cyan;   /* (the hit line in neon in a FREE SOLO) */
-  rect(ctx, NL, HIT - 2, NR - NL, 1, mix(P.bg, line, .4));
-  rect(ctx, NL, HIT - 1, NR - NL, 2, line);
+  const down = new Set(); for (const e of pressed.values()) if (e.lane >= 0) down.add(e.lane);
+  for (const i of down) padLit(ctx, i);                                /* D17: lit only by a key that is down; what comes next is on the FM-1's LEDs */
+  if (p.live) for (const g of p.ghosts) {                              /* MIDI PREVIEW: a black key on channel 1 warns on the line (D1) */
+    const d = g.t - beat, s = g.pitch - 60 - 12 * g.w;
+    if (d > -.15 && d < .3 && s > 0 && s < 12 && Number.isInteger(S2P[s])) pcap(ctx, U(S2P[s]) - 4, HIT - 6, 8, 10, P.coral);
+  }
   p.fx = p.fx.filter(f => now - f.t0 < 260);
   for (const f of p.fx) burstDraw(ctx, U(f.p), HIT - 1, f.col, (now - f.t0) / 260, f.big);
-  const keys = {}, leds = ledStates(now).L;
-  for (const e of pressed.values()) if (e.lane >= 0) keys['w' + e.lane] = 'lit';
-  for (const n of p.notes) { if (n.t > beat + 1) break; if (n.state === 'pending' && n.t >= beat - .1 && !keys['w' + n.lane]) keys['w' + n.lane] = 'next'; }
-  if (solo) for (let i = 0; i < 8; i++) if (!keys['w' + i]) keys['w' + i] = 'next';
-  if (p.live) for (const g of p.ghosts) { const d = g.t - beat, s = g.pitch - 60 - 12 * g.w; if (d > -.15 && d < .3 && s > 0 && s < 12) keys['b' + S2P[s]] = 'warn'; }
-  keyStrip(ctx, keys, layout().map(k => leds[k]));
   if (p.judge && now - p.judge.t0 < 450) {
-    const y = 150 - Math.round((now - p.judge.t0) / 450 * 4);
+    const y = HIT - 62 - Math.round((now - p.judge.t0) / 450 * 4);
     textOut(ctx, 'S', Math.round(CX - tw('S', p.judge.text) / 2), y, p.judge.text, JCOL[p.judge.text], OUT);
   }
   const linked = p.vs && Link.linked(), r = Link.rival;
