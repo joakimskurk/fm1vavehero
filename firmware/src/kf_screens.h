@@ -354,7 +354,7 @@ static void ks_splash(uint32_t ms, const char *version)
 typedef struct { uint32_t sel, speed, spread, tone; int32_t best[KF_NSONG]; uint32_t mm_mode, ms; } ks_menu_t;   /* best: acc10, -1 none */
 static void ks_songs(const ks_menu_t *m, const char *tone)
 {
-    static const char *const KN[4] = {"", "TONE", "SPEED", "MIX"}, *const KM[4] = {"MODE", "TONE", "BPM", "MIX"};
+    static const char *const KN[4] = {"KEYS", "TONE", "SPEED", "MIX"}, *const KM[4] = {"MODE", "TONE", "BPM", "MIX"};   /* (KEYS: D19) */
     uint32_t total = KF_NSONG + 1u, top, r;
     char s[40], *p;
     ks_night(m->ms);
@@ -427,7 +427,7 @@ static void ks_songs(const ks_menu_t *m, const char *tone)
         }
     }
     (void)tone;
-    ks_knobs(KN, 1u);                            /* (KNOB 1: nothing here, a song's level is its own) */
+    ks_knobs(KN, 0u);                            /* (KNOB 1: the lanes' keys, D19; a song's level is its own) */
 }
 
 /* the sky over the highway, copied from flash into RAM once: from flash, every frame, it missed the flash cache */

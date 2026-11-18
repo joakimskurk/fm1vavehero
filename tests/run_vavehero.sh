@@ -58,6 +58,8 @@ run "CHROME HORIZON on AUTO: the count beside the highway, its FREE SOLO (D14) w
     "sh tests/run_host.sh tests/kf/solo.txt >/dev/null && for t in 11348 57498 59558 60708; do test -s build/host/vavehero-\$t.png || exit 1; done"
 run "D18: KNOB 3 in a song is the note speed: the same moment drawn at 1X and 1.5X differs" sh -c \
     "sh tests/run_host.sh tests/kf/notes-1x.txt >/dev/null && cp build/host/vavehero-7000.png build/host/notes-1x.png && sh tests/run_host.sh tests/kf/notes-15x.txt >/dev/null && ! cmp -s build/host/vavehero-7000.png build/host/notes-1x.png"
+run "D19: KNOB 1 moves the keys, GLO in a song (SPREAD on and off on AUTO)" sh -c \
+    "sh tests/run_host.sh tests/kf/keys.txt >/dev/null && for t in 700 9300 16300; do test -s build/host/vavehero-\$t.png || exit 1; done"
 run "the sound file is there and not empty" test -s "$OUT/vavehero.wav"
 if [ -f build/vavehero.fwsc ]; then                 # (CI builds the package before the tests)
     run "the site (web/make_site.py): the page with the installer, the package, the game in the browser, the link preview" sh -c \
@@ -73,7 +75,7 @@ if echo 'int main(void) { return 0; }' | gcc $SAN -x c - -o build/san/probe 2>/d
     run "the app built with the sanitizers" \
         gcc $SAN -Wall -Wno-unused-function -DDINGHY_HOST -DAPP_VER='"san"' -Ifirmware/hal -Ifirmware/src -Ifirmware/gen \
             -o build/san/vavehero firmware/src/vavehero.c
-    for s in default tests/kf/game.txt tests/kf/results.txt tests/kf/solo.txt fuzz:1 fuzz:2; do
+    for s in default tests/kf/game.txt tests/kf/results.txt tests/kf/solo.txt tests/kf/keys.txt fuzz:1 fuzz:2; do
         case $s in
             default) arg= ;;
             fuzz:*) python3 tests/kf/fuzz.py "${s#fuzz:}" 45 > "build/san/fuzz${s#fuzz:}.txt"; arg="build/san/fuzz${s#fuzz:}.txt" ;;

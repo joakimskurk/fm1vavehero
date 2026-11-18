@@ -448,3 +448,19 @@ to read in a dense song, slower ones give more time to see them coming.
 **How.** The reference: `setZpb` and the panel's Note speed. The firmware: `ks_zq` in `kf_screens.h` (the depth of a
 time scaled by it), kept in a byte of the settings that was padding (a save from before reads as 1X and keeps the
 rest). Checked by `tests/reference.cjs` and, on the host, `tests/kf/notes-1x.txt` against `tests/kf/notes-15x.txt`.
+
+## D19 (2026-11-18): GLO in a song, and the keys moved along the keyboard
+
+**Decision.** GLO switches SPREAD during a song too, not only on the song list. Every key is let go first (AUTO's
+too), so nothing is left sounding or held on a key that no longer plays its lane; a hold that was down ends there.
+KNOB 1 on the song list is KEYS: the eight white keys the lanes are on, C4 to C5, move along the keyboard by up to 4
+white keys either way (F3 to F4 at the far left, G4 to G5 at the far right). The notes the lanes play stay the same;
+only the keys under the fingers move. The key LEDs on the song list show where they are. SPREAD needs 15 of the 16
+white keys, so it starts on F3, or on G3 when the keys are moved right. The setting is kept with the others, in a
+field that was padding (0 in an older save).
+
+**Why.** Played on a real FM-1 (the beta): a player wants to switch SPREAD without leaving the song, and the keys in
+the middle of the keyboard are not under the screen. Moving them lets the hands sit under what they are reading.
+
+**Checked by.** `tests/kf/kf_game_test.c` (the moved layouts; NEON CARRIER at 100 % on F3 to F4; ENGINE TOUR on AUTO
+with GLO twice: no miss, no shift missed, nothing left sounding) and `tests/reference.cjs`.

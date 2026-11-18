@@ -113,6 +113,11 @@ async function choose(page, song) {                       /* a song's level is i
   const blacks = await a.page.evaluate(() => window.KF.SONGS.flatMap(s => window.KF.buildChart(s).notes).filter(n => [1, 3, 6, 8, 10].includes(((n.pitch % 12) + 12) % 12)).length);
   check(blacks === 0, 'D1: no black keys in any chart');
 
+  /* D19: KNOB 1 on SONGS moves the lanes' keys along the keyboard, the LEDs show where */
+  const shift = await a.page.evaluate(() => { const K = window.KF, lit = () => K.leds().map((v, k) => v ? k : -1).filter(k => k >= 0).join();
+    K.enc('K1', -9); const l = [K.G.shift, lit()]; K.enc('K1', 9); const r = [K.G.shift, lit()]; K.enc('K1', -4); return { l, r, back: [K.G.shift, lit()], stored: localStorage.getItem('vavehero.shift') }; });
+  check(shift.l.join() === '-4,0,2,4,6,7,9,11,12' && shift.r.join() === '4,14,16,18,19,21,23,24,26' && shift.back.join() === '0,7,9,11,12,14,16,18,19' && shift.stored === '0',
+    'D19: KNOB 1 on SONGS moves the keys 4 white keys left (F3-F4) and right (G4-G5), the LEDs with them: ' + JSON.stringify(shift));
   await a.page.evaluate(() => window.KF.setAuto(true));
   /* D15: a bar of closed hi-hat (GM 42) before beat 0, a beat apart, so a first note on beat 0 can be played:
      KIRAMEKI RUSH's is */
@@ -134,6 +139,8 @@ async function choose(page, song) {                       /* a song's level is i
     K.enc('K3', -9); const low = K.G.zpb; K.enc('K3', 1); return { z0, up, top, low, back: K.G.zpb, bpm: K.play.bpm === bpm, stored: localStorage.getItem('vavehero.zpb'), panel: document.getElementById('zpb').value }; });
   check(ns.z0 === 1 && ns.up === 1.25 && ns.top === 1.5 && ns.low === .75 && ns.back === 1 && ns.bpm && ns.stored === '1' && ns.panel === '1',
     'D18: KNOB 3 in a song sets the note speed (0.75X to 1.5X), kept, and the tempo stays: ' + JSON.stringify(ns));
+  const glo = await a.page.evaluate(() => { const K = window.KF, w = K.G.spread; K.button('GLO'); const on = K.G.spread; K.button('GLO'); return { w, on, back: K.G.spread, scr: K.G.scr }; });
+  check(glo.w === false && glo.on === true && glo.back === false && glo.scr === 'play', 'D19: GLO turns SPREAD on and off during a song: ' + JSON.stringify(glo));
   const count = await a.page.evaluate(() => {                     /* the count to the first note (beat 8): beside the highway */
     const g = document.getElementById('scr').getContext('2d'), d = g.getImageData(206, 100, 32, 32).data, row = g.getImageData(0, 99, 240, 1).data;
     let face = 0; for (let i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 600) face++;

@@ -1,0 +1,13 @@
+# VaveHero on the host (D19): KNOB 1 on SONGS moves the keys 4 white keys left (F3-F4); NEON CARRIER on AUTO there,
+# GLO (SPREAD) on and off during the song
+300 btn 12
+600 enc 2 -4
+700 shot
+900 btn 11
+1000 enc 0 1
+1200 btn 12
+9000 btn 7
+9300 shot
+16000 btn 7
+16300 shot
+17000 end

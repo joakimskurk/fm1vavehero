@@ -59,14 +59,14 @@ static uint32_t heard_now(void)                  /* the frame being heard now */
 static struct {
     uint8_t pad0, speed, tone, mix, grit, spread, sel, zpb;   /* (pad0: the level the player chose once; a song's own now, D12)
                                                  * zpb: the note speed in quarters, 3..6 (D18; 0 in older saves: 1x) */
-    int16_t offset, pad2;
+    int16_t offset, shift;                       /* shift: D19, the lanes' keys moved, white keys (-4..4; 0 in older saves) */
     uint16_t best_hash[NBEST];                   /* the song's hash | its level << 14 (the key as before D12: saves stay) */
     int16_t best_acc[NBEST];                     /* accuracy x 10 */
 } set;
 static void set_defaults(void)
 {
     uint32_t i;
-    set.pad0 = 0; set.speed = 100; set.tone = 0; set.mix = 60; set.grit = 70; set.spread = 0; set.sel = 0; set.zpb = 4; set.offset = 0;
+    set.pad0 = 0; set.speed = 100; set.tone = 0; set.mix = 60; set.grit = 70; set.spread = 0; set.sel = 0; set.zpb = 4; set.offset = 0; set.shift = 0;
     for (i = 0; i < NBEST; i++) { set.best_hash[i] = 0xFFFFu; set.best_acc[i] = -1; }
 }
 static uint32_t best_key(uint32_t song) { return KF_SONG[song].hash | (uint32_t)KF_SONG[song].level << 14; }
@@ -100,6 +100,13 @@ static void kg_sound_on(uint32_t key, uint32_t pitch, int32_t detune, uint32_t b
     if (key_note[key]) kf_note_off(0, KF_P_PLAY, key_note[key]);
     key_note[key] = (uint8_t)pitch;
     kf_note_on(0, KF_P_PLAY, tone_patch(), pitch, 104, detune, bright);
+}
+static char *key_name(char *p, uint32_t key)     /* a white key's name: key 0 is F3 */
+{
+    static const char N[12] = {'C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'};
+    uint32_t m = 53u + key;
+    *p++ = N[m % 12u];
+    return knum(p, m / 12u - 1u, 0);
 }
 static void kg_sound_off(uint32_t key, uint32_t pitch)
 {
@@ -292,7 +299,7 @@ static void leds(void)
         for (i = kg.first; i < kg.n; i++) {
             const kf_cnote_t *n = &kg.notes[i];
             int32_t d = (int32_t)n->t * 256 - pos;
-            uint32_t key = KG_LAYOUT[kg.spread ? 1 : 0][n->lane];
+            uint32_t key = kg_lay[n->lane];
             if (d > 2 * KG_BEAT) break;
             if (kg.nst[i] == KN_HELD) L[key] = 2;
             else if (kg.nst[i] == KN_PENDING) { if (d >= -gb && d <= KG_BEAT / 2) L[key] = 2; else if (d > KG_BEAT / 2 && L[key] < 1) L[key] = 1; }
@@ -308,7 +315,8 @@ static void leds(void)
         play = pos >= 0 && (pos / (KG_BEAT / 4)) % 4 == 0 ? 2 : 0;
         fx = kg_boosting() ? 2 : kg.ops >= 6 ? ((fm1_ms / 125u) % 2u ? 2 : 0) : 0;
     } else if (scr == SCR_SONGS) {
-        for (i = 0; i < 8u; i++) L[KG_LAYOUT[set.spread ? 1 : 0][i]] = 1;   /* the landmarks: the layout's keys */
+        kg_layout_set(set.spread);
+        for (i = 0; i < 8u; i++) L[kg_lay[i]] = 1;   /* the landmarks: the layout's keys (D19: where KNOB 1 moved them) */
     }
     if (scr != SCR_PLAY) for (k = 0; k < 27u; k++) if (key_note[k]) L[k] = 2;
     for (k = 0; k < 27u; k++) { fm1_led_key(KEY_LED(k), L[k] == 2u); fm1_led_key_glow(KEY_LED(k), L[k] == 1u); }
@@ -445,7 +453,7 @@ static void draw(void)
 #endif
         kg.vpos = paused || kg.done ? kg.pos : kg_pos_at(heard_now() + vis_lead_us * 441u / 10000u);
         for (i = 0; i < 8u; i++) {
-            uint32_t key = KG_LAYOUT[kg.spread ? 1 : 0][i];
+            uint32_t key = kg_lay[i];
             lit[i] = (uint8_t)(key_note[key] != 0u);
             led[i] = (uint8_t)(lit[i] ? 2u : 0u);
         }
@@ -490,6 +498,8 @@ static void app_main(void)
         set.mix > 100u || set.grit > 100u || set.sel > KF_NSONG)
         set_defaults();
     if (set.zpb < 3u || set.zpb > 6u) set.zpb = 4u;   /* (a save from before D18 keeps everything else) */
+    if (set.shift < -KG_SHIFT_MAX || set.shift > KG_SHIFT_MAX) set.shift = 0;
+    kg_shift = set.shift;
     ks_zq = set.zpb;
     offset_ms = set.offset;
     kf_init();
@@ -521,14 +531,24 @@ static void app_main(void)
             if (b & (1u << BTN_SEQ)) { autoplay ^= 1u; toast(autoplay ? "AUTO ON" : "AUTO OFF"); }
             v = enc_step(ENC_SELECT, (int32_t)set.sel, 1, 0, (int32_t)KF_NSONG, &ch);
             if (v != (int32_t)set.sel) { set.sel = (uint8_t)v; redraw = 1; }
-            (void)fm1_enc_take(ENC_KNOB1);         /* (KNOB 1: nothing on SONGS, a song's level is its own: D12) */
+            if ((e = fm1_enc_take(ENC_KNOB1)) != 0) {   /* KNOB 1: the lanes' keys along the keyboard (D19) */
+                int32_t sh = set.shift + (e > 0 ? 1 : -1);
+                char t[16], *p;
+                sh = sh < -KG_SHIFT_MAX ? -KG_SHIFT_MAX : sh > KG_SHIFT_MAX ? KG_SHIFT_MAX : sh;
+                set.shift = (int16_t)sh; kg_shift = sh; kg_layout_set(set.spread);
+                p = key_name(kput(t, "KEYS "), kg_lay[0]); p = kput(p, "-"); key_name(p, kg_lay[7]);
+                toast(t); ch = 1;
+            }
             if ((e = fm1_enc_take(ENC_KNOB2)) != 0) { set.tone = (uint8_t)((set.tone + 6u + (uint32_t)(e % 6 + 6)) % 6u); toast(tone_name()); ch = 1; }
             v = enc_step(ENC_KNOB3, (int32_t)set.speed, 10, 50, 100, &ch);
             if (v != (int32_t)set.speed) { set.speed = (uint8_t)v; toast_num("SPEED ", (uint32_t)v, v < 100 ? "% PRACTICE" : "%"); }   /* (D16) */
         } else if (scr == SCR_PLAY) {
             if (b & (1u << BTN_HOME) || (demo && b & (1u << BTN_PLAY))) { int d = (int)demo; song_stop(); scr = d ? SCR_SPLASH : SCR_SONGS; redraw = 1; }
             else if (b & (1u << BTN_PLAY) && !kg.done) song_pause();
-            else if (!paused) {
+            else if (b & (1u << BTN_GLO) && !demo) {   /* GLO in a song too (D19): every key let go, then the other layout */
+                set.spread ^= 1u; kg_relayout(set.spread, heard_now());
+                toast(set.spread ? "SPREAD ON" : "SPREAD OFF"); ch = 1;
+            } else if (!paused) {
                 if (!demo) {
                     uint32_t frame = heard_now();
                     if (b & (1u << BTN_FX)) kg_boost();

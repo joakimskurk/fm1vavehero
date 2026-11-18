@@ -59,6 +59,7 @@ tested on the host and in fm1-emu.
 - [x] D16: below 100 % speed is practice: the result is not kept
 - [x] D17: the lanes' buttons on the hit line, lit only while a key is down; the highway longer
 - [x] D18: KNOB 3 in a song is the note speed (0.75X to 1.5X); the tempo is chosen on the song list
+- [x] D19: GLO (SPREAD) in a song too; KNOB 1 on the song list moves the lanes' keys along the keyboard
 - [x] The count to the first note beside the highway, not over the first notes
 - [x] v0.1, the first release: a GitHub release with the `.fwsc` (identity `FM-1_951`), built and attested by fm1-build;
       the page installs the newest release
@@ -99,7 +100,7 @@ but the audio is the tight part, so it is measured first.
 - [ ] The game engine is ready for LINK from the first version: START, clock and score go through one module
 - [x] Host tests (`make test`) and `.fwsc` with attestation in CI
 - [ ] fm1-emu in strict mode, and a calibration screen for the latency
-- [ ] Tried on a real FM-1
+- [x] Tried on a real FM-1 (2026-11-18: the beta)
 
 ## Phase 4: LINK on hardware, two FM-1s connected with USB-C
 

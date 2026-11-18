@@ -6,7 +6,7 @@ as in RoboSeq and SkurkyMello.
 
 | File | Version | SHA-256 |
 |---|---|---|
-| `vavehero.html` | REF 0.1.22 (the splash's hit line has the lanes' buttons too, D17; KNOB 3 in a song the note speed, D18) | `1e5fccd970fc40e51bfa84f7d81808b790d41b80d044fe328e814e5d4ab60ac3` |
+| `vavehero.html` | REF 0.1.23 (GLO in a song, and KNOB 1 on SONGS moves the lanes' keys, D19) | `4bdc4d292e0d4d86b06b0b36b6450ed179400b8088bbd445d3badc917c947254` |
 
 A new HTML is a new reference and gets its own commit with a new SHA-256 here.
 

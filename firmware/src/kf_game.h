@@ -26,6 +26,18 @@ static const char *const KJ_TEXT[7] = {"", "PERFECT", "GREAT", "GOOD", "MISS", "
 static const uint8_t KG_WHITE_SEMI[8] = {0, 2, 4, 5, 7, 9, 11, 12};   /* lane -> semitones above the window's C */
 static const uint8_t KG_LAYOUT[2][8] = {{7, 9, 11, 12, 14, 16, 18, 19},   /* C4 D4 E4 F4 G4 A4 B4 C5 */
                                         {0, 4, 7, 11, 14, 18, 21, 24}};   /* D2 SPREAD: F3 A3 C4 E4 G4 B4 D5 F5 */
+/* D19: the layout now, kg_lay: the eight white keys C4..C5 moved along the keyboard by kg_shift white keys (-4: F3..F4,
+ * 4: G4..G5), the lanes' notes the same; SPREAD every other white key from F3, or from G3 when moved right */
+static const uint8_t KG_WHITE_KEY[16] = {0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26};   /* F3 .. G5 */
+#define KG_SHIFT_MAX 4
+static int32_t kg_shift;                         /* (the app's setting) */
+static uint8_t kg_lay[8];                        /* lane -> key */
+static void kg_layout_set(uint32_t spread)
+{
+    uint32_t i;
+    int32_t sh = kg_shift < -KG_SHIFT_MAX ? -KG_SHIFT_MAX : kg_shift > KG_SHIFT_MAX ? KG_SHIFT_MAX : kg_shift;
+    for (i = 0; i < 8u; i++) kg_lay[i] = spread ? KG_WHITE_KEY[2u * i + (sh > 0 ? 1u : 0u)] : KG_WHITE_KEY[4 + sh + (int32_t)i];
+}
 
 typedef struct {
     const kf_song_t *song;
@@ -103,6 +115,7 @@ static void kg_start(uint32_t idx, uint32_t speed, uint32_t spread, uint32_t t0)
     const kf_song_t *s = &KF_SONG[idx];
     uint32_t i;
     kg.song = s; kg.idx = (uint8_t)idx; kg.level = s->level; kg.speed = (uint8_t)speed; kg.spread = (uint8_t)spread;
+    kg_layout_set(spread);
     kg.notes = s->chart;
     kg.n = s->nchart;
     if (kg.n > KG_MAXN) kg.n = KG_MAXN;
@@ -208,7 +221,7 @@ static void kg_press_oct(uint32_t key, uint32_t frame, int32_t oct)
         kg_sound_on(key, (uint32_t)(53 + (int32_t)key + 12 * oct + kg.song->transpose), 0, kg_bright());
         return;
     }
-    for (i = 0; i < 8u; i++) if (KG_LAYOUT[kg.spread ? 1 : 0][i] == key) lane = (int32_t)i;
+    for (i = 0; i < 8u; i++) if (kg_lay[i] == key) lane = (int32_t)i;
     if (lane < 0) return;
     s = KG_WHITE_SEMI[lane];
     pitch = 60 + s + 12 * oct;
@@ -245,6 +258,18 @@ static void kg_release(uint32_t key, uint32_t frame)
         int32_t frac = len <= 0 || d >= len ? 4096 : d <= 0 ? 0 : (d << 12) / len;   /* how much of it was held (d < 2^19) */
         kg_hold_end((uint32_t)i, frac > 4096 ? 4096 : frac);
     }
+}
+/* D19: GLO (SPREAD) or the shift during a song. Every key is let go first, AUTO's too, so nothing is left sounding or
+ * held on a key that no longer plays its lane */
+static void kg_relayout(uint32_t spread, uint32_t frame)
+{
+    uint32_t k;
+    for (k = 0; k < 27u; k++) {
+        if (kg.akey[k] >= 0) { kg.adn[kg.akey[k]] = 2; kg.akey[k] = -1; }
+        kg_release(k, frame);
+    }
+    kg.spread = (uint8_t)spread;
+    kg_layout_set(spread);
 }
 static void kg_oct_press(int32_t dir, uint32_t frame)
 {
@@ -294,7 +319,7 @@ static void kg_autoplay(void)
         if (kg.ost[i] == KO_PENDING && kg.pos >= (int32_t)s->octs[i].t * 256) kg_oct_press(s->octs[i].dir, kf_seq_frame(s->octs[i].t));
     for (i = kg.first; i < kg.n; i++) {
         const kf_cnote_t *n = &kg.notes[i];
-        uint32_t key = KG_LAYOUT[kg.spread ? 1 : 0][n->lane];
+        uint32_t key = kg_lay[n->lane];
         if ((int32_t)n->t * 256 > kg.pos) break;
         if (kg.nst[i] == KN_PENDING && !kg.adn[i]) { kg.adn[i] = 1; kg.akey[key] = (int16_t)i; kg_press(key, kg_note_frame(i)); }
     }
@@ -306,7 +331,7 @@ static void kg_autoplay(void)
         uint32_t up = n->t + ((n->flags & 1u) ? n->len : (n->len < 48u ? n->len : 48u)) * 95u / 100u;
         if ((int32_t)n->t * 256 > kg.pos) break;
         if (kg.adn[i] == 1u && kg.pos >= (int32_t)up * 256) {
-            uint32_t key = KG_LAYOUT[kg.spread ? 1 : 0][n->lane];
+            uint32_t key = kg_lay[n->lane];
             kg.adn[i] = 2;
             if (kg.akey[key] == (int16_t)i) { kg.akey[key] = -1; kg_release(key, kf_seq_frame(up)); }   /* (not the next note's on the same key) */
         }

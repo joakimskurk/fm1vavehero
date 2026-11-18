@@ -8,9 +8,9 @@ to happen.
 VaveHero takes this to the FM-1. Notes come down a neon highway, you play them on the white keys while the key LEDs
 show what is coming, and a synthwave band plays along.
 
-> **An alpha: a proof of concept.** Its eight songs are generated demo songs, made to try the game out; real
-> songs are welcome. It is tested in CI and in an FM-1 emulator, but **not yet tried on a real FM-1**: install it at
-> your own risk. **Testers wanted:** have an FM-1? Tell us how it went in
+> **A beta.** It has been played on a real FM-1, and it is tested in CI and in an FM-1 emulator, but it is still
+> new: install it at your own risk. Its eight songs are generated demo songs, made to try the game out; real songs are
+> welcome. **Testers wanted:** have an FM-1? Tell us how it went in
 > an [issue](https://github.com/joakimskurk/fm1vavehero/issues).
 
 <p align="center"><img src="docs/screens/splash.gif" width="360" alt="The title screen: the chrome logo VAVEHERO over a striped sun and mountains, and the game's highway as the road into the sunset"></p>
@@ -38,11 +38,12 @@ Edge.
 |---|---|
 | PLAY | Start a song, or pause it. On the title screen, FX plays a demo. |
 | SELECT | Pick a song. Each song has its own level, from EASY to EXP. |
+| KNOB 1 | On the song list: KEYS, the lanes' keys moved along the keyboard, up to 4 white keys either way (the LEDs show where). |
 | In a song | A bar of hi-hat counts you in. Play the notes on the white keys C4–C5. OCT− and OCT+ when the song changes octave, FX for OP BOOST, HOME to quit. |
 | FREE SOLO | Where the highway lights up, every key is yours: play what you like. |
 | KNOB 2–4 | Your sound; KNOB 3 the tempo on the song list (below 100 % it is practice, not kept) and the note speed in a song; the mix. |
 | ALGORITHM | GRIT: how dirty the sound is. |
-| GLO | SPREAD: every other white key, for big fingers. |
+| GLO | SPREAD: every other white key, for big fingers. In a song too. |
 | SEQ | AUTO: the song plays itself. |
 | MIDI MODE | The last song in the list: the FM-1 as a sound module for your DAW. |
 

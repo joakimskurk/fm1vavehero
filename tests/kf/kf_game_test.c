@@ -55,6 +55,35 @@ int main(void)
     check(!strcmp(lv, "EASY,MED,HARD,MED,EXP,EXP,HARD,HARD"), "D12: each song has its one level (FIRST LIGHT EASY, NEON CARRIER MED, ENGINE TOUR HARD, CHROME HORIZON MED, KIRAMEKI RUSH EXP, YOZORA SPARK EXP, TURBO NOIR HARD, DISCO VOLTAGE HARD)");
     run_song(1, 1);                              /* NEON CARRIER with SPREAD (D2) */
 
+    /* D19: the lanes' keys moved along the keyboard (KNOB 1) play the same game; GLO in a song changes the layout with
+     * every key let go first */
+    {
+        static const uint8_t LEFT[8] = {0, 2, 4, 6, 7, 9, 11, 12}, RIGHT[8] = {14, 16, 18, 19, 21, 23, 24, 26}, SPR[8] = {2, 6, 9, 12, 16, 19, 23, 26};
+        uint32_t f, k, left = 0, flips = 0, ok;
+        char what[200];
+        kg_shift = -4; kg_layout_set(0); ok = !memcmp(kg_lay, LEFT, 8);
+        kg_shift = 4; kg_layout_set(0); ok &= !memcmp(kg_lay, RIGHT, 8);
+        kg_layout_set(1); ok &= !memcmp(kg_lay, SPR, 8);
+        kg_shift = 0; kg_layout_set(1); ok &= !memcmp(kg_lay, KG_LAYOUT[1], 8);
+        check(ok, "D19: the layout moved 4 white keys left is F3..F4, right G4..G5; SPREAD moved right starts on G3");
+        kg_shift = -4; run_song(1, 0);           /* NEON CARRIER on the keys F3..F4 */
+        kg_shift = 0;
+        memset(sounding, 0, sizeof sounding);    /* ENGINE TOUR on AUTO, GLO pressed twice on the way */
+        kf_init();
+        kg_start(2, 100, 0, 44100);
+        kg_count_in(KG_COUNT_IN);
+        kg.auto_on = 1;
+        for (f = 0; f < 44100u * 400u; f += 256u) {
+            kg_ms = f / 44;
+            if ((f == 44100u * 30u / 256u * 256u || f == 44100u * 60u / 256u * 256u) && !kg.done) { kg_relayout(!kg.spread, f); flips++; }
+            if (kg_update(f)) break;
+        }
+        for (k = 0; k < 27u; k++) left += sounding[k];
+        snprintf(what, sizeof what, "D19: GLO twice in a song on AUTO (%u): no MISS, no shift missed, nothing left sounding (%u), done at %d.%d %%",
+                 flips, left, kg.acc10 / 10, kg.acc10 % 10);
+        check(flips == 2 && kg.done && kg.cnt[3] == 0 && kg.cnt[4] == kg.song->noct && left == 0 && !kg.spread, what);
+    }
+
     /* D16: a result counts (its best, its medals) only at full speed and without AUTO */
     {
         int32_t full, slow, aut;
