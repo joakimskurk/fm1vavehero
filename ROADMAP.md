@@ -80,6 +80,8 @@ but the audio is the tight part, so it is measured first.
       long release tails) use 31.6 % of the chip alone, and 34.0 % with the game around it (36.9 % with the platform). CI fails above 45 %. What it took:
       24 voices and 10 drum layers, an oscillator budget of 48 (D8), a control rate of 32 frames and FDN reverb.
 
+- [x] Dinghy 0.6.1's platform: the newer FM-1s' screen (M-VAVE's ST7789V registers); CI on fm1-emu 0.5.1, with a check
+      that the settings are saved on the newer FM-1s' flash chip
 - [x] `vavehero.c` on Dinghy 0.5: `APP_NAME "VAVEHERO"`, its own identity (`FM-1_95N`), `PLATFORM.md` with deviations
       from upstream, CI via zvenson/fm1-build, `make test` on the host
 - [x] Highway, top strip and knob row in one full-screen canvas, drawn like the reference. Estimated at about 9 % of

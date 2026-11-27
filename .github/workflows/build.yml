@@ -47,8 +47,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: packages
       - name: GitHub Pages switched on?
@@ -77,10 +77,10 @@ jobs:
           fi
       - name: The site
         run: python3 web/make_site.py "${{ steps.pkg.outputs.file }}" "${{ steps.pkg.outputs.version }}" _site
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         if: steps.pages.outputs.on == '1'
         with:
           path: _site
       - id: deploy
         if: steps.pages.outputs.on == '1'
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

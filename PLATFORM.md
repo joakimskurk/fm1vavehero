@@ -1,11 +1,21 @@
 # PLATFORM
 
-VaveHero runs on **Dinghy 0.5**, imported as source (commit `1444aa4` of this repo, unchanged).
+VaveHero runs on **Dinghy 0.6.1**'s platform, imported as source (0.5 in commit `1444aa4` of this repo, 0.6.1's
+platform files on 2026-11-27).
 
 - upstream: https://github.com/zvenson/dinghy
-- commit: `ea1b6bf` (2026-11, after "Dinghy 0.5" `1675934`; the release workflow's file pattern only). Dinghy 0.5
-  is 0.4 plus `f77bf03`: `firmware/hal/fm1_flash_map.h` accepts the UC25HQ80 (`0xB36014`) of FM-1s sold since
-  autumn 2026 beside the Puya `0x856014`.
+- commit: `14cda7a` (2026-11-26, the tag `v0.6.1` plus its screen note). What VaveHero takes from it:
+  - **0.6.1, the newer FM-1s' screen** (`firmware/src/lcd.c`): M-VAVE's own ST7789V register values in M-VAVE's
+    order (porch, gate, VCOM, supplies, 60 Hz, both gammas, one data line, full brightness), found by Jake Handy for
+    h1. Without them the units with the FM-1 / M-VAVE logo under the screen show washed-out colours, no reds, or
+    nothing. `docs/NEWER-FM1-SCREEN.md` is upstream's note on it.
+  - 0.6's platform hooks: `MIDI_RT_HOOK` in `usb.c`, `midi_uart.c` and `tests/host.c` (clock and transport where they
+    arrive) and the `LCD_MIRROR` hooks in `lcd.c`. Both do nothing unless the app defines them; VaveHero does not.
+  - 0.5 (in since the start): `firmware/hal/fm1_flash_map.h` accepts the UC25HQ80 (`0xB36014`) of FM-1s sold since
+    autumn 2026 beside the Puya `0x856014`.
+- Not taken from 0.6: the kit (`kit_clock.h`, `kit_midi.h`, `kit_backup.h`, `kit_link.h`, `kit_mirror.h`,
+  `screen_mirror/`) and its tests, and `dinghy.c`'s new GLOBAL page. They are headers Dinghy's own app includes;
+  VaveHero has its own MIDI MODE and settings and does not use them.
 - Dinghy's docs stay in `docs/` (`API.md`, `RULES.md`, `MAKE-IT-YOURS.md`, `SMK37.md`). Its README is
   `docs/DINGHY_README.md` (the toolchain, the SDK, the host mode).
 
@@ -30,8 +40,9 @@ Kept small, so a later Dinghy can be merged by diffing these files.
 | `tests/host.c` | calls `FM1_NOTE_EDGE` for each key a script moves, as the FM-1's scan does |
 
 Nothing else in `firmware/hal/`, `firmware/loader/`, `firmware/app.ld`, `firmware/src/` or `tests/` is changed. Checked
-file by file against upstream `ea1b6bf` (the tag `v0.5`, upstream's latest on 2026-11-07): only the files in this
-table differ.
+file by file against upstream `14cda7a` (0.6.1) on 2026-11-27: `firmware/hal/`, `firmware/loader/`, `firmware/app.ld`,
+`lcd.c` and `midi_uart.c` are upstream's; `usb.c` and `tests/host.c` are upstream's with the changes in this table; the
+kit files above are not here.
 
 ## Updating Dinghy
 

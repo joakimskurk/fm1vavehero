@@ -8,7 +8,7 @@ The numbers below are **estimates** from the Dinghy documentation and from the m
 fm1-emu. None of the FM-1 apps have been measured on a real FM-1 yet. That is why the first step of the port is to measure the audio engine
 (see [ROADMAP.md](../ROADMAP.md), phase 3).
 
-## What the FM-1 has (Dinghy 0.5)
+## What the FM-1 has (Dinghy 0.5; 0.6.1's platform since 2026-11-27)
 
 | | |
 |---|---|

@@ -75,7 +75,7 @@ CI builds the package on every push, runs the tests and times the game in fm1-em
 | | |
 |---|---|
 | [reference/](reference/) | The browser version: the ground truth the firmware follows |
-| [firmware/](firmware/), [PLATFORM.md](PLATFORM.md) | The firmware (Dinghy 0.5 and the app `src/vavehero.c`), and what was changed in Dinghy |
+| [firmware/](firmware/), [PLATFORM.md](PLATFORM.md) | The firmware (Dinghy 0.6.1's platform and the app `src/vavehero.c`), and what was changed in Dinghy |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | The design decisions |
 | [docs/fm1-budget.md](docs/fm1-budget.md) | What fits on the FM-1: memory, CPU and the measurements |
 | [docs/link.md](docs/link.md) | Two players (LINK), in the browser version for now |
@@ -85,6 +85,7 @@ CI builds the package on every push, runs the tests and times the game in fm1-em
 
 - [Dinghy](https://github.com/zvenson/dinghy) by **zvenson**: the platform VaveHero is built on, and
   [fm1-build](https://github.com/zvenson/fm1-build) for CI.
+- [h1](https://github.com/jakehandy/h1) by **Jake Handy**: the newer FM-1s' screen settings, through Dinghy 0.6.1.
 - [Felucca](https://github.com/hugelton/Felucca) by **Leo Kuroshita** (Hügelton Instruments) and
   [SLOOP](https://github.com/isod89/sloop-fm1) by **isod89**: the platform under Dinghy, and the browser installer.
 - [fm1-emu](https://github.com/joakimeriksson/fm1-emu) by **joakimeriksson**: the FM-1 emulator it is tested in.
